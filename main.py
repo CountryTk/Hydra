@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog
 from PyQt5.QtGui import QFont
-from PyQt5 import QtCore, QtGui, QtTest
+from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import Qt
 from subprocess import PIPE, Popen
 import os
@@ -30,6 +30,8 @@ class Example(QMainWindow):
         self.new()
         self.is_opened = False
         self.open()
+        self.print_preview()
+        self.print_button()
         self.save_button()
         self.saveAs()
         self.initUI()
@@ -55,7 +57,6 @@ class Example(QMainWindow):
         self.openAct = QAction('Open...', self)
         self.openAct.setShortcut('Ctrl+O')
         self.openAct.setStatusTip('Open a file')
-
         self.is_opened = False
         def _open():
             global files
@@ -68,7 +69,6 @@ class Example(QMainWindow):
                 options=options
             )
             if files:
-
                 with open(files[0], "r+") as file_o:
                     self.textArea.setText(file_o.read())
         self.openAct.triggered.connect(_open)
@@ -90,17 +90,40 @@ class Example(QMainWindow):
         self.saveAct.setShortcut('Ctrl+S')
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.save)
+
     def save(self):
         if self.is_opened is True:
             with open(files[0], "w") as saving:
                 saving.write(self.textArea.toPlainText())
         elif self.is_opened is False:
             print("woops")
+
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(self.save_file_as)
+
+    def print_button(self):
+        self.printAct = QAction('Print...', self)
+        self.printAct.setShortcut('Ctrl+P')
+        self.printAct.setStatusTip('Print a file')
+
+        def test():
+            dialog = QtPrintSupport.QPrintDialog()
+            if dialog.exec_() == QDialog.Accepted:
+                self.textArea.document().print_(dialog.printer())
+        self.printAct.triggered.connect(test)
+
+    def print_preview(self):
+        self.printPrAct = QAction('Print preview', self)
+        self.printPrAct.setShortcut('Shift+Ctrl+P')
+        self.printPrAct.setStatusTip('See a print preview')
+        def test():
+            dialog = QtPrintSupport.QPrintPreviewDialog()
+            dialog.paintRequested.connect(self.textArea.print_)
+            dialog.exec_()
+        self.printPrAct.triggered.connect(test)
 
     def initUI(self):
 
@@ -115,11 +138,14 @@ class Example(QMainWindow):
         fileMenu.addAction(self.saveAct)
         fileMenu.addAction(self.saveAsAct)
         fileMenu.addSeparator()
+        fileMenu.addAction(self.printPrAct)
+        fileMenu.addAction(self.printAct)
+        fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
         self.textArea.move(0, 20)
-        self.textArea.resize(400,380)
+        self.textArea.resize(400,360)
         self.setWindowTitle('fpad')
         self.show()
 
@@ -139,7 +165,6 @@ if __name__ == '__main__':
     palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
-
     palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(53, 53, 53).lighter())
     palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
     app.setPalette(palette)
