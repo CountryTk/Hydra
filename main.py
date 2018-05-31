@@ -31,7 +31,10 @@ class Example(QMainWindow):
         self.is_opened = False
         self.open()
         self.undo()
+        self.cut()
+        self.copy()
         self.printPreview()
+        self.redo()
         self.printButton()
         self.saveButton()
         self.saveAs()
@@ -125,11 +128,30 @@ class Example(QMainWindow):
             dialog.paintRequested.connect(self.textArea.print_)
             dialog.exec_()
         self.printPrAct.triggered.connect(test)
+
     def undo(self):
         self.undoAct = QAction('Undo', self)
         self.undoAct.setShortcut('Ctrl+Z')
         self.undoAct.setStatusTip('Undo')
         self.undoAct.triggered.connect(lambda: hotkey('ctrl', 'z'))
+
+    def redo(self):
+        self.redoAct = QAction('Redo', self)
+        self.redoAct.setShortcut('Shift+Ctrl+Z')
+        self.redoAct.setStatusTip('Redo')
+        self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
+
+    def cut(self):
+        self.cutAct = QAction('Cut', self)
+        self.cutAct.setShortcut('Ctrl+X')
+        self.cutAct.setStatusTip('Cut')
+        self.cutAct.triggered.connect(lambda: hotkey('ctrl', 'x'))
+
+    def copy(self):
+        self.copyAct = QAction('Copy', self)
+        self.copyAct.setShortcut('Ctrl+C')
+        self.copyAct.setStatusTip('Copy')
+        self.copyAct.triggered.connect(lambda: hotkey('ctrl', 'c'))
     def initUI(self):
 
         self.statusBar()
@@ -151,6 +173,11 @@ class Example(QMainWindow):
 
         editMenu = menubar.addMenu('Edit') # tired of writing comments
         editMenu.addAction(self.undoAct)
+        editMenu.addAction(self.redoAct)
+        editMenu.addSeparator()
+        editMenu.addAction(self.cutAct)
+        editMenu.addAction(self.copyAct)
+
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
         self.textArea.move(0, 20)
