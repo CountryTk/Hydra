@@ -103,7 +103,8 @@ class Example(QMainWindow):
             with open(files[0], "w") as saving:
                 saving.write(self.textArea.toPlainText())
         elif self.is_opened is False:
-            print("woops")
+            with open("Untitled.txt", 'w+') as newfile:
+                newfile.write(self.textArea.toPlainText())
 
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
@@ -258,8 +259,7 @@ class Highlighter(QSyntaxHighlighter):
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
         functionFormat.setForeground(Qt.blue)
-        self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"),
-                functionFormat))
+        self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
 
         self.commentStartExpression = QRegExp("/\\*")
         self.commentEndExpression = QRegExp("\\*/")
