@@ -29,7 +29,9 @@ class Example(QMainWindow):
         self.save_button()
         self.blank()
         self.initUI()
-
+    def onstart(self):
+        with open('untitled.txt', 'a+') as file:
+            pass
     def blank(self):
         self.blankAct = QAction('', self)
 
@@ -58,8 +60,12 @@ class Example(QMainWindow):
 
         def save():
             data = self.textArea.toPlainText()
-            print(data)
+            with open('untitled.txt', 'w+') as file:
+                file.write(data)
+                file.close()
+                
         self.saveAct.triggered.connect(save)
+
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
