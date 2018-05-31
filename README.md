@@ -1,5 +1,5 @@
 # fpad
-A simple cross-platform 
+A simple cross-platform notepad
 
 Perfect for fast note taking
 
