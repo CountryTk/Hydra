@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import Qt
 from subprocess import PIPE, Popen
-import os
+from pyautogui import hotkey
 
 
 file_o = None
@@ -30,9 +30,10 @@ class Example(QMainWindow):
         self.new()
         self.is_opened = False
         self.open()
-        self.print_preview()
-        self.print_button()
-        self.save_button()
+        self.undo()
+        self.printPreview()
+        self.printButton()
+        self.saveButton()
         self.saveAs()
         self.initUI()
 
@@ -73,7 +74,7 @@ class Example(QMainWindow):
                     self.textArea.setText(file_o.read())
         self.openAct.triggered.connect(_open)
 
-    def save_file_as(self):
+    def saveFileAs(self):
         try:
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
@@ -85,7 +86,7 @@ class Example(QMainWindow):
         except:
             pass
 
-    def save_button(self):
+    def saveButton(self):
         self.saveAct = QAction('Save', self)
         self.saveAct.setShortcut('Ctrl+S')
         self.saveAct.setStatusTip('Save a file')
@@ -102,9 +103,9 @@ class Example(QMainWindow):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
         self.saveAsAct.setStatusTip('Save a file as')
-        self.saveAsAct.triggered.connect(self.save_file_as)
+        self.saveAsAct.triggered.connect(self.saveFileAs)
 
-    def print_button(self):
+    def printButton(self):
         self.printAct = QAction('Print...', self)
         self.printAct.setShortcut('Ctrl+P')
         self.printAct.setStatusTip('Print a file')
@@ -115,7 +116,7 @@ class Example(QMainWindow):
                 self.textArea.document().print_(dialog.printer())
         self.printAct.triggered.connect(test)
 
-    def print_preview(self):
+    def printPreview(self):
         self.printPrAct = QAction('Print preview', self)
         self.printPrAct.setShortcut('Shift+Ctrl+P')
         self.printPrAct.setStatusTip('See a print preview')
@@ -124,7 +125,11 @@ class Example(QMainWindow):
             dialog.paintRequested.connect(self.textArea.print_)
             dialog.exec_()
         self.printPrAct.triggered.connect(test)
-
+    def undo(self):
+        self.undoAct = QAction('Undo', self)
+        self.undoAct.setShortcut('Ctrl+Z')
+        self.undoAct.setStatusTip('Undo')
+        self.undoAct.triggered.connect(lambda: hotkey('ctrl', 'z'))
     def initUI(self):
 
         self.statusBar()
@@ -132,6 +137,7 @@ class Example(QMainWindow):
         font.setPointSize(14)
 
         menubar = self.menuBar() #Creating a menu bar
+
         fileMenu = menubar.addMenu('File') #Creating the first menu which will have options listed below
         fileMenu.addAction(self.newAct) #Adding a newact button
         fileMenu.addAction(self.openAct)
@@ -142,6 +148,9 @@ class Example(QMainWindow):
         fileMenu.addAction(self.printAct)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
+
+        editMenu = menubar.addMenu('Edit') # tired of writing comments
+        editMenu.addAction(self.undoAct)
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
         self.textArea.move(0, 20)
