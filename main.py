@@ -1,9 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
+
+file = None
 class Example(QMainWindow):
 
     def __init__(self):
@@ -25,15 +27,10 @@ class Example(QMainWindow):
         self.exit()
         self.new()
         self.open()
+        self.save()
         self.saveAs()
-        self.save_button()
-        self.blank()
         self.initUI()
-    def onstart(self):
-        with open('untitled.txt', 'a+') as file:
-            pass
-    def blank(self):
-        self.blankAct = QAction('', self)
+
 
     def exit(self):
         self.exitAct = QAction('Quit', self)
@@ -51,26 +48,43 @@ class Example(QMainWindow):
         self.openAct = QAction('Open...', self)
         self.openAct.setShortcut('Ctrl+O')
         self.openAct.setStatusTip('Open a file')
-        self.openAct.triggered.connect(qApp.beep)  # TODO: add a open file function
 
-    def save_button(self):
+
+        def _open():
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            files, _ = QFileDialog.getOpenFileNames(
+                self, "Open a file", "",
+                "All Files (*);;Python Files (*.py);;Text Files (*.txt)",
+                options=options
+            )
+            if files:
+                global file
+                file = open(files[0], "r+")
+                self.textArea.setText(file.read())
+        self.openAct.triggered.connect(_open)  # TODO: add a open file function
+
+    def save_file_as(self):
+        try:
+            name = QFileDialog.getSaveFileName(self, 'Save File')
+            file_s = open(name[0], 'w+')
+            text = self.textArea.toPlainText()
+            file_s.write(text)
+            file_s.close()
+        except:
+            pass
+
+    def save(self):
         self.saveAct = QAction('Save', self)
         self.saveAct.setShortcut('Ctrl+S')
         self.saveAct.setStatusTip('Save a file')
-
-        def save():
-            data = self.textArea.toPlainText()
-            with open('untitled.txt', 'w+') as file:
-                file.write(data)
-                file.close()
-                
-        self.saveAct.triggered.connect(save)
-
+        self.saveAct.triggered.connect(qApp.beep)
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
         self.saveAsAct.setStatusTip('Save a file as')
-        self.saveAsAct.triggered.connect(qApp.beep)
+        self.saveAsAct.triggered.connect(self.save_file_as)
+
 
     def initUI(self):
 
