@@ -18,43 +18,54 @@ class Example(QMainWindow):
             Qt.MSWindowsFixedSizeDialogHint
 
         )
-        self.setFixedSize(400,400)
+        self.setFixedSize(400, 400)
         self.height = 600
+        self.move(0, 0)
         self.width = 600
         self.exit()
         self.new()
         self.open()
         self.saveAs()
-        self.save()
+        self.save_button()
         self.blank()
         self.initUI()
+
     def blank(self):
         self.blankAct = QAction('', self)
+
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
+
     def new(self):
         self.newAct = QAction('New', self)
         self.newAct.setShortcut('Ctrl+N')
         self.newAct.setStatusTip('Create a file')
-        self.newAct.triggered.connect(qApp.beep) #TODO: add a new file creation function
+        self.newAct.triggered.connect(qApp.beep)  # TODO: add a new file creation function
+
     def open(self):
         self.openAct = QAction('Open...', self)
         self.openAct.setShortcut('Ctrl+O')
         self.openAct.setStatusTip('Open a file')
-        self.openAct.triggered.connect(qApp.beep) #TODO: add a open file function
-    def save(self):
+        self.openAct.triggered.connect(qApp.beep)  # TODO: add a open file function
+
+    def save_button(self):
         self.saveAct = QAction('Save', self)
         self.saveAct.setShortcut('Ctrl+S')
         self.saveAct.setStatusTip('Save a file')
-        self.saveAct.triggered.connect(qApp.beep)
+
+        def save():
+            data = self.textArea.toPlainText()
+            print(data)
+        self.saveAct.triggered.connect(save)
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(qApp.beep)
+
     def initUI(self):
 
         self.statusBar()
