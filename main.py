@@ -33,6 +33,8 @@ class Example(QMainWindow):
         self.undo()
         self.cut()
         self.copy()
+        self.paste()
+        self.all()
         self.printPreview()
         self.redo()
         self.printButton()
@@ -152,6 +154,17 @@ class Example(QMainWindow):
         self.copyAct.setShortcut('Ctrl+C')
         self.copyAct.setStatusTip('Copy')
         self.copyAct.triggered.connect(lambda: hotkey('ctrl', 'c'))
+
+    def paste(self):
+        self.pasteAct = QAction('Paste', self)
+        self.pasteAct.setShortcut('Ctrl+V')
+        self.pasteAct.setStatusTip('Paste')
+        self.pasteAct.triggered.connect(lambda: hotkey('ctrl', 'v'))
+    def all(self):
+        self.allAct = QAction('Select all', self)
+        self.allAct.setShortcut('Ctrl+A')
+        self.allAct.setStatusTip('Select all')
+        self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
     def initUI(self):
 
         self.statusBar()
@@ -177,6 +190,9 @@ class Example(QMainWindow):
         editMenu.addSeparator()
         editMenu.addAction(self.cutAct)
         editMenu.addAction(self.copyAct)
+        editMenu.addAction(self.pasteAct)
+        editMenu.addSeparator()
+        editMenu.addAction(self.allAct)
 
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
