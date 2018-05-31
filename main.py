@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
@@ -27,7 +27,7 @@ class Example(QMainWindow):
         self.exit()
         self.new()
         self.open()
-        self.save()
+        self.save_button()
         self.saveAs()
         self.initUI()
 
@@ -62,11 +62,13 @@ class Example(QMainWindow):
                 global file
                 file = open(files[0], "r+")
                 self.textArea.setText(file.read())
-        self.openAct.triggered.connect(_open)  # TODO: add a open file function
+        self.openAct.triggered.connect(_open)
 
     def save_file_as(self):
         try:
-            name = QFileDialog.getSaveFileName(self, 'Save File')
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            name = QFileDialog.getSaveFileName(self, 'Save File', options=options)
             file_s = open(name[0], 'w+')
             text = self.textArea.toPlainText()
             file_s.write(text)
@@ -74,21 +76,25 @@ class Example(QMainWindow):
         except:
             pass
 
-    def save(self):
+    def save_button(self):
         self.saveAct = QAction('Save', self)
         self.saveAct.setShortcut('Ctrl+S')
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(qApp.beep)
+    def save(self):
+        pass
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
         self.saveAsAct.setShortcut('Shift+Ctrl+S')
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(self.save_file_as)
 
-
     def initUI(self):
 
         self.statusBar()
+        font = QFont()
+        font.setPointSize(14)
+
         menubar = self.menuBar() #Creating a menu bar
         fileMenu = menubar.addMenu('File') #Creating the first menu which will have options listed below
         fileMenu.addAction(self.newAct) #Adding a newact button
@@ -98,7 +104,7 @@ class Example(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
         self.textArea = QTextEdit(self)
-
+        self.textArea.setFont(font)
         self.textArea.move(0, 20)
         self.textArea.resize(400,380)
         self.setWindowTitle('fpad')
