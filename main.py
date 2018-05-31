@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics
 from PyQt5 import QtCore, QtGui, QtPrintSupport
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QRegExp
 from subprocess import PIPE, Popen
 from pyautogui import hotkey
 
@@ -37,6 +37,7 @@ class Example(QMainWindow):
         self.all()
         self.printPreview()
         self.redo()
+        self.find()
         self.printButton()
         self.saveButton()
         self.saveAs()
@@ -160,11 +161,19 @@ class Example(QMainWindow):
         self.pasteAct.setShortcut('Ctrl+V')
         self.pasteAct.setStatusTip('Paste')
         self.pasteAct.triggered.connect(lambda: hotkey('ctrl', 'v'))
+
     def all(self):
         self.allAct = QAction('Select all', self)
         self.allAct.setShortcut('Ctrl+A')
         self.allAct.setStatusTip('Select all')
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
+
+    def find(self):
+        self.findAct = QAction('Find', self)
+        self.findAct.setShortcut('Ctrl+F')
+        self.findAct.setStatusTip('Find')
+        self.findAct.triggered.connect(lambda: print("nigger"))
+
     def initUI(self):
 
         self.statusBar()
@@ -194,12 +203,95 @@ class Example(QMainWindow):
         editMenu.addSeparator()
         editMenu.addAction(self.allAct)
 
+        searchMenu = menubar.addMenu('Search')
+        searchMenu.addAction(self.findAct)
+
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
+        self.textArea.setTabStopWidth(5)
+        self.highlighter = Highlighter(self.textArea.document())
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
         self.setWindowTitle('fpad')
         self.show()
+
+class Highlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super(Highlighter, self).__init__(parent)
+
+        keywordFormat = QTextCharFormat()
+        keywordFormat.setForeground(Qt.darkBlue)
+        keywordFormat.setFontWeight(QFont.Bold)
+
+        keywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
+                "\\bFalse\\b", "\\bfinally\\b", "\\bis\\b", "\\breturn\\b",
+                "\\bNone\\b", "\\bcontinue\\b", "\\bfor\\b", "\\blambda\\b",
+                "\\btry\\b", "\\bTrue\\b", "\\bdef\\b",
+                "\\bfrom\\b", "\\bnonlocal\\b", "\\bwhile\\b", "\\band\\b",
+                "\\bnot\\b", "\\bglobal\\b", "\\bdel\\b",
+                "\\bwith\\b", "\\bas\\b", "\\belif\\b",
+                "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
+                "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
+                "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
+
+        self.highlightingRules = [(QRegExp(pattern), keywordFormat)
+                for pattern in keywordPatterns]
+
+        classFormat = QTextCharFormat()
+        classFormat.setFontWeight(QFont.Bold)
+        classFormat.setForeground(Qt.darkMagenta)
+        self.highlightingRules.append((QRegExp("\\bQ[A-Za-z]+\\b"),
+                classFormat))
+
+        singleLineCommentFormat = QTextCharFormat()
+        singleLineCommentFormat.setForeground(Qt.red)
+        self.highlightingRules.append((QRegExp("//[^\n]*"),
+                singleLineCommentFormat))
+
+        self.multiLineCommentFormat = QTextCharFormat()
+        self.multiLineCommentFormat.setForeground(Qt.red)
+
+        quotationFormat = QTextCharFormat()
+        quotationFormat.setForeground(Qt.darkGreen)
+        self.highlightingRules.append((QRegExp("\".*\""), quotationFormat))
+
+        functionFormat = QTextCharFormat()
+        functionFormat.setFontItalic(True)
+        functionFormat.setForeground(Qt.blue)
+        self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"),
+                functionFormat))
+
+        self.commentStartExpression = QRegExp("/\\*")
+        self.commentEndExpression = QRegExp("\\*/")
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlightingRules:
+            expression = QRegExp(pattern)
+            index = expression.indexIn(text)
+            while index >= 0:
+                length = expression.matchedLength()
+                self.setFormat(index, length, format)
+                index = expression.indexIn(text, index + length)
+
+        self.setCurrentBlockState(0)
+
+        startIndex = 0
+        if self.previousBlockState() != 1:
+            startIndex = self.commentStartExpression.indexIn(text)
+
+        while startIndex >= 0:
+            endIndex = self.commentEndExpression.indexIn(text, startIndex)
+
+            if endIndex == -1:
+                self.setCurrentBlockState(1)
+                commentLength = len(text) - startIndex
+            else:
+                commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
+
+            self.setFormat(startIndex, commentLength,
+                    self.multiLineCommentFormat)
+            startIndex = self.commentStartExpression.indexIn(text,
+                    startIndex + commentLength);
 
 
 if __name__ == '__main__':
@@ -209,7 +301,7 @@ if __name__ == '__main__':
     palette = QtGui.QPalette()
     palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(53, 53, 53))
+    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(64, 64, 64))
     palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
@@ -217,7 +309,7 @@ if __name__ == '__main__':
     palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
-    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(53, 53, 53).lighter())
+    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(77, 210, 255).lighter())
     palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
     app.setPalette(palette)
     ex = Example()
