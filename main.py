@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit,
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui, QtTest
 from PyQt5.QtCore import Qt
+from subprocess import PIPE, Popen
+import os
 
 
 file_o = None
@@ -39,11 +41,15 @@ class Example(QMainWindow):
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
 
+    def execute(self):
+        out, err = Popen(["python fuck.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        return (out + err).decode()
+
     def new(self):
         self.newAct = QAction('New', self)
         self.newAct.setShortcut('Ctrl+N')
         self.newAct.setStatusTip('Create a file')
-        self.newAct.triggered.connect(qApp.beep)  # TODO: add a new file creation function
+        self.newAct.triggered.connect(self.execute)  
 
     def open(self):
         self.openAct = QAction('Open...', self)
