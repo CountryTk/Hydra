@@ -22,7 +22,8 @@ class Example(QMainWindow):
             Qt.MSWindowsFixedSizeDialogHint
 
         )
-        self.setFixedSize(400, 400)
+
+        self.setGeometry(0, 0, 400, 400)
         self.height = 600
         self.move(0, 0)
         self.width = 600
@@ -42,6 +43,7 @@ class Example(QMainWindow):
         self.saveButton()
         self.saveAs()
         self.initUI()
+        self.setCentralWidget(self.textArea)
 
 
     def exit(self):
@@ -236,6 +238,19 @@ class Highlighter(QSyntaxHighlighter):
                 "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
                 "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
                 "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
+
+        cppKeywordPatterns = [
+            "\\bfor\\b", "\\bclass\\b", "\\brange\\b",
+            "\\bFalse\\b", "\\bfinally\\b", "\\bis\\b", "\\breturn\\b",
+            "\\bNone\\b", "\\bcontinue\\b", "\\bfor\\b", "\\blambda\\b",
+            "\\btry\\b", "\\bTrue\\b", "\\bdef\\b",
+            "\\bfrom\\b", "\\bnonlocal\\b", "\\bwhile\\b", "\\band\\b",
+            "\\bnot\\b", "\\bglobal\\b", "\\bdel\\b",
+            "\\bwith\\b", "\\bas\\b", "\\belif\\b",
+            "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
+            "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
+            "\\bexcept\\b", "\\bin\\b", "\\braise\\b"
+        ]
 
         self.highlightingRules = [(QRegExp(pattern), keywordFormat)
                 for pattern in pyKeywordPatterns]
