@@ -1,10 +1,6 @@
 # fpad
 A simple cross-platform notepad with syntax highlighting
 
-Fpad is not meant to be resized, it's meant to be a small window to take quick notes in.
-You can also open files in it and save them.
-
-
 Required modules: PyQt5, pyautogui
 
 **If you use MacOs and can't install pyautogui follow this**
