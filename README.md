@@ -1,4 +1,4 @@
-# fpad
+# pypad
 A simple cross-platform notepad with syntax highlighting
 
 Required modules: PyQt5, pyautogui
