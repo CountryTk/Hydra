@@ -217,13 +217,12 @@ class Example(QMainWindow):
         self.highlighter = Highlighter(self.textArea.document())
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
-        self.setWindowTitle('fpad')
+        self.setWindowTitle('pypad')
         self.show()
 
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(Highlighter, self).__init__(parent)
-
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(Qt.darkBlue)
         keywordFormat.setFontWeight(QFont.Bold)
@@ -239,18 +238,7 @@ class Highlighter(QSyntaxHighlighter):
                 "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
                 "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
 
-        cppKeywordPatterns = [
-            "\\bfor\\b", "\\bclass\\b", "\\brange\\b",
-            "\\bFalse\\b", "\\bfinally\\b", "\\bis\\b", "\\breturn\\b",
-            "\\bNone\\b", "\\bcontinue\\b", "\\bfor\\b", "\\blambda\\b",
-            "\\btry\\b", "\\bTrue\\b", "\\bdef\\b",
-            "\\bfrom\\b", "\\bnonlocal\\b", "\\bwhile\\b", "\\band\\b",
-            "\\bnot\\b", "\\bglobal\\b", "\\bdel\\b",
-            "\\bwith\\b", "\\bas\\b", "\\belif\\b",
-            "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
-            "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
-            "\\bexcept\\b", "\\bin\\b", "\\braise\\b"
-        ]
+        
 
         self.highlightingRules = [(QRegExp(pattern), keywordFormat)
                 for pattern in pyKeywordPatterns]
