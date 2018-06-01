@@ -67,20 +67,23 @@ class Example(QMainWindow):
         self.openAct.setShortcut('Ctrl+O')
         self.openAct.setStatusTip('Open a file')
         self.is_opened = False
-        def _open():
-            global files
-            self.is_opened = True
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
-            files, _ = QFileDialog.getOpenFileNames(
-                self, "Open a file", "",
-                "All Files (*);;Python Files (*.py);;Text Files (*.txt)",
-                options=options
-            )
-            if files:
-                with open(files[0], "r+") as file_o:
-                    self.textArea.setText(file_o.read())
-        self.openAct.triggered.connect(_open)
+        self.openAct.triggered.connect(self.open1)
+    def open1(self):
+        global files
+        self.is_opened = True
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(
+            self, "Open a file", "",
+            "All Files (*);;Python Files (*.py);;Text Files (*.txt)",
+            options=options
+        )
+        if files:
+            with open(files[0], "r+") as file_o:
+                self.textArea.setText(file_o.read())
+                if files[0].endswith('.py'):
+                    self.highlighter = Highlighter(self.textArea.document())
+
 
     def saveFileAs(self):
         try:
@@ -178,16 +181,14 @@ class Example(QMainWindow):
         self.findAct.triggered.connect(lambda: print("oh no"))
 
     def initUI(self):
-
         self.statusBar()
         font = QFont()
         font.setFamily('Courier')
         font.setFixedPitch(True)
         font.setPointSize(14)
-
         menubar = self.menuBar() #Creating a menu bar
-
         fileMenu = menubar.addMenu('File') #Creating the first menu which will have options listed below
+
         fileMenu.addAction(self.newAct) #Adding a newact button
         fileMenu.addAction(self.openAct)
         fileMenu.addAction(self.saveAct)
@@ -214,7 +215,6 @@ class Example(QMainWindow):
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
         self.textArea.setTabStopWidth(5)
-        self.highlighter = Highlighter(self.textArea.document())
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
         self.setWindowTitle('pypad')
@@ -238,7 +238,7 @@ class Highlighter(QSyntaxHighlighter):
                 "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
                 "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
 
-        
+
 
         self.highlightingRules = [(QRegExp(pattern), keywordFormat)
                 for pattern in pyKeywordPatterns]
