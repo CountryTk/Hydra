@@ -168,9 +168,16 @@ class Example(QMainWindow):
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
     def findWindow(self):
+        global files
         text, ok = QInputDialog.getText(self, 'Find', "Find what: ")
         if ok:
-            print(text)
+            try:
+                with open(files[0], 'r') as read:
+                    if text in read.read():
+                        print(text)
+            except NameError:
+                pass
+
 
     def find(self):
         self.findAct = QAction('Find', self)
@@ -262,7 +269,8 @@ class Highlighter(QSyntaxHighlighter):
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
-        self.highlightingRules.append((QRegExp("\".*\""), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+        self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
 
         self.commentStartExpression = QRegExp("^'''")
         self.commentEndExpression = QRegExp("'''$")
