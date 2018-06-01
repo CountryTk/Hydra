@@ -7,6 +7,7 @@ from subprocess import PIPE, Popen
 from pyautogui import hotkey
 
 
+
 file_o = None
 class Example(QMainWindow):
 
@@ -76,7 +77,6 @@ class Example(QMainWindow):
                 self.textArea.setText(file_o.read())
                 if files[0].endswith('.py'):
                     self.highlighter = Highlighter(self.textArea.document())
-
 
     def saveFileAs(self):
         try:
@@ -207,6 +207,8 @@ class Example(QMainWindow):
 
         self.textArea = QTextEdit(self)
         self.textArea.setFont(font)
+
+
         self.textArea.setTabStopWidth(5)
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
@@ -248,7 +250,7 @@ class Highlighter(QSyntaxHighlighter):
                 singleLineCommentFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
-        self.multiLineCommentFormat.setForeground(Qt.red)
+        self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
@@ -259,7 +261,8 @@ class Highlighter(QSyntaxHighlighter):
         functionFormat.setForeground(QtGui.QColor(255, 221, 0))
         self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
 
-
+        self.commentStartExpression = QRegExp("'''\*")
+        self.commentEndExpression = QRegExp("*\'''")
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -272,7 +275,23 @@ class Highlighter(QSyntaxHighlighter):
 
         self.setCurrentBlockState(0)
 
+        startIndex = 0
+        if self.previousBlockState() != 1:
+            startIndex = self.commentStartExpression.indexIn(text)
 
+        while startIndex >= 0:
+            endIndex = self.commentEndExpression.indexIn(text, startIndex)
+
+            if endIndex == -1:
+                self.setCurrentBlockState(1)
+                commentLength = len(text) - startIndex
+            else:
+                commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
+
+            self.setFormat(startIndex, commentLength,
+                           self.multiLineCommentFormat)
+            startIndex = self.commentStartExpression.indexIn(text,
+                                                             startIndex + commentLength);
 
 
 if __name__ == '__main__':
