@@ -51,7 +51,7 @@ class Example(QMainWindow):
         self.exitAct.triggered.connect(qApp.quit)
 
     def execute(self):
-        out, err = Popen(["python fuck.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        out, err = Popen(["python main.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
         return (out + err).decode()
 
     def new(self):
