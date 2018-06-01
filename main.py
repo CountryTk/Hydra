@@ -51,7 +51,7 @@ class Example(QMainWindow):
         self.exitAct.triggered.connect(qApp.quit)
 
     def execute(self):
-        out, err = Popen(["python main.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        out, err = Popen(["python fuck.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
         return (out + err).decode()
 
     def new(self):
@@ -173,12 +173,14 @@ class Example(QMainWindow):
         self.findAct = QAction('Find', self)
         self.findAct.setShortcut('Ctrl+F')
         self.findAct.setStatusTip('Find')
-        self.findAct.triggered.connect(lambda: print("nigger"))
+        self.findAct.triggered.connect(lambda: print("oh no"))
 
     def initUI(self):
 
         self.statusBar()
         font = QFont()
+        font.setFamily('Courier')
+        font.setFixedPitch(True)
         font.setPointSize(14)
 
         menubar = self.menuBar() #Creating a menu bar
@@ -224,7 +226,7 @@ class Highlighter(QSyntaxHighlighter):
         keywordFormat.setForeground(Qt.darkBlue)
         keywordFormat.setFontWeight(QFont.Bold)
 
-        keywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
+        pyKeywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
                 "\\bFalse\\b", "\\bfinally\\b", "\\bis\\b", "\\breturn\\b",
                 "\\bNone\\b", "\\bcontinue\\b", "\\bfor\\b", "\\blambda\\b",
                 "\\btry\\b", "\\bTrue\\b", "\\bdef\\b",
@@ -236,7 +238,7 @@ class Highlighter(QSyntaxHighlighter):
                 "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
 
         self.highlightingRules = [(QRegExp(pattern), keywordFormat)
-                for pattern in keywordPatterns]
+                for pattern in pyKeywordPatterns]
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
