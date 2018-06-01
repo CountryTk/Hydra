@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog, QLineEdit
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics
 from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import Qt, QRegExp
@@ -38,6 +38,7 @@ class Example(QMainWindow):
         self.saveAs()
         self.initUI()
         self.setCentralWidget(self.textArea)
+        self.setWindowTitle('pypad')
 
 
     def exit(self):
@@ -173,15 +174,19 @@ class Example(QMainWindow):
         if ok:
             try:
                 with open(files[0], 'r') as read:
-                    if text in read.read():
-                        print(text)
-            except NameError:
-                with open("Untitled.txt", 'r') as newfile:
-                    if text in newfile.read():
-                        print("Text found: " + text)
-                    else:
-                        print("Text not found, maybe try saving your document?")
+                    index = read.read().find(text)
+                    if index != -1:
+                        self.cursors.setPosition(index)
+                        self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
+                        self.textArea.setTextCursor(self.cursors)
 
+            except NameError:
+                with open("Untitled.txt", 'a+') as newfile:
+                    index = newfile.read().find(text)
+                    if index != -1:
+                        self.cursors.setPosition(index)
+                        self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
+                        self.textArea.setTextCursor(self.cursors)
 
     def find(self):
         self.findAct = QAction('Find', self)
@@ -220,15 +225,16 @@ class Example(QMainWindow):
 
         searchMenu = menubar.addMenu('Search')
         searchMenu.addAction(self.findAct)
+        self.showNameEdit = QTextEdit()
 
         self.textArea = QTextEdit(self)
+        self.cursors = self.textArea.textCursor()
+
         self.textArea.setFont(font)
-
-
         self.textArea.setTabStopWidth(4)
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
-        self.setWindowTitle('pypad')
+
         self.show()
 
 class Highlighter(QSyntaxHighlighter):
