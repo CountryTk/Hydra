@@ -13,14 +13,7 @@ class Example(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(
-            Qt.Window |
-            Qt.CustomizeWindowHint |
-            Qt.WindowTitleHint |
-            Qt.WindowCloseButtonHint |
-            Qt.WindowStaysOnTopHint |
-            Qt.FramelessWindowHint |
-            Qt.MSWindowsFixedSizeDialogHint
-
+            Qt.WindowStaysOnTopHint
         )
 
         self.setGeometry(0, 0, 400, 400)
@@ -224,7 +217,7 @@ class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(Highlighter, self).__init__(parent)
         keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(Qt.darkBlue)
+        keywordFormat.setForeground(QtGui.QColor(0, 153, 255))
         keywordFormat.setFontWeight(QFont.Bold)
 
         pyKeywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
@@ -245,29 +238,28 @@ class Highlighter(QSyntaxHighlighter):
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(Qt.darkMagenta)
+        classFormat.setForeground(QtGui.QColor(255, 135, 48))
         self.highlightingRules.append((QRegExp("\\bQ[A-Za-z]+\\b"),
                 classFormat))
 
         singleLineCommentFormat = QTextCharFormat()
-        singleLineCommentFormat.setForeground(Qt.red)
-        self.highlightingRules.append((QRegExp("//[^\n]*"),
+        singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
+        self.highlightingRules.append((QRegExp("#[^\n]*"),
                 singleLineCommentFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(Qt.red)
 
         quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(Qt.darkGreen)
+        quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
         self.highlightingRules.append((QRegExp("\".*\""), quotationFormat))
 
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(Qt.blue)
+        functionFormat.setForeground(QtGui.QColor(255, 221, 0))
         self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
 
-        self.commentStartExpression = QRegExp("/\\*")
-        self.commentEndExpression = QRegExp("\\*/")
+
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -280,23 +272,7 @@ class Highlighter(QSyntaxHighlighter):
 
         self.setCurrentBlockState(0)
 
-        startIndex = 0
-        if self.previousBlockState() != 1:
-            startIndex = self.commentStartExpression.indexIn(text)
 
-        while startIndex >= 0:
-            endIndex = self.commentEndExpression.indexIn(text, startIndex)
-
-            if endIndex == -1:
-                self.setCurrentBlockState(1)
-                commentLength = len(text) - startIndex
-            else:
-                commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
-
-            self.setFormat(startIndex, commentLength,
-                    self.multiLineCommentFormat)
-            startIndex = self.commentStartExpression.indexIn(text,
-                    startIndex + commentLength);
 
 
 if __name__ == '__main__':
@@ -304,9 +280,9 @@ if __name__ == '__main__':
 
     app.setStyle('Fusion')
     palette = QtGui.QPalette()
-    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53, 53, 53))
+    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(48, 48, 48))
     palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(64, 64, 64))
+    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(48, 48, 48))
     palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
