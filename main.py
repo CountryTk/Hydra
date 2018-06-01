@@ -176,7 +176,11 @@ class Example(QMainWindow):
                     if text in read.read():
                         print(text)
             except NameError:
-                pass
+                with open("Untitled.txt", 'r') as newfile:
+                    if text in newfile.read():
+                        print("Text found: " + text)
+                    else:
+                        print("Text not found, maybe try saving your document?")
 
 
     def find(self):
