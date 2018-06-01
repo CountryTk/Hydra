@@ -255,14 +255,14 @@ class Highlighter(QSyntaxHighlighter):
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
 
-        quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
-        self.highlightingRules.append((QRegExp("\".*\""), quotationFormat))
-
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
         functionFormat.setForeground(QtGui.QColor(255, 221, 0))
         self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
+
+        quotationFormat = QTextCharFormat()
+        quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
+        self.highlightingRules.append((QRegExp("\".*\""), quotationFormat))
 
         self.commentStartExpression = QRegExp("^'''")
         self.commentEndExpression = QRegExp("'''$")
