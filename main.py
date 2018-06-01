@@ -167,11 +167,16 @@ class Example(QMainWindow):
         self.allAct.setStatusTip('Select all')
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
+    def findWindow(self):
+        text, ok = QInputDialog.getText(self, 'Find', "Find what: ")
+        if ok:
+            print(text)
+
     def find(self):
         self.findAct = QAction('Find', self)
         self.findAct.setShortcut('Ctrl+F')
         self.findAct.setStatusTip('Find')
-        self.findAct.triggered.connect(lambda: print("oh no"))
+        self.findAct.triggered.connect(self.findWindow)
 
     def initUI(self):
         self.statusBar()
@@ -209,7 +214,7 @@ class Example(QMainWindow):
         self.textArea.setFont(font)
 
 
-        self.textArea.setTabStopWidth(5)
+        self.textArea.setTabStopWidth(4)
         self.textArea.move(0, 20)
         self.textArea.resize(400,360)
         self.setWindowTitle('pypad')
@@ -232,8 +237,6 @@ class Highlighter(QSyntaxHighlighter):
                 "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
                 "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
                 "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
-
-
 
         self.highlightingRules = [(QRegExp(pattern), keywordFormat)
                 for pattern in pyKeywordPatterns]
