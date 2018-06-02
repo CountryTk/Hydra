@@ -1,5 +1,5 @@
 # pypad
-A simple cross-platform notepad with syntax highlighting
+A simple cross-platform python editing notepad written in python.
 
 Required modules: PyQt5, pyautogui
 
