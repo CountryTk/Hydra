@@ -1,0 +1,3 @@
+pyautogui
+PyQt5
+sip~=4.19.8
