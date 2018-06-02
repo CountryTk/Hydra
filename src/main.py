@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog, QLineEdit, QPlainTextEdit, QWidget, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics, QPainter, QTextFormat, QColor
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QMessageBox, QInputDialog, QFileDialog, QDialog, QLineEdit, QPlainTextEdit, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics, QPainter, QTextFormat, QColor, QTextCursor
 from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import Qt, QRegExp, QRect, QSize
 from subprocess import PIPE, Popen
@@ -80,6 +80,7 @@ class Main(QMainWindow):
         self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
+        self.filename = ""
         self.font = QFont()
         self.font.setFamily('Consolas')
         self.font.setPointSize(14)
@@ -136,7 +137,9 @@ class Main(QMainWindow):
         )
         if files:
             with open(files[0], "r+") as file_o:
-                self.editor.setPlainText(file_o.read())
+
+                self.filename = file_o, self.editor.setPlainText(file_o.read())
+
                 if files[0].endswith('.py'):
                     self.highlighter = Highlighter(self.editor.document())
                 else:
@@ -148,6 +151,7 @@ class Main(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
             name = QFileDialog.getSaveFileName(self, 'Save File' , '', "All Files (*);;Python Files (*.py);;Text Files (*.txt)", options=options)
             file_s = open(name[0], 'w+')
+            self.filename = file_s
             text = self.editor.toPlainText()
             file_s.write(text)
             file_s.close()
@@ -163,7 +167,8 @@ class Main(QMainWindow):
     def save(self):
         if self.is_opened is True:
             with open(files[0], "w") as saving:
-                saving.write(self.textArea.toPlainText())
+                self.filename = saving
+                saving.write(self.editor.toPlainText())
         elif self.is_opened is False:
             with open("Untitled.txt", 'w+') as newfile:
                 newfile.write(self.editor.toPlainText())
@@ -260,6 +265,35 @@ class Main(QMainWindow):
         self.findAct.setShortcut('Ctrl+F')
         self.findAct.setStatusTip('Find')
         self.findAct.triggered.connect(self.findWindow)
+    def closeEvent(self, e):
+        if self.maybeSave():
+            e.accept()
+        else:
+            e.ignore()
+    def isModified(self):
+        return self.editor.document().isModified()
+    def maybeSave(self):
+        global files
+        if not self.isModified():
+            return True
+
+        ret = QMessageBox.question(self, "Message",
+                "<h4><p>The document was modified.</p>\n" \
+                "<p>Do you want to save changes?</p></h4>",
+                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+        if ret == QMessageBox.Yes:
+            if self.filename == "":
+                self.saveFileAs()
+                return False
+            else:
+                self.save()
+                return True
+
+        if ret == QMessageBox.Cancel:
+            return False
+
+        return True
 
     def initUI(self):
         self.statusBar()
@@ -301,6 +335,13 @@ class Main(QMainWindow):
         mainWindow.setLayout(layoutV)
         self.editor.setFont(self.font)
         self.setCentralWidget(mainWindow)
+        self.installEventFilter(self)
+        self.editor.setFocus()
+        self.cursor = QTextCursor()
+        self.editor.setPlainText("Welcome to pypad")
+        self.editor.moveCursor(self.cursor.End)
+        #self.editor.document().modificationChanged.connect(self.setWindowModified)
+
         self.cursors = self.editor.textCursor()
 
         self.show()
@@ -339,7 +380,6 @@ class Highlighter(QSyntaxHighlighter):
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
-
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
         functionFormat.setForeground(QColor("#FF9500")) # TODO: Add your own customization to keyword color
@@ -381,8 +421,6 @@ class Highlighter(QSyntaxHighlighter):
                            self.multiLineCommentFormat)
             startIndex = self.commentStartExpression.indexIn(text,
                                                              startIndex + commentLength);
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
