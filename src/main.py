@@ -1,26 +1,88 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog, QLineEdit
-from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics
+from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QTextEdit, QInputDialog, QFileDialog, QDialog, QLineEdit, QPlainTextEdit, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics, QPainter, QTextFormat, QColor
 from PyQt5 import QtCore, QtGui, QtPrintSupport
-from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtCore import Qt, QRegExp, QRect, QSize
 from subprocess import PIPE, Popen
 from pyautogui import hotkey
 
 
 
 file_o = None
-class Example(QMainWindow):
+lineBarColor = QColor("#5E5E5E")
+lineHighlightColor = QColor("#5E5E5E")
 
-    def __init__(self):
-        super().__init__()
-        self.setWindowFlags(
-            Qt.WindowStaysOnTopHint
-        )
+class NumberBar(QWidget):
+    def __init__(self, parent = None):
+        super(NumberBar, self).__init__(parent)
+        self.editor = parent
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        self.editor.blockCountChanged.connect(self.update_width)
+        self.editor.updateRequest.connect(self.update_on_scroll)
+        self.update_width('1')
 
+    def update_on_scroll(self, rect, scroll):
+        if self.isVisible():
+            if scroll:
+                self.scroll(0, scroll)
+            else:
+                self.update()
+
+    def update_width(self, string):
+        width = self.fontMetrics().width(str(string)) + 10
+        if self.width() != width:
+            self.setFixedWidth(width)
+
+    def paintEvent(self, event):
+        if self.isVisible():
+            block = self.editor.firstVisibleBlock()
+            height = self.fontMetrics().height()
+            number = block.blockNumber()
+            painter = QPainter(self)
+            painter.fillRect(event.rect(), lineBarColor)
+            painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
+            font = painter.font()
+
+            current_block = self.editor.textCursor().block().blockNumber() + 1
+
+            condition = True
+            while block.isValid() and condition:
+                block_geometry = self.editor.blockBoundingGeometry(block)
+                offset = self.editor.contentOffset()
+                block_top = block_geometry.translated(offset).top()
+                number += 1
+
+                rect = QRect(0, block_top, self.width() - 5, height)
+
+                if number == current_block:
+                    font.setBold(True)
+                else:
+                    font.setBold(False)
+
+                painter.setFont(font)
+                painter.drawText(rect, Qt.AlignRight, '%i'%number)
+
+                if block_top > event.rect().bottom():
+                    condition = False
+
+                block = block.next()
+
+            painter.end()
+
+class Main(QMainWindow):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setGeometry(0, 0, 400, 400)
-        self.height = 600
+        self.editor = QPlainTextEdit()
+        self.numbers = NumberBar(self.editor)
         self.move(0, 0)
-        self.width = 600
+        self.font = QFont()
+        self.font.setFamily('Consolas')
+        self.font.setPointSize(14)
         self.exit()
         self.new()
         self.is_opened = False
@@ -37,7 +99,6 @@ class Example(QMainWindow):
         self.saveButton()
         self.saveAs()
         self.initUI()
-        self.setCentralWidget(self.textArea)
         self.setWindowTitle('pypad')
 
 
@@ -55,7 +116,7 @@ class Example(QMainWindow):
         self.newAct = QAction('New', self)
         self.newAct.setShortcut('Ctrl+N')
         self.newAct.setStatusTip('Create a file')
-        self.newAct.triggered.connect(self.execute)  
+        self.newAct.triggered.connect(self.execute)
 
     def open(self):
         self.openAct = QAction('Open...', self)
@@ -75,9 +136,11 @@ class Example(QMainWindow):
         )
         if files:
             with open(files[0], "r+") as file_o:
-                self.textArea.setText(file_o.read())
+                self.editor.setPlainText(file_o.read())
                 if files[0].endswith('.py'):
-                    self.highlighter = Highlighter(self.textArea.document())
+                    self.highlighter = Highlighter(self.editor.document())
+                else:
+                    print("no")
 
     def saveFileAs(self):
         try:
@@ -85,7 +148,7 @@ class Example(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
             name = QFileDialog.getSaveFileName(self, 'Save File' , '', "All Files (*);;Python Files (*.py);;Text Files (*.txt)", options=options)
             file_s = open(name[0], 'w+')
-            text = self.textArea.toPlainText()
+            text = self.editor.toPlainText()
             file_s.write(text)
             file_s.close()
         except:
@@ -103,7 +166,7 @@ class Example(QMainWindow):
                 saving.write(self.textArea.toPlainText())
         elif self.is_opened is False:
             with open("Untitled.txt", 'w+') as newfile:
-                newfile.write(self.textArea.toPlainText())
+                newfile.write(self.editor.toPlainText())
 
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
@@ -119,7 +182,7 @@ class Example(QMainWindow):
         def test():
             dialog = QtPrintSupport.QPrintDialog()
             if dialog.exec_() == QDialog.Accepted:
-                self.textArea.document().print_(dialog.printer())
+                self.editor.document().print_(dialog.printer())
         self.printAct.triggered.connect(test)
 
     def printPreview(self):
@@ -128,7 +191,7 @@ class Example(QMainWindow):
         self.printPrAct.setStatusTip('See a print preview')
         def test():
             dialog = QtPrintSupport.QPrintPreviewDialog()
-            dialog.paintRequested.connect(self.textArea.print_)
+            dialog.paintRequested.connect(self.editor.print_)
             dialog.exec_()
         self.printPrAct.triggered.connect(test)
 
@@ -178,7 +241,9 @@ class Example(QMainWindow):
                     if index != -1:
                         self.cursors.setPosition(index)
                         self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
-                        self.textArea.setTextCursor(self.cursors)
+                        self.editor.setTextCursor(self.cursors)
+                    else:
+                        qApp.beep()
 
             except NameError:
                 with open("Untitled.txt", 'a+') as newfile:
@@ -186,7 +251,9 @@ class Example(QMainWindow):
                     if index != -1:
                         self.cursors.setPosition(index)
                         self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
-                        self.textArea.setTextCursor(self.cursors)
+                        self.editor.setTextCursor(self.cursors)
+                    else:
+                        qApp.beep()
 
     def find(self):
         self.findAct = QAction('Find', self)
@@ -197,13 +264,13 @@ class Example(QMainWindow):
     def initUI(self):
         self.statusBar()
         font = QFont()
-        font.setFamily('Courier')
+        font.setFamily('Consolas') # TODO: Add your own font in a config file
         font.setFixedPitch(True)
-        font.setPointSize(14)
-        menubar = self.menuBar() #Creating a menu bar
-        fileMenu = menubar.addMenu('File') #Creating the first menu which will have options listed below
+        font.setPointSize(14) # TODO: Add your own font size in a config file
+        menubar = self.menuBar() # Creating a menu bar
+        fileMenu = menubar.addMenu('File') # Creating the first menu which will have options listed below
 
-        fileMenu.addAction(self.newAct) #Adding a newact button
+        fileMenu.addAction(self.newAct) # Adding a newact button
         fileMenu.addAction(self.openAct)
         fileMenu.addAction(self.saveAct)
         fileMenu.addAction(self.saveAsAct)
@@ -213,7 +280,7 @@ class Example(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
 
-        editMenu = menubar.addMenu('Edit') # tired of writing comments
+        editMenu = menubar.addMenu('Edit')
         editMenu.addAction(self.undoAct)
         editMenu.addAction(self.redoAct)
         editMenu.addSeparator()
@@ -225,15 +292,16 @@ class Example(QMainWindow):
 
         searchMenu = menubar.addMenu('Search')
         searchMenu.addAction(self.findAct)
-        self.showNameEdit = QTextEdit()
-
-        self.textArea = QTextEdit(self)
-        self.cursors = self.textArea.textCursor()
-
-        self.textArea.setFont(font)
-        self.textArea.setTabStopWidth(4)
-        self.textArea.move(0, 20)
-        self.textArea.resize(400,360)
+        layoutH = QHBoxLayout()
+        layoutH.addWidget(self.numbers)
+        layoutH.addWidget(self.editor)
+        layoutV = QVBoxLayout()
+        layoutV.addLayout(layoutH)
+        mainWindow = QWidget(self)
+        mainWindow.setLayout(layoutV)
+        self.editor.setFont(self.font)
+        self.setCentralWidget(mainWindow)
+        self.cursors = self.editor.textCursor()
 
         self.show()
 
@@ -241,7 +309,7 @@ class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(Highlighter, self).__init__(parent)
         keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QtGui.QColor(0, 153, 255))
+        keywordFormat.setForeground(QColor(0, 153, 255)) # TODO: Add your own customization to keyword color
         keywordFormat.setFontWeight(QFont.Bold)
 
         pyKeywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
@@ -260,7 +328,7 @@ class Highlighter(QSyntaxHighlighter):
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QtGui.QColor(255, 135, 48))
+        classFormat.setForeground(QColor(255, 135, 48)) # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp("\\bQ[A-Za-z]+\\b"),
                 classFormat))
 
@@ -274,11 +342,11 @@ class Highlighter(QSyntaxHighlighter):
 
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QtGui.QColor(255, 221, 0))
+        functionFormat.setForeground(QColor(255, 221, 0)) # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
 
         quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QtGui.QColor(3, 145, 53))
+        quotationFormat.setForeground(QColor(3, 145, 53))
         self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
         self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
 
@@ -315,23 +383,23 @@ class Highlighter(QSyntaxHighlighter):
                                                              startIndex + commentLength);
 
 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
     app.setStyle('Fusion')
     palette = QtGui.QPalette()
-    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(48, 48, 48))
+    palette.setColor(QtGui.QPalette.Window, QColor(48, 48, 48))
     palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(48, 48, 48))
-    palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
+    palette.setColor(QtGui.QPalette.Base, QColor(48, 48, 48))
+    palette.setColor(QtGui.QPalette.AlternateBase, QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
+    palette.setColor(QtGui.QPalette.Button, QColor(53, 53, 53))
     palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
     palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
-    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(77, 210, 255).lighter())
+    palette.setColor(QtGui.QPalette.Highlight, QColor(77, 210, 255).lighter())
     palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
     app.setPalette(palette)
-    ex = Example()
+    ex = Main()
     sys.exit(app.exec_())
