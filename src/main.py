@@ -9,8 +9,8 @@ from pyautogui import hotkey
 
 
 file_o = None
-lineBarColor = QColor("#5E5E5E")
-lineHighlightColor = QColor("#5E5E5E")
+lineBarColor = QColor(53, 53, 53)
+lineHighlightColor = QColor("#00FF04")
 
 class NumberBar(QWidget):
     def __init__(self, parent = None):
@@ -328,7 +328,7 @@ class Highlighter(QSyntaxHighlighter):
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor(255, 135, 48)) # TODO: Add your own customization to keyword color
+        classFormat.setForeground(QColor("#00FF16")) # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp("\\bQ[A-Za-z]+\\b"),
                 classFormat))
 
@@ -342,7 +342,7 @@ class Highlighter(QSyntaxHighlighter):
 
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor(255, 221, 0)) # TODO: Add your own customization to keyword color
+        functionFormat.setForeground(QColor("#FF9500")) # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
 
         quotationFormat = QTextCharFormat()
