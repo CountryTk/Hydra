@@ -341,7 +341,7 @@ class Main(QMainWindow):
         self.cursor = QTextCursor()
         self.editor.moveCursor(self.cursor.End)
         # self.editor.document().modificationChanged.connect(self.setWindowModified)
-
+        self.setWindowIcon(QtGui.QIcon('py.png'))
         self.cursors = self.editor.textCursor()
 
         self.show()
