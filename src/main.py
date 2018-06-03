@@ -105,7 +105,7 @@ class Main(QMainWindow):
         self.saveButton()
         self.saveAs()
         self.initUI()
-        self.setWindowTitle('pypad')
+        self.setWindowTitle('PyPad')
 
         self.files = None
 
