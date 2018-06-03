@@ -87,7 +87,7 @@ class Main(QMainWindow):
         self.filename = ''
         self.font = QFont()
         self.font.setFamily('Consolas')
-        self.setWindowIcon(QtGui.QIcon('py.png'))
+        self.setWindowIcon(QtGui.QIcon('resources/py.png'))
         self.font.setPointSize(14)
         self.exit()
         self.new()
