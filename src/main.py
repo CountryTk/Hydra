@@ -1,20 +1,24 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QMessageBox, QInputDialog, QFileDialog, QDialog, QLineEdit, QPlainTextEdit, QWidget, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics, QPainter, QTextFormat, QColor, QTextCursor
-from PyQt5 import QtCore, QtGui, QtPrintSupport
-from PyQt5.QtCore import Qt, QRegExp, QRect, QSize
 from subprocess import PIPE, Popen
+
 from pyautogui import hotkey
-
-
+from PyQt5 import QtCore, QtGui, QtPrintSupport
+from PyQt5.QtCore import QRect, QRegExp, QSize, Qt
+from PyQt5.QtGui import (QColor, QFont, QFontMetrics, QPainter,
+                         QSyntaxHighlighter, QTextCharFormat, QTextCursor,
+                         QTextFormat)
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QFileDialog,
+                             QHBoxLayout, QInputDialog, QLineEdit, QMainWindow,
+                             QMessageBox, QPlainTextEdit, QVBoxLayout, QWidget,
+                             qApp)
 
 file_o = None
 lineBarColor = QColor(53, 53, 53)
-lineHighlightColor = QColor("#00FF04")
+lineHighlightColor = QColor('#00FF04')
 
 class NumberBar(QWidget):
-    def __init__(self, parent = None):
-        super(NumberBar, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__()
         self.editor = parent
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -46,8 +50,7 @@ class NumberBar(QWidget):
 
             current_block = self.editor.textCursor().block().blockNumber() + 1
 
-            condition = True
-            while block.isValid() and condition:
+            while block.isValid():
                 block_geometry = self.editor.blockBoundingGeometry(block)
                 offset = self.editor.contentOffset()
                 block_top = block_geometry.translated(offset).top()
@@ -64,23 +67,22 @@ class NumberBar(QWidget):
                 painter.drawText(rect, Qt.AlignRight, '%i'%number)
 
                 if block_top > event.rect().bottom():
-                    condition = False
+                    break
 
                 block = block.next()
 
             painter.end()
 
 class Main(QMainWindow):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setGeometry(0, 0, 400, 400)
         self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
-        self.filename = ""
+        self.filename = ''
         self.font = QFont()
         self.font.setFamily('Consolas')
         self.font.setPointSize(14)
@@ -102,14 +104,17 @@ class Main(QMainWindow):
         self.initUI()
         self.setWindowTitle('pypad')
 
+        self.files = None
+
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
 
+    @staticmethod
     def execute(self):
-        out, err = Popen(["python main.py"], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+        out, err = Popen(['python main.py'], shell=True, stdout=PIPE, stderr=PIPE).communicate()
         return (out + err).decode()
 
     def new(self):
@@ -124,31 +129,32 @@ class Main(QMainWindow):
         self.openAct.setStatusTip('Open a file')
         self.is_opened = False
         self.openAct.triggered.connect(self.open1)
+        
     def open1(self):
-        global files
         self.is_opened = True
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(
-            self, "Open a file", "",
-            "All Files (*);;Python Files (*.py);;Text Files (*.txt)",
+        self.files, _ = QFileDialog.getOpenFileNames(
+            self, 'Open a file', '',
+            'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
             options=options
         )
-        if files:
-            with open(files[0], "r+") as file_o:
+
+        if self.files:
+            with open(self.files[0], 'r+') as file_o:
 
                 self.filename = file_o, self.editor.setPlainText(file_o.read())
 
-                if files[0].endswith('.py'):
+                if self.files[0].endswith('.py'):
                     self.highlighter = Highlighter(self.editor.document())
                 else:
-                    print("no")
+                    print('Non-Python file opened. Highlighting will not be used.')
 
     def saveFileAs(self):
         try:
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
-            name = QFileDialog.getSaveFileName(self, 'Save File' , '', "All Files (*);;Python Files (*.py);;Text Files (*.txt)", options=options)
+            name = QFileDialog.getSaveFileName(self, 'Save File' , '', 'All Files (*);;Python Files (*.py);;Text Files (*.txt)', options=options)
             file_s = open(name[0], 'w+')
             self.filename = file_s
             text = self.editor.toPlainText()
@@ -164,12 +170,12 @@ class Main(QMainWindow):
         self.saveAct.triggered.connect(self.save)
 
     def save(self):
-        if self.is_opened is True:
-            with open(files[0], "w+") as saving:
+        if self.is_opened:
+            with open(self.files[0], 'w+') as saving:
                 self.filename = saving
                 saving.write(self.editor.toPlainText())
-        elif self.is_opened is False:
-            with open("Untitled.txt", 'w+') as newfile:
+        else:
+            with open('Untitled.txt', 'w+') as newfile:
                 newfile.write(self.editor.toPlainText())
 
     def saveAs(self):
@@ -183,21 +189,10 @@ class Main(QMainWindow):
         self.printAct.setShortcut('Ctrl+P')
         self.printAct.setStatusTip('Print a file')
 
-        def test():
-            dialog = QtPrintSupport.QPrintDialog()
-            if dialog.exec_() == QDialog.Accepted:
-                self.editor.document().print_(dialog.printer())
-        self.printAct.triggered.connect(test)
-
     def printPreview(self):
         self.printPrAct = QAction('Print preview', self)
         self.printPrAct.setShortcut('Shift+Ctrl+P')
         self.printPrAct.setStatusTip('See a print preview')
-        def test():
-            dialog = QtPrintSupport.QPrintPreviewDialog()
-            dialog.paintRequested.connect(self.editor.print_)
-            dialog.exec_()
-        self.printPrAct.triggered.connect(test)
 
     def undo(self):
         self.undoAct = QAction('Undo', self)
@@ -236,53 +231,56 @@ class Main(QMainWindow):
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
     def findWindow(self):
-        global files
-        text, ok = QInputDialog.getText(self, 'Find', "Find what: ")
-        if ok:
-            try:
-                with open(files[0], 'r') as read:
-                    index = read.read().find(text)
-                    if index != -1:
-                        self.cursors.setPosition(index)
-                        self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
-                        self.editor.setTextCursor(self.cursors)
-                    else:
-                        qApp.beep()
+        text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
+        if not ok:
+            return
+        
+        try:
+            with open(self.files[0], 'r') as read:
+                index = read.read().find(text)
+                if index != -1:
+                    self.cursors.setPosition(index)
+                    self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
+                    self.editor.setTextCursor(self.cursors)
+                else:
+                    qApp.beep()
 
-            except NameError:
-                with open("Untitled.txt", 'a+') as newfile:
-                    index = newfile.read().find(text)
-                    if index != -1:
-                        self.cursors.setPosition(index)
-                        self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
-                        self.editor.setTextCursor(self.cursors)
-                    else:
-                        qApp.beep()
+        except NameError:
+            with open('Untitled.txt', 'a+') as f:
+                index = f.read().find(text)
+                if index != -1:
+                    self.cursors.setPosition(index)
+                    self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
+                    self.editor.setTextCursor(self.cursors)
+                else:
+                    qApp.beep()
 
     def find(self):
         self.findAct = QAction('Find', self)
         self.findAct.setShortcut('Ctrl+F')
         self.findAct.setStatusTip('Find')
         self.findAct.triggered.connect(self.findWindow)
+
     def closeEvent(self, e):
         if self.maybeSave():
             e.accept()
         else:
             e.ignore()
+
     def isModified(self):
         return self.editor.document().isModified()
+
     def maybeSave(self):
-        global files
         if not self.isModified():
             return True
 
-        ret = QMessageBox.question(self, "Message",
-                "<h4><p>The document was modified.</p>\n" \
-                "<p>Do you want to save changes?</p></h4>",
+        ret = QMessageBox.question(self, 'Message',
+                '<h4><p>The document was modified.</p>\n' \
+                '<p>Do you want to save changes?</p></h4>',
                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 
         if ret == QMessageBox.Yes:
-            if self.filename == "":
+            if self.filename == '':
                 self.saveFileAs()
                 return False
             else:
@@ -351,41 +349,41 @@ class Highlighter(QSyntaxHighlighter):
         keywordFormat.setForeground(QColor(0, 153, 255)) # TODO: Add your own customization to keyword color
         keywordFormat.setFontWeight(QFont.Bold)
 
-        pyKeywordPatterns = ["\\bfor\\b", "\\bclass\\b", "\\brange\\b",
-                "\\bFalse\\b", "\\bfinally\\b", "\\bis\\b", "\\breturn\\b",
-                "\\bNone\\b", "\\bcontinue\\b", "\\bfor\\b", "\\blambda\\b",
-                "\\btry\\b", "\\bTrue\\b", "\\bdef\\b",
-                "\\bfrom\\b", "\\bnonlocal\\b", "\\bwhile\\b", "\\band\\b",
-                "\\bnot\\b", "\\bglobal\\b", "\\bdel\\b",
-                "\\bwith\\b", "\\bas\\b", "\\belif\\b",
-                "\\bif\\b", "\\bor\\b", "\\byield\\b", "\\bassert\\b",
-                "\\belse\\b", "\\bimport\\b", "\\bpass\\b", "\\bbreak\\b",
-                "\\bexcept\\b", "\\bin\\b", "\\braise\\b"]
+        pyKeywordPatterns = ['for', 'class', 'range',
+                             'False', 'finally', 'is', 
+                             'return', 'None', 'continue', 
+                             'for', 'lambda', 'try',
+                             'True', 'def', 'from',
+                             'nonlocal', 'while', 'and',
+                             'not', 'global', 'del',
+                             'with', 'as', 'elif',
+                             'if', 'or', 'yield',
+                             'assert', 'else', 'import',
+                             'pass', 'break', 'except',
+                             'in', 'raise', 'self',
+                             'async']
 
-        self.highlightingRules = [(QRegExp(pattern), keywordFormat)
-                for pattern in pyKeywordPatterns]
+        self.highlightingRules = [(QRegExp('\\b'+pattern+'\\b'), keywordFormat) for pattern in pyKeywordPatterns]
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor("#00FF16")) # TODO: Add your own customization to keyword color
-        self.highlightingRules.append((QRegExp("\\bQ[A-Za-z]+\\b"),
-                classFormat))
+        classFormat.setForeground(QColor('#00FF16')) # TODO: Add your own customization to keyword color
+        self.highlightingRules.append((QRegExp('Q[A-Za-z]+'), classFormat))
 
         singleLineCommentFormat = QTextCharFormat()
         singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
-        self.highlightingRules.append((QRegExp("#[^\n]*"),
-                singleLineCommentFormat))
+        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor("#FF9500")) # TODO: Add your own customization to keyword color
-        self.highlightingRules.append((QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), functionFormat))
+        functionFormat.setForeground(QColor('#FF9500')) # TODO: Add your own customization to keyword color
+        self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QColor(3, 145, 53))
-        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+        self.highlightingRules.append((QRegExp('\'[^\']*\''), quotationFormat))
         self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
 
         self.commentStartExpression = QRegExp("^'''")
@@ -418,7 +416,7 @@ class Highlighter(QSyntaxHighlighter):
             self.setFormat(startIndex, commentLength,
                            self.multiLineCommentFormat)
             startIndex = self.commentStartExpression.indexIn(text,
-                                                             startIndex + commentLength);
+                                                             startIndex + commentLength)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
