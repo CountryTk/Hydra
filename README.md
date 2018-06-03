@@ -1,4 +1,4 @@
-# pypad
+# PyPad
 A simple cross-platform python editing notepad written in python.
 
 Required modules: PyQt5, pyautogui
