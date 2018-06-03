@@ -337,7 +337,6 @@ class Main(QMainWindow):
         self.installEventFilter(self)
         self.editor.setFocus()
         self.cursor = QTextCursor()
-        self.editor.setPlainText("Welcome to pypad")
         self.editor.moveCursor(self.cursor.End)
         #self.editor.document().modificationChanged.connect(self.setWindowModified)
 
