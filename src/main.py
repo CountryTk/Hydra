@@ -1,18 +1,3 @@
-# Copyright (C) 2018 AnonymousDapper & Fuchsiaff
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import sys
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QMessageBox, QInputDialog, QFileDialog, QDialog, QLineEdit, QPlainTextEdit, QWidget, QVBoxLayout, QHBoxLayout
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontMetrics, QPainter, QTextFormat, QColor, QTextCursor
@@ -117,7 +102,6 @@ class Main(QMainWindow):
         self.initUI()
         self.setWindowTitle('pypad')
 
-
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -181,7 +165,7 @@ class Main(QMainWindow):
 
     def save(self):
         if self.is_opened is True:
-            with open(files[0], "w") as saving:
+            with open(files[0], "w+") as saving:
                 self.filename = saving
                 saving.write(self.editor.toPlainText())
         elif self.is_opened is False:
