@@ -87,6 +87,7 @@ class Main(QMainWindow):
         self.filename = ''
         self.font = QFont()
         self.font.setFamily('Consolas')
+        self.setWindowIcon(QtGui.QIcon('py.png'))
         self.font.setPointSize(14)
         self.exit()
         self.new()
@@ -341,7 +342,7 @@ class Main(QMainWindow):
         self.cursor = QTextCursor()
         self.editor.moveCursor(self.cursor.End)
         # self.editor.document().modificationChanged.connect(self.setWindowModified)
-        self.setWindowIcon(QtGui.QIcon('py.png'))
+
         self.cursors = self.editor.textCursor()
 
         self.show()
