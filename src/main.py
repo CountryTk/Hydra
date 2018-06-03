@@ -16,6 +16,7 @@ file_o = None
 lineBarColor = QColor(53, 53, 53)
 lineHighlightColor = QColor('#00FF04')
 
+
 class NumberBar(QWidget):
     def __init__(self, parent=None):
         super().__init__()
@@ -64,7 +65,7 @@ class NumberBar(QWidget):
                     font.setBold(False)
 
                 painter.setFont(font)
-                painter.drawText(rect, Qt.AlignRight, '%i'%number)
+                painter.drawText(rect, Qt.AlignRight, '%i' % number)
 
                 if block_top > event.rect().bottom():
                     break
@@ -72,6 +73,7 @@ class NumberBar(QWidget):
                 block = block.next()
 
             painter.end()
+
 
 class Main(QMainWindow):
     def __init__(self):
@@ -129,7 +131,7 @@ class Main(QMainWindow):
         self.openAct.setStatusTip('Open a file')
         self.is_opened = False
         self.openAct.triggered.connect(self.open1)
-        
+
     def open1(self):
         self.is_opened = True
         options = QFileDialog.Options()
@@ -154,7 +156,9 @@ class Main(QMainWindow):
         try:
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
-            name = QFileDialog.getSaveFileName(self, 'Save File' , '', 'All Files (*);;Python Files (*.py);;Text Files (*.txt)', options=options)
+            name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                               'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                               options=options)
             file_s = open(name[0], 'w+')
             self.filename = file_s
             text = self.editor.toPlainText()
@@ -234,7 +238,7 @@ class Main(QMainWindow):
         text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
         if not ok:
             return
-        
+
         try:
             with open(self.files[0], 'r') as read:
                 index = read.read().find(text)
@@ -275,9 +279,9 @@ class Main(QMainWindow):
             return True
 
         ret = QMessageBox.question(self, 'Message',
-                '<h4><p>The document was modified.</p>\n' \
-                '<p>Do you want to save changes?</p></h4>',
-                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                                   '<h4><p>The document was modified.</p>\n' \
+                                   '<p>Do you want to save changes?</p></h4>',
+                                   QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 
         if ret == QMessageBox.Yes:
             if self.filename == '':
@@ -295,13 +299,13 @@ class Main(QMainWindow):
     def initUI(self):
         self.statusBar()
         font = QFont()
-        font.setFamily('Consolas') # TODO: Add your own font in a config file
+        font.setFamily('Consolas')  # TODO: Add your own font in a config file
         font.setFixedPitch(True)
-        font.setPointSize(14) # TODO: Add your own font size in a config file
-        menubar = self.menuBar() # Creating a menu bar
-        fileMenu = menubar.addMenu('File') # Creating the first menu which will have options listed below
+        font.setPointSize(14)  # TODO: Add your own font size in a config file
+        menubar = self.menuBar()  # Creating a menu bar
+        fileMenu = menubar.addMenu('File')  # Creating the first menu which will have options listed below
 
-        fileMenu.addAction(self.newAct) # Adding a newact button
+        fileMenu.addAction(self.newAct)  # Adding a newact button
         fileMenu.addAction(self.openAct)
         fileMenu.addAction(self.saveAct)
         fileMenu.addAction(self.saveAsAct)
@@ -336,22 +340,23 @@ class Main(QMainWindow):
         self.editor.setFocus()
         self.cursor = QTextCursor()
         self.editor.moveCursor(self.cursor.End)
-        #self.editor.document().modificationChanged.connect(self.setWindowModified)
+        # self.editor.document().modificationChanged.connect(self.setWindowModified)
 
         self.cursors = self.editor.textCursor()
 
         self.show()
 
+
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(Highlighter, self).__init__(parent)
         keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QColor(0, 153, 255)) # TODO: Add your own customization to keyword color
+        keywordFormat.setForeground(QColor(0, 153, 255))  # TODO: Add your own customization to keyword color
         keywordFormat.setFontWeight(QFont.Bold)
 
         pyKeywordPatterns = ['for', 'class', 'range',
-                             'False', 'finally', 'is', 
-                             'return', 'None', 'continue', 
+                             'False', 'finally', 'is',
+                             'return', 'None', 'continue',
                              'for', 'lambda', 'try',
                              'True', 'def', 'from',
                              'nonlocal', 'while', 'and',
@@ -363,11 +368,11 @@ class Highlighter(QSyntaxHighlighter):
                              'in', 'raise', 'self',
                              'async']
 
-        self.highlightingRules = [(QRegExp('\\b'+pattern+'\\b'), keywordFormat) for pattern in pyKeywordPatterns]
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor('#00FF16')) # TODO: Add your own customization to keyword color
+        classFormat.setForeground(QColor('#00FF16'))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('Q[A-Za-z]+'), classFormat))
 
         singleLineCommentFormat = QTextCharFormat()
@@ -378,12 +383,13 @@ class Highlighter(QSyntaxHighlighter):
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor('#FF9500')) # TODO: Add your own customization to keyword color
+        functionFormat.setForeground(QColor('#FF9500'))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QColor(3, 145, 53))
-        self.highlightingRules.append((QRegExp('\'[^\']*\''), quotationFormat))
+        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
         self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
 
         self.commentStartExpression = QRegExp("^'''")
@@ -417,6 +423,7 @@ class Highlighter(QSyntaxHighlighter):
                            self.multiLineCommentFormat)
             startIndex = self.commentStartExpression.indexIn(text,
                                                              startIndex + commentLength)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
