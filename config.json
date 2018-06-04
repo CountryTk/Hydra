@@ -1,0 +1,46 @@
+{
+  "editor": [
+    {
+      "windowStaysOnTop": true,
+
+      "editorFont": "Consolas",
+
+      "editorFontSize": 14,
+
+      "editorColor": "#303030",
+
+      "windowColor": "#303030",
+
+      "windowText": "#FFFFFF",
+
+      "alternateBase": "#FFFFFF",
+
+      "ToolTipBase": "#FFFFFF",
+
+      "ToolTipText": "#FFFFFF",
+
+      "editorText": "#FFFFFF",
+
+      "buttonColor": "#353535",
+
+      "buttonTextColor": "#FFFFFF",
+
+      "HighlightColor": "#4DD2FF",
+
+      "HighlightedTextColor": "#000000"
+
+    }
+  ],
+  "syntaxHighlightColors": [
+    {
+      "keywordFormatColor": "#0099FF",
+
+      "classFormatColor": "#00FF16",
+
+      "functionFormatColor": "#FF9500",
+
+      "quotationFormatColor": "#039135"
+
+    }
+  ]
+}
