@@ -1,6 +1,8 @@
 # PyPad
 A simple cross-platform python editing notepad written in python.
 
+This editor is fully customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
+
 Required modules: PyQt5, pyautogui
 
 **If you use MacOs and can't install pyautogui follow this**
