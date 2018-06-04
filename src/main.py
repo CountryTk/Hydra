@@ -97,6 +97,7 @@ class Main(QMainWindow):
         self.cut()
         self.copy()
         self.paste()
+        self.indent()
         self.all()
         self.printPreview()
         self.redo()
@@ -135,6 +136,8 @@ class Main(QMainWindow):
 
 
     def exit(self):
+        # I want to know when this is defined
+        # print("def exit(self):")
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
         self.exitAct.setStatusTip('Exit application')
@@ -190,10 +193,46 @@ class Main(QMainWindow):
             file_s = open(name[0], 'w+')
             self.filename = file_s
             text = self.editor.toPlainText()
+            # what is the content of text
+            # print("saveFileAs:text:"+text)
             file_s.write(text)
             file_s.close()
         except:
             pass
+
+    def indenting(self):
+        try:
+            # self.editor is QPlainTextEdit
+            print("try;indenting")
+            text = self.editor.toPlainText()
+            print("indenting:text:"+text)
+            # http://pyqt.sourceforge.net/Docs/PyQt4/qplaintextedit.html
+            # http://pyqt.sourceforge.net/Docs/PyQt4/qtextcursor.html
+            textCursor_1 = self.editor.textCursor()
+            # print(textCursor_1)
+            if(textCursor_1.hasSelection() == True):
+                # print("textCursor_1.hasSelection() == True")
+                # selectedText = textCursor_1.selectedText()
+                # print("selectedText:"+selectedText)
+                # QTextCursor.select (self, SelectionType selection)
+                textCursor_1.select(QTextCursor.BlockUnderCursor )
+
+                selectedText2 = textCursor_1.selectedText()
+                # print("selectedText2:"+selectedText2)
+
+                # a block will be undone by undo() in one go
+                textCursor_1.beginEditBlock()
+                textCursor_1.insertText("\n    ")
+                # ignoring the \n at the very start of selectedText2
+                textCursor_1.insertText(selectedText2[1:len(selectedText2)])
+                textCursor_1.endEditBlock()
+                # print("len(selectedText2):"+str(len(selectedText2)))
+
+        except:
+            print("except:indenting")
+            print(sys.exc_info())
+            pass
+
 
     def saveButton(self):
         self.saveAct = QAction('Save', self)
@@ -285,6 +324,13 @@ class Main(QMainWindow):
         self.allAct.setStatusTip('Select all')
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
+    def indent(self):
+        self.indentAct = QAction('Indent line', self)
+        self.indentAct.setShortcut('Tab')
+        self.indentAct.setStatusTip('Indent line')
+        # ok
+        self.indentAct.triggered.connect(self.indenting)
+
     def findWindow(self):
         text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
         if not ok:
@@ -365,6 +411,7 @@ class Main(QMainWindow):
         editMenu.addAction(self.cutAct)
         editMenu.addAction(self.copyAct)
         editMenu.addAction(self.pasteAct)
+        editMenu.addAction(self.indentAct)
         editMenu.addSeparator()
         editMenu.addAction(self.allAct)
 
