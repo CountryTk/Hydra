@@ -123,6 +123,7 @@ class Main(QMainWindow):
             self.editor = QPlainTextEdit()
             self.editor.setPlainText(self.newFile.read())
             self.newFile.close()
+
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -328,10 +329,8 @@ class Main(QMainWindow):
             return True
     def initUI(self):
         self.statusBar()
-        font = QFont()
-        font.setFamily('Consolas')  # TODO: Add your own font in a config file
-        font.setFixedPitch(True)
-        font.setPointSize(14)  # TODO: Add your own font size in a config file
+        self.font.setFixedPitch(True)
+
         menubar = self.menuBar()  # Creating a menu bar
         fileMenu = menubar.addMenu('File')  # Creating the first menu which will have options listed below
 
