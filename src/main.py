@@ -325,9 +325,9 @@ class Main(QMainWindow):
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
     def indent(self):
-        self.indentAct = QAction('Indent line', self)
-        self.indentAct.setShortcut('Tab')
-        self.indentAct.setStatusTip('Indent line')
+        self.indentAct = QAction('Indent selected line', self)
+        self.indentAct.setShortcut('Ctrl+I')
+        self.indentAct.setStatusTip('Indent selected line')
         # ok
         self.indentAct.triggered.connect(self.indenting)
 
