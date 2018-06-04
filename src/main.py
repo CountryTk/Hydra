@@ -79,7 +79,7 @@ class Main(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        #self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setGeometry(0, 0, 400, 400)
         self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
@@ -150,8 +150,10 @@ class Main(QMainWindow):
 
                 if self.files[0].endswith('.py'):
                     self.highlighter = Highlighter(self.editor.document())
+                    self.setWindowTitle("PyPad [" + self.files[0] + "]")
                 else:
                     print('Non-Python file opened. Highlighting will not be used.')
+                    self.setWindowTitle("PyPad [" + self.files[0] + "]")
 
     def saveFileAs(self):
         try:
@@ -374,7 +376,7 @@ class Highlighter(QSyntaxHighlighter):
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
         classFormat.setForeground(QColor('#00FF16'))  # TODO: Add your own customization to keyword color
-        self.highlightingRules.append((QRegExp('Q[A-Za-z]+'), classFormat))
+        self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
         singleLineCommentFormat = QTextCharFormat()
         singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
