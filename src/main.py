@@ -90,6 +90,7 @@ class Main(QMainWindow):
         self.exit()
         self.new()
         self.is_opened = False
+        self.saved = False
         self.open()
         self.undo()
         self.cut()
@@ -190,6 +191,7 @@ class Main(QMainWindow):
         if self.is_opened:
             with open(self.files[0], 'w+') as saving:
                 self.filename = saving
+                self.saved = True
                 saving.write(self.editor.toPlainText())
         else:
             with open('Untitled.txt', 'w+') as newfile:
@@ -290,25 +292,26 @@ class Main(QMainWindow):
     def maybeSave(self):
         if not self.isModified():
             return True
+        if self.saved is False:
+            ret = QMessageBox.question(self, 'Message',
+                                       '<h4><p>The document was modified.</p>\n' \
+                                       '<p>Do you want to save changes?</p></h4>',
+                                       QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 
-        ret = QMessageBox.question(self, 'Message',
-                                   '<h4><p>The document was modified.</p>\n' \
-                                   '<p>Do you want to save changes?</p></h4>',
-                                   QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+            if ret == QMessageBox.Yes:
+                if self.filename == '':
+                    self.saveFileAs()
+                    return False
+                else:
+                    self.save()
+                    return True
 
-        if ret == QMessageBox.Yes:
-            if self.filename == '':
-                self.saveFileAs()
+            if ret == QMessageBox.Cancel:
                 return False
-            else:
-                self.save()
-                return True
 
-        if ret == QMessageBox.Cancel:
-            return False
-
-        return True
-
+            return True
+        else:
+            return True
     def initUI(self):
         self.statusBar()
         font = QFont()
