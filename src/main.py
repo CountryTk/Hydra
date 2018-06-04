@@ -1,6 +1,6 @@
 import sys
 from subprocess import PIPE, Popen
-
+import json
 from pyautogui import hotkey
 from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import QRect, QRegExp, QSize, Qt
@@ -78,17 +78,15 @@ class NumberBar(QWidget):
 class Main(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.onStart()
         self.setAttribute(Qt.WA_DeleteOnClose)
-        #self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.data = None
         self.setGeometry(0, 0, 400, 400)
         self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
         self.filename = ''
-        self.font = QFont()
-        self.font.setFamily('Consolas')
         self.setWindowIcon(QtGui.QIcon('resources/py.png'))
-        self.font.setPointSize(14)
         self.exit()
         self.new()
         self.is_opened = False
@@ -108,6 +106,18 @@ class Main(QMainWindow):
         self.setWindowTitle('PyPad')
 
         self.files = None
+    def onStart(self):
+        with open("../config.json", "r") as jsonFile:
+            read = jsonFile.read()
+            self.data = json.loads(read)
+            if self.data["editor"][0]["windowStaysOnTop"] is True:
+                self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            else:
+                pass
+            self.font = QFont()
+            self.font.setFamily(self.data["editor"][0]["editorFont"])
+            self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
+            jsonFile.close()
 
     def exit(self):
         self.exitAct = QAction('Quit', self)
@@ -343,8 +353,6 @@ class Main(QMainWindow):
         self.editor.setFocus()
         self.cursor = QTextCursor()
         self.editor.moveCursor(self.cursor.End)
-        # self.editor.document().modificationChanged.connect(self.setWindowModified)
-
         self.cursors = self.editor.textCursor()
 
         self.show()
@@ -353,8 +361,12 @@ class Main(QMainWindow):
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(Highlighter, self).__init__(parent)
+        with open("../config.json", "r") as jsonFile:
+            read = jsonFile.read()
+            data = json.loads(read)
+            jsonFile.close()
         keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QColor(0, 153, 255))  # TODO: Add your own customization to keyword color
+        keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))  # TODO: Add your own customization to keyword color
         keywordFormat.setFontWeight(QFont.Bold)
 
         pyKeywordPatterns = ['for', 'class', 'range',
@@ -375,7 +387,7 @@ class Highlighter(QSyntaxHighlighter):
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor('#00FF16'))  # TODO: Add your own customization to keyword color
+        classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
         singleLineCommentFormat = QTextCharFormat()
@@ -386,11 +398,11 @@ class Highlighter(QSyntaxHighlighter):
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor('#FF9500'))  # TODO: Add your own customization to keyword color
+        functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
 
         quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QColor(3, 145, 53))
+        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"])) # TODO: Add your own customization color
         self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
         self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
         self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
@@ -427,23 +439,25 @@ class Highlighter(QSyntaxHighlighter):
             startIndex = self.commentStartExpression.indexIn(text,
                                                              startIndex + commentLength)
 
-
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    app.setStyle('Fusion')
-    palette = QtGui.QPalette()
-    palette.setColor(QtGui.QPalette.Window, QColor(48, 48, 48))
-    palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Base, QColor(48, 48, 48))
-    palette.setColor(QtGui.QPalette.AlternateBase, QColor(53, 53, 53))
-    palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.Button, QColor(53, 53, 53))
-    palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
-    palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
-    palette.setColor(QtGui.QPalette.Highlight, QColor(77, 210, 255).lighter())
-    palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
-    app.setPalette(palette)
-    ex = Main()
-    sys.exit(app.exec_())
+    with open("../config.json", "r") as jsonFile:
+        read = jsonFile.read()
+        data = json.loads(read)
+        app = QApplication(sys.argv)
+        app.setStyle('Fusion')
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Window, QColor(data["editor"][0]["windowColor"]))
+        palette.setColor(QtGui.QPalette.WindowText, QColor(data["editor"][0]["windowText"]))
+        palette.setColor(QtGui.QPalette.Base, QColor(data["editor"][0]["editorColor"]))
+        palette.setColor(QtGui.QPalette.AlternateBase, QColor(data["editor"][0]["alternateBase"]))
+        palette.setColor(QtGui.QPalette.ToolTipBase, QColor(data["editor"][0]["ToolTipBase"]))
+        palette.setColor(QtGui.QPalette.ToolTipText, QColor(data["editor"][0]["ToolTipText"]))
+        palette.setColor(QtGui.QPalette.Text, QColor(data["editor"][0]["editorText"]))
+        palette.setColor(QtGui.QPalette.Button, QColor(data["editor"][0]["buttonColor"]))
+        palette.setColor(QtGui.QPalette.ButtonText, QColor(data["editor"][0]["buttonTextColor"]))
+        palette.setColor(QtGui.QPalette.Highlight, QColor(data["editor"][0]["HighlightColor"]).lighter())
+        palette.setColor(QtGui.QPalette.HighlightedText, QColor(data["editor"][0]["HighlightedTextColor"]))
+        app.setPalette(palette)
+        ex = Main()
+        sys.exit(app.exec_())
+        jsonFile.close()
