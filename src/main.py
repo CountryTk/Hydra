@@ -81,7 +81,7 @@ class Main(QMainWindow):
         self.onStart()
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.data = None
-        self.setGeometry(0, 0, 400, 400)
+        self.setGeometry(0, 0, 800, 600)
         #self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
@@ -90,7 +90,6 @@ class Main(QMainWindow):
         self.exit()
         self.new()
         self.run_m()
-        self.printButton()
         self.is_opened = False
         self.saved = False
         self.open()
@@ -107,6 +106,7 @@ class Main(QMainWindow):
         self.saveAs()
         self.initUI()
         self.setWindowTitle('PyPad')
+        self.files = None
 
     def onStart(self):
         with open("../config.json", "r") as jsonFile:
@@ -122,9 +122,19 @@ class Main(QMainWindow):
             jsonFile.close()
         with open("Untitled.txt", "w+") as self.newFile:
             self.files = "Untitled.txt"
+            print(self.files)
             self.editor = QPlainTextEdit()
             self.editor.setPlainText(self.newFile.read())
             self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
+            self.editor.setPlainText('''
+#############################
+|                           |
+|      No files open        |
+|Press Ctrl+O to open a file|
+|                           |
+|                           |
+#############################
+            ''')
             self.newFile.close()
 
     def exit(self):
@@ -285,7 +295,7 @@ class Main(QMainWindow):
             return False
 
         try:
-            with open(self.files, 'r') as read:
+            with open(self.files[0], 'r') as read:
                 index = read.read().find(text)
                 if index != -1:
                     self.cursors.setPosition(index)
@@ -294,9 +304,9 @@ class Main(QMainWindow):
                 else:
                     qApp.beep()
 
-        except TypeError:
-            with open(self.files[0], 'r') as read:
-                index = read.read().find(text)
+        except NameError:
+            with open('Untitled.txt', 'a+') as f:
+                index = f.read().find(text)
                 if index != -1:
                     self.cursors.setPosition(index)
                     self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
