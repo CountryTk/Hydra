@@ -82,7 +82,7 @@ class Main(QMainWindow):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.data = None
         self.setGeometry(0, 0, 400, 400)
-        self.editor = QPlainTextEdit()
+        #self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
         self.filename = ''
@@ -119,7 +119,10 @@ class Main(QMainWindow):
             self.font.setFamily(self.data["editor"][0]["editorFont"])
             self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
             jsonFile.close()
-
+        with open("Untitled.txt", "w+") as self.newFile:
+            self.editor = QPlainTextEdit()
+            self.editor.setPlainText(self.newFile.read())
+            self.newFile.close()
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -207,11 +210,22 @@ class Main(QMainWindow):
         self.printAct = QAction('Print...', self)
         self.printAct.setShortcut('Ctrl+P')
         self.printAct.setStatusTip('Print a file')
+        def _action():
+            dialog = QtPrintSupport.QPrintDialog()
+            if dialog.exec_() == QDialog.Accepted:
+                self.textArea.document().print_(dialog.printer())
+        self.printAct.triggered.connect(_action)
 
     def printPreview(self):
         self.printPrAct = QAction('Print preview', self)
         self.printPrAct.setShortcut('Shift+Ctrl+P')
         self.printPrAct.setStatusTip('See a print preview')
+        def _action():
+            dialog = QtPrintSupport.QPrintPreviewDialog()
+            dialog.paintRequested.connect(self.textArea.print_)
+            dialog.exec_()
+
+        self.printPrAct.triggered.connect(_action)
 
     def undo(self):
         self.undoAct = QAction('Undo', self)
