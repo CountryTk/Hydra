@@ -120,21 +120,19 @@ class Main(QMainWindow):
             self.font.setFamily(self.data["editor"][0]["editorFont"])
             self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
             jsonFile.close()
-        with open("Untitled.txt", "w+") as self.newFile:
-            self.files = "Untitled.txt"
+
             self.editor = QPlainTextEdit()
-            self.editor.setPlainText(self.newFile.read())
             self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
             self.editor.setPlainText('''
 #############################
 |                           |
 |      No files open        |
 |Press Ctrl+O to open a file|
-|                           |
+|      Ctrl+Q to quit       |
 |                           |
 #############################
             ''')
-            self.newFile.close()
+
 
     def exit(self):
         self.exitAct = QAction('Quit', self)
@@ -210,8 +208,7 @@ class Main(QMainWindow):
                 self.saved = True
                 saving.write(self.editor.toPlainText())
         else:
-            with open('Untitled.txt', 'w+') as newfile:
-                newfile.write(self.editor.toPlainText())
+            print("No file open!")
 
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
