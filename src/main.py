@@ -122,6 +122,7 @@ class Main(QMainWindow):
         with open("Untitled.txt", "w+") as self.newFile:
             self.editor = QPlainTextEdit()
             self.editor.setPlainText(self.newFile.read())
+            self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
             self.newFile.close()
 
     def exit(self):
