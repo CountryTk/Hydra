@@ -133,7 +133,6 @@ class Main(QMainWindow):
 #############################
 ''')
 
-
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -344,6 +343,7 @@ class Main(QMainWindow):
             return True
         else:
             return True
+
     def initUI(self):
         self.statusBar()
         self.font.setFixedPitch(True)
@@ -441,8 +441,11 @@ class Highlighter(QSyntaxHighlighter):
         quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"])) # TODO: Add your own customization color
         self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
         self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
-        self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
+        #self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
 
+        magicFormat = QTextCharFormat()
+        magicFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["magicFormatColor"]))
+        self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
         self.commentStartExpression = QRegExp("^'''")
         self.commentEndExpression = QRegExp("'''$")
 
@@ -474,7 +477,10 @@ class Highlighter(QSyntaxHighlighter):
                            self.multiLineCommentFormat)
             startIndex = self.commentStartExpression.indexIn(text,
                                                              startIndex + commentLength)
-
+    def indent(self):
+        while True:
+            if self.editor.toPlainText().endswith(':\n'):
+                self.editor.insertPlainText('    ')
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
         read = jsonFile.read()
