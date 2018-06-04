@@ -5,7 +5,7 @@ from pyautogui import hotkey
 from PyQt5 import QtCore, QtGui, QtPrintSupport
 from PyQt5.QtCore import QRect, QRegExp, QSize, Qt
 from PyQt5.QtGui import (QColor, QFont, QFontMetrics, QPainter,
-                         QSyntaxHighlighter, QTextCharFormat, QTextCursor,
+                         QSyntaxHighlighter, QTextCharFormat, QTextCursor, QFontDatabase,
                          QTextFormat)
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QFileDialog,
                              QHBoxLayout, QInputDialog, QLineEdit, QMainWindow,
@@ -89,6 +89,7 @@ class Main(QMainWindow):
         self.setWindowIcon(QtGui.QIcon('resources/py.png'))
         self.exit()
         self.new()
+        self.run_m()
         self.is_opened = False
         self.saved = False
         self.open()
@@ -105,8 +106,8 @@ class Main(QMainWindow):
         self.saveAs()
         self.initUI()
         self.setWindowTitle('PyPad')
-
         self.files = None
+
     def onStart(self):
         with open("../config.json", "r") as jsonFile:
             read = jsonFile.read()
@@ -241,6 +242,18 @@ class Main(QMainWindow):
         self.redoAct.setStatusTip('Redo')
         self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
 
+    def run(self):
+        if self.files is None or self.files[0].endswith(".py") is False:
+            print("Can't run a non python file or a file that doesn't exist...")
+        else:
+            Popen(['python ' + self.files[0]], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+
+    def run_m(self):
+        self.runAct = QAction('Run', self)
+        self.runAct.setShortcut('Ctrl+R')
+        self.runAct.setStatusTip('Run your program')
+        self.runAct.triggered.connect(self.run)
+
     def cut(self):
         self.cutAct = QAction('Cut', self)
         self.cutAct.setShortcut('Ctrl+X')
@@ -357,6 +370,9 @@ class Main(QMainWindow):
 
         searchMenu = menubar.addMenu('Search')
         searchMenu.addAction(self.findAct)
+        runMenu = menubar.addMenu('Run')
+        runMenu.addAction(self.runAct)
+
         layoutH = QHBoxLayout()
         layoutH.addWidget(self.numbers)
         layoutH.addWidget(self.editor)
