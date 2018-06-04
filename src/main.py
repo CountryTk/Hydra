@@ -131,7 +131,7 @@ class Main(QMainWindow):
 |      Ctrl+Q to quit       |
 |                           |
 #############################
-            ''')
+''')
 
 
     def exit(self):
@@ -189,6 +189,8 @@ class Main(QMainWindow):
                                                options=options)
             file_s = open(name[0], 'w+')
             self.filename = file_s
+            if name[0].endswith(".py"):
+                self.highlighter = Highlighter(self.editor.document())
             text = self.editor.toPlainText()
             file_s.write(text)
             file_s.close()
@@ -208,7 +210,8 @@ class Main(QMainWindow):
                 self.saved = True
                 saving.write(self.editor.toPlainText())
         else:
-            print("No file open!")
+            QMessageBox.warning(self, 'No file opened', "<h1>No file opened</h1>",
+                                 QMessageBox.Yes | QMessageBox.No)
 
     def saveAs(self):
         self.saveAsAct = QAction('Save as...', self)
@@ -301,7 +304,7 @@ class Main(QMainWindow):
                     qApp.beep()
 
         except:
-            print("No file opened")
+            QMessageBox.Ok(self,"No file open", "No file open, Ctrl+O to open a file")
 
     def find(self):
         self.findAct = QAction('Find', self)
@@ -322,7 +325,7 @@ class Main(QMainWindow):
         if not self.isModified():
             return True
         if self.saved is False:
-            ret = QMessageBox.question(self, 'Message',
+            ret = QMessageBox.question(self, 'Warning',
                                        '<h4><p>The document was modified.</p>\n' \
                                        '<p>Do you want to save changes?</p></h4>',
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
