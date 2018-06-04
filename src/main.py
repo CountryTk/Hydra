@@ -122,7 +122,6 @@ class Main(QMainWindow):
             jsonFile.close()
         with open("Untitled.txt", "w+") as self.newFile:
             self.files = "Untitled.txt"
-            print(self.files)
             self.editor = QPlainTextEdit()
             self.editor.setPlainText(self.newFile.read())
             self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
@@ -304,15 +303,8 @@ class Main(QMainWindow):
                 else:
                     qApp.beep()
 
-        except NameError:
-            with open('Untitled.txt', 'a+') as f:
-                index = f.read().find(text)
-                if index != -1:
-                    self.cursors.setPosition(index)
-                    self.cursors.movePosition(self.cursors.Right, self.cursors.KeepAnchor, len(text))
-                    self.editor.setTextCursor(self.cursors)
-                else:
-                    qApp.beep()
+        except:
+            print("No file opened")
 
     def find(self):
         self.findAct = QAction('Find', self)
