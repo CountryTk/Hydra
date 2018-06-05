@@ -1,11 +1,11 @@
 {
   "editor": [
     {
-      "windowStaysOnTop": true,
+      "windowStaysOnTop": false,
 
-      "editorFont": "Consolas",
+      "editorFont": "Iosevka",
 
-      "editorFontSize": 14,
+      "editorFontSize": 12,
 
       "editorColor": "#303030",
 
@@ -41,7 +41,9 @@
 
       "functionFormatColor": "#FF9500",
 
-      "quotationFormatColor": "#039135"
+      "quotationFormatColor": "#039135",
+
+      "magicFormatColor": "#FF0000"
 
     }
   ]
