@@ -426,10 +426,6 @@ class Highlighter(QSyntaxHighlighter):
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
-        decoratorFormat = QTextCharFormat()
-        decoratorFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["decoratorFormatColor"]))
-        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
-
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
@@ -451,11 +447,8 @@ class Highlighter(QSyntaxHighlighter):
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))  # TODO: Add your own customization color
-        self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
-        self.highlightingRules.append((QRegExp("\"[^']*\""), quotationFormat))
-
-        self.commentStartExpression = QRegExp("^'''")
-        self.commentEndExpression = QRegExp("'''$")
+        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -467,24 +460,30 @@ class Highlighter(QSyntaxHighlighter):
                 index = expression.indexIn(text, index + length)
 
         self.setCurrentBlockState(0)
+        comment = QRegExp("'''")
 
-        startIndex = 0
-        if self.previousBlockState() != 1:
-            startIndex = self.commentStartExpression.indexIn(text)
+        if self.previousBlockState() == 1:
+            start = 0
+        else:
+            start = comment.indexIn(text)
 
-        while startIndex >= 0:
-            endIndex = self.commentEndExpression.indexIn(text, startIndex)
-
-            if endIndex == -1:
-                #self.setCurrentBlockState(1)
-                commentLength = len(text) - startIndex
+        while start >= 0:
+            end = comment.indexIn(text, start + 1)
+            if end != -1:
+                self.setCurrentBlockState(0)
+                length = end - start + comment.matchedLength()
             else:
-                commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
+                self.setCurrentBlockState(1)
+                length = len(text) - start
 
-            self.setFormat(startIndex, commentLength,
-                           self.multiLineCommentFormat)
-            startIndex = self.commentStartExpression.indexIn(text,
-                                                             startIndex + commentLength)
+            self.setFormat(start, length, self.multiLineCommentFormat)
+            start = comment.indexIn(text, start + length)
+
+    def indent(self):
+        while True:
+            if self.editor.toPlainText().endswith(':\n'):
+                self.editor.insertPlainText('    ')
+
 
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
