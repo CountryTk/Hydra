@@ -427,7 +427,7 @@ class Highlighter(QSyntaxHighlighter):
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
         decoratorFormat = QTextCharFormat()
-        decoratorFormat.setForeground(QColor("#e5ba52"))
+        decoratorFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["decoratorFormatColor"]))
         self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
