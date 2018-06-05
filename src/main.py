@@ -426,8 +426,6 @@ class Highlighter(QSyntaxHighlighter):
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
-
-
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
@@ -439,9 +437,13 @@ class Highlighter(QSyntaxHighlighter):
         magicFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["magicFormatColor"]))
         self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
 
+        decoratorFormat = QTextCharFormat()
+        decoratorFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["decoratorFormatColor"]))
+        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
+
         intFormat = QTextCharFormat()
-        intFormat.setForeground(QColor("#000000"))
-        self.highlightingRules.append((QRegExp("^[-+]?[0-9]+$"), intFormat))
+        intFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["intFormatColor"]))
+        self.highlightingRules.append((QRegExp("[-+]?[0-9]+"), intFormat))
 
         singleLineCommentFormat = QTextCharFormat()
         singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
