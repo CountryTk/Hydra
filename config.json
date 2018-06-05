@@ -1,7 +1,7 @@
 {
   "editor": [
     {
-      "windowStaysOnTop": true,
+      "windowStaysOnTop": false,
 
       "editorFont": "Consolas",
 
@@ -11,7 +11,7 @@
 
       "windowColor": "#303030",
 
-      "windowText": "#FFFFFF",
+      "windowText": "#36fc0a",
 
       "alternateBase": "#FFFFFF",
 
@@ -41,7 +41,9 @@
 
       "functionFormatColor": "#FF9500",
 
-      "quotationFormatColor": "#039135"
+      "quotationFormatColor": "#039135",
+
+      "magicFormatColor": "#ff6666"
 
     }
   ]
