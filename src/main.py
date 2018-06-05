@@ -209,7 +209,7 @@ class Main(QMainWindow):
                 self.saved = True
                 saving.write(self.editor.toPlainText())
         else:
-            QMessageBox.warning(self, 'No file opened', "<h1>No file opened</h1>",
+            QMessageBox.warning(self, 'No file opened', "<h2>No file opened</h2>",
                                  QMessageBox.Yes | QMessageBox.No)
 
     def saveAs(self):
@@ -426,9 +426,7 @@ class Highlighter(QSyntaxHighlighter):
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
-        singleLineCommentFormat = QTextCharFormat()
-        singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
-        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
+
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
@@ -437,17 +435,26 @@ class Highlighter(QSyntaxHighlighter):
         functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
 
-        quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"])) # TODO: Add your own customization color
-        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
-        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
-        #self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
-
         magicFormat = QTextCharFormat()
         magicFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["magicFormatColor"]))
         self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
-        self.commentStartExpression = QRegExp("^'''")
-        self.commentEndExpression = QRegExp("'''$")
+
+        intFormat = QTextCharFormat()
+        intFormat.setForeground(QColor("#000000"))
+        self.highlightingRules.append((QRegExp("^[-+]?[0-9]+$"), intFormat))
+
+        singleLineCommentFormat = QTextCharFormat()
+        singleLineCommentFormat.setForeground(QtGui.QColor(107, 110, 108))
+        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
+
+        quotationFormat = QTextCharFormat()
+        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))  # TODO: Add your own customization color
+        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+        #self.highlightingRules.append((QRegExp("(?<!\'|)\'[^\']*\'(?!\')"), quotationFormat))
+
+        self.commentStartExpression = QRegExp("(?<=(^|\()\s*)'''")
+        self.commentEndExpression = QRegExp("'''(?=\s*($|\)))")
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
