@@ -426,7 +426,9 @@ class Highlighter(QSyntaxHighlighter):
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
-
+        decoratorFormat = QTextCharFormat()
+        decoratorFormat.setForeground(QColor("#e5ba52"))
+        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
@@ -449,12 +451,11 @@ class Highlighter(QSyntaxHighlighter):
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))  # TODO: Add your own customization color
-        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
-        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
-        #self.highlightingRules.append((QRegExp("(?<!\'|)\'[^\']*\'(?!\')"), quotationFormat))
+        self.highlightingRules.append((QRegExp("'[^']*'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^']*\""), quotationFormat))
 
-        self.commentStartExpression = QRegExp("(?<=(^|\()\s*)'''")
-        self.commentEndExpression = QRegExp("'''(?=\s*($|\)))")
+        self.commentStartExpression = QRegExp("^'''")
+        self.commentEndExpression = QRegExp("'''$")
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -475,7 +476,7 @@ class Highlighter(QSyntaxHighlighter):
             endIndex = self.commentEndExpression.indexIn(text, startIndex)
 
             if endIndex == -1:
-                self.setCurrentBlockState(1)
+                #self.setCurrentBlockState(1)
                 commentLength = len(text) - startIndex
             else:
                 commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
@@ -484,10 +485,7 @@ class Highlighter(QSyntaxHighlighter):
                            self.multiLineCommentFormat)
             startIndex = self.commentStartExpression.indexIn(text,
                                                              startIndex + commentLength)
-    def indent(self):
-        while True:
-            if self.editor.toPlainText().endswith(':\n'):
-                self.editor.insertPlainText('    ')
+
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
         read = jsonFile.read()
