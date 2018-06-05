@@ -45,7 +45,9 @@
 
       "magicFormatColor": "#ff6666",
 
-      "decoratorFormatColor": "#ff00e7"
+      "decoratorFormatColor": "#ff00e7",
+
+      "intFormatColor": "#70DBFF"
 
     }
   ]
