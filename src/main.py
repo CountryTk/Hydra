@@ -303,7 +303,7 @@ class Main(QMainWindow):
                     qApp.beep()
 
         except:
-            QMessageBox.Ok(self,"No file open", "No file open, Ctrl+O to open a file")
+            QMessageBox.warning(self, "No file open", "No file open, Ctrl+O to open a file")
 
     def find(self):
         self.findAct = QAction('Find', self)
