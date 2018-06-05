@@ -426,6 +426,8 @@ class Highlighter(QSyntaxHighlighter):
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
+
+
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
@@ -447,7 +449,7 @@ class Highlighter(QSyntaxHighlighter):
 
         quotationFormat = QTextCharFormat()
         quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))  # TODO: Add your own customization color
-        self.highlightingRules.append((QRegExp("\'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
         self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
 
     def highlightBlock(self, text):
@@ -460,24 +462,27 @@ class Highlighter(QSyntaxHighlighter):
                 index = expression.indexIn(text, index + length)
 
         self.setCurrentBlockState(0)
+
         comment = QRegExp("'''")
 
         if self.previousBlockState() == 1:
-            start = 0
+            start_index = 0
+            index_step = 0
         else:
-            start = comment.indexIn(text)
+            start_index = comment.indexIn(text)
+            index_step = comment.matchedLength()
 
-        while start >= 0:
-            end = comment.indexIn(text, start + 1)
+        while start_index >= 0:
+            end = comment.indexIn(text, start_index + index_step)
             if end != -1:
                 self.setCurrentBlockState(0)
-                length = end - start + comment.matchedLength()
+                length = end - start_index + comment.matchedLength()
             else:
                 self.setCurrentBlockState(1)
-                length = len(text) - start
+                length = len(text) - start_index
 
-            self.setFormat(start, length, self.multiLineCommentFormat)
-            start = comment.indexIn(text, start + length)
+            self.setFormat(start_index, length, self.multiLineCommentFormat)
+            start_index = comment.indexIn(text, start_index + length)
 
     def indent(self):
         while True:
