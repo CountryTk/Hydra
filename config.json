@@ -43,7 +43,9 @@
 
       "quotationFormatColor": "#039135",
 
-      "magicFormatColor": "#ff6666"
+      "magicFormatColor": "#ff6666",
+
+      "decoratorFormatColor": "#ff00e7"
 
     }
   ]
