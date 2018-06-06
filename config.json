@@ -29,7 +29,9 @@
 
       "HighlightedTextColor": "#000000",
 
-      "TabWidth": 45
+      "TabWidth": 45,
+
+      "DontUseNativeDialog": true
 
     }
   ],
