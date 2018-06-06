@@ -96,6 +96,7 @@ class Main(QMainWindow):
         self.open()
         self.undo()
         self.cut()
+        self.pyFileOpened = False
         self.copy()
         self.paste()
         self.all()
@@ -183,11 +184,16 @@ class Main(QMainWindow):
                     print(self.files)
 
                     if self.files.endswith('.py'):
+                        self.pyFileOpened = True
                         self.highlighter = Highlighter(self.editor.document())
                         self.setWindowTitle("PyPad [" + self.files + "]")
                     else:
+
                         print('Non-Python file opened. Highlighting will not be used.')
-                        del self.highlighter
+                        if self.pyFileOpened is True:
+                            del self.highlighter
+                        else:
+                            pass
                         self.setWindowTitle("PyPad [" + self.files + "]")
 
                     self.filename = file_o, self.editor.setPlainText(file_o.read())
