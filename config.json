@@ -3,9 +3,9 @@
     {
       "windowStaysOnTop": false,
 
-      "editorFont": "Consolas",
+      "editorFont": "Iosevka",
 
-      "editorFontSize": 14,
+      "editorFontSize": 12,
 
       "editorColor": "#303030",
 

@@ -52,7 +52,20 @@ class PyPad(Ui_MainWindow):
         self.actionFind.triggered.connect(self.find_in_file)
         self.actionReplace.triggered.connect(self.replace_in_file)
 
+        self.textEdit.verticalScrollBar().valueChanged.connect(lambda i: self.textEdit_2.verticalScrollBar().setSliderPosition(i))
+
         window.show()
+
+        file = sys.argv[1]
+
+        with open(file, "r", encoding="utf-8") as f:
+            self.open_files.append({"filename": file, "content": f.read()})
+
+        source = self.open_files[0].get("content", "no")
+
+        self.textEdit.setPlainText(source)
+
+        self.textEdit_2.setPlainText("\n".join(str(x) for x in range(1, len(source.split("\n")))))
 
 
     def exit(self):

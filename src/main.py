@@ -181,14 +181,17 @@ class Main(QMainWindow):
             if self.files:
                 with open(self.files, 'r+') as file_o:
                     print(self.files)
-                    self.filename = file_o, self.editor.setPlainText(file_o.read())
 
                     if self.files.endswith('.py'):
                         self.highlighter = Highlighter(self.editor.document())
                         self.setWindowTitle("PyPad [" + self.files + "]")
                     else:
                         print('Non-Python file opened. Highlighting will not be used.')
+                        del self.highlighter
                         self.setWindowTitle("PyPad [" + self.files + "]")
+
+                    self.filename = file_o, self.editor.setPlainText(file_o.read())
+
         except IndexError:
             print("File open dialog closed...")
 
