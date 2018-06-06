@@ -78,6 +78,7 @@ class NumberBar(QWidget):
 class Main(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.DontUseNativeDialogs = None
         self.onStart()
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.data = None
@@ -116,6 +117,10 @@ class Main(QMainWindow):
                 self.setWindowFlags(Qt.WindowStaysOnTopHint)
             else:
                 pass
+            if self.data["editor"][0]["DontUseNativeDialog"] is True:
+                self.DontUseNativeDialogs = True
+            else:
+                self.DontUseNativeDialogs = False
             self.font = QFont()
             self.font.setFamily(self.data["editor"][0]["editorFont"])
             self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
@@ -161,7 +166,10 @@ class Main(QMainWindow):
         try:
             self.is_opened = True
             options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
+            if self.DontUseNativeDialogs is True:
+                options |= QFileDialog.DontUseNativeDialog
+            else:
+                pass
             self.files, _ = QFileDialog.getOpenFileNames(
                 self, 'Open a file', '',
                 'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
@@ -185,26 +193,31 @@ class Main(QMainWindow):
             print("File open dialog closed...")
 
     def saveFileAs(self):
-
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        name = QFileDialog.getSaveFileName(self, 'Save File', '',
-                                           'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
-                                           options=options)
-        name = name[0]
-        file_s = open(name, 'w+')
-        self.filename = name
-        self.saved = True
-        if name[0].endswith(".py"):
-            self.highlighter = Highlighter(self.editor.document())
-        text = self.editor.toPlainText()
-        file_s.write(text)
-        file_s.close()
-        self.setWindowTitle(self.filename)
-        with open(self.filename, 'r+') as file:
-            self.files = self.filename
-            self.editor.setPlainText(file.read())
-            print("test")
+        try:
+            options = QFileDialog.Options()
+            if self.DontUseNativeDialogs is True:
+                options |= QFileDialog.DontUseNativeDialog
+            else:
+                pass
+            name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                               'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                               options=options)
+            name = name[0]
+            file_s = open(name, 'w+')
+            self.filename = name
+            self.saved = True
+            if name[0].endswith(".py"):
+                self.highlighter = Highlighter(self.editor.document())
+            text = self.editor.toPlainText()
+            file_s.write(text)
+            file_s.close()
+            self.setWindowTitle(self.filename)
+            with open(self.filename, 'r+') as file:
+                self.files = self.filename
+                self.editor.setPlainText(file.read())
+                print("test")
+        except FileNotFoundError:
+            print("Save as dialog closed")
 
     def saveButton(self):
         self.saveAct = QAction('Save', self)
