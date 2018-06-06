@@ -158,43 +158,53 @@ class Main(QMainWindow):
         self.openAct.triggered.connect(self.open1)
 
     def open1(self):
-        self.is_opened = True
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        self.files, _ = QFileDialog.getOpenFileNames(
-            self, 'Open a file', '',
-            'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
-            options=options
-        )
-
-        if self.files:
-            with open(self.files[0], 'r+') as file_o:
-
-                self.filename = file_o, self.editor.setPlainText(file_o.read())
-
-                if self.files[0].endswith('.py'):
-                    self.highlighter = Highlighter(self.editor.document())
-                    self.setWindowTitle("PyPad [" + self.files[0] + "]")
-                else:
-                    print('Non-Python file opened. Highlighting will not be used.')
-                    self.setWindowTitle("PyPad [" + self.files[0] + "]")
-
-    def saveFileAs(self):
         try:
+            self.is_opened = True
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
-            name = QFileDialog.getSaveFileName(self, 'Save File', '',
-                                               'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
-                                               options=options)
-            file_s = open(name[0], 'w+')
-            self.filename = file_s
-            if name[0].endswith(".py"):
-                self.highlighter = Highlighter(self.editor.document())
-            text = self.editor.toPlainText()
-            file_s.write(text)
-            file_s.close()
-        except:
-            pass
+            self.files, _ = QFileDialog.getOpenFileNames(
+                self, 'Open a file', '',
+                'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                options=options
+            )
+
+            self.files = self.files[0]
+
+            if self.files:
+                with open(self.files, 'r+') as file_o:
+                    print(self.files)
+                    self.filename = file_o, self.editor.setPlainText(file_o.read())
+
+                    if self.files.endswith('.py'):
+                        self.highlighter = Highlighter(self.editor.document())
+                        self.setWindowTitle("PyPad [" + self.files + "]")
+                    else:
+                        print('Non-Python file opened. Highlighting will not be used.')
+                        self.setWindowTitle("PyPad [" + self.files + "]")
+        except IndexError:
+            print("File open dialog closed...")
+
+    def saveFileAs(self):
+
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                           'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                           options=options)
+        name = name[0]
+        file_s = open(name, 'w+')
+        self.filename = name
+        self.saved = True
+        if name[0].endswith(".py"):
+            self.highlighter = Highlighter(self.editor.document())
+        text = self.editor.toPlainText()
+        file_s.write(text)
+        file_s.close()
+        self.setWindowTitle(self.filename)
+        with open(self.filename, 'r+') as file:
+            self.files = self.filename
+            self.editor.setPlainText(file.read())
+            print("test")
 
     def saveButton(self):
         self.saveAct = QAction('Save', self)
@@ -203,13 +213,14 @@ class Main(QMainWindow):
         self.saveAct.triggered.connect(self.save)
 
     def save(self):
+        print(self.files)
         if self.is_opened:
-            with open(self.files[0], 'w+') as saving:
+            with open(self.files, 'w+') as saving:
                 self.filename = saving
                 self.saved = True
                 saving.write(self.editor.toPlainText())
         else:
-            QMessageBox.warning(self, 'No file opened', "<h2>No file opened</h2>",
+            QMessageBox.warning(self, 'No file opened', "No file opened",
                                  QMessageBox.Yes | QMessageBox.No)
 
     def saveAs(self):
@@ -252,10 +263,10 @@ class Main(QMainWindow):
         self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
 
     def run(self):
-        if self.files is None or self.files[0].endswith(".py") is False:
+        if self.files is None or self.files.endswith(".py") is False:
             print("Can't run a non python file or a file that doesn't exist...")
         else:
-            Popen(['python ' + self.files[0]], shell=True, stdout=PIPE, stderr=PIPE).communicate()
+            Popen(['python ' + self.files], shell=True, stdout=PIPE, stderr=PIPE).communicate()
 
     def run_m(self):
         self.runAct = QAction('Run', self)
@@ -293,7 +304,7 @@ class Main(QMainWindow):
             return False
 
         try:
-            with open(self.files[0], 'r') as read:
+            with open(self.files, 'r') as read:
                 index = read.read().find(text)
                 if index != -1:
                     self.cursors.setPosition(index)
@@ -395,14 +406,14 @@ class Main(QMainWindow):
 
 
 class Highlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None):
-        super(Highlighter, self).__init__(parent)
+    def __init__(self, parent=None, *args):
+        super(Highlighter, self).__init__(parent, *args)
         with open("../config.json", "r") as jsonFile:
             read = jsonFile.read()
             data = json.loads(read)
             jsonFile.close()
         keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))  # TODO: Add your own customization to keyword color
+        keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))
         keywordFormat.setFontWeight(QFont.Bold)
 
         pyKeywordPatterns = ['for', 'class', 'range',
@@ -423,14 +434,14 @@ class Highlighter(QSyntaxHighlighter):
 
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))  # TODO: Add your own customization to keyword color
+        classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))
         self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
         functionFormat = QTextCharFormat()
         functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))  # TODO: Add your own customization to keyword color
+        functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))
         self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
 
         magicFormat = QTextCharFormat()
@@ -450,7 +461,7 @@ class Highlighter(QSyntaxHighlighter):
         self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
 
         quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))  # TODO: Add your own customization color
+        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))
         self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
         self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
 
