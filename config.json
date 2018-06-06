@@ -11,7 +11,7 @@
 
       "windowColor": "#303030",
 
-      "windowText": "#FFFFFF",
+      "windowText": "#36fc0a",
 
       "alternateBase": "#FFFFFF",
 
@@ -29,7 +29,9 @@
 
       "HighlightedTextColor": "#000000",
 
-      "TabWidth": 45
+      "TabWidth": 45,
+
+      "DontUseNativeDialog": true
 
     }
   ],
@@ -43,7 +45,11 @@
 
       "quotationFormatColor": "#039135",
 
-      "magicFormatColor": "#FF0000"
+      "magicFormatColor": "#ff6666",
+
+      "decoratorFormatColor": "#ff00e7",
+
+      "intFormatColor": "#70DBFF"
 
     }
   ]
