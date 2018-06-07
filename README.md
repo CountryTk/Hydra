@@ -52,7 +52,7 @@ Example config:
 
       "TabWidth": 45,
 
-      "DontUseNativeDialog": true
+      "DontUseNativeDialog": false
 
     }
   ],
