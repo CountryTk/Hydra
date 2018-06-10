@@ -40,33 +40,52 @@ class QtHtmlFormatter(Formatter):
     def __init__(self, style, **kwargs):
         super().__init__(**kwargs)
 
-        self.stylesheet = style
+        style_lines = []
+        self.class_ref = []
+
+        for name, data in style.items():
+            style_lines.append(f"{data['css_class']}{{{'color:' + data['color'] if data.get('color') is not None else ''};{'background:' + data['background'] if data.get('background') is not None else ''};{''.join(self._get_font_style(style) for style in data['font']) if data['font'] is not None else ''}}}")
+
+            self.class_ref.append(name)
+
+        self.stylesheet = "\n".join(style_lines)
 
     def _get_class_name(self, token):
-        while not token in pygments.token.STANDARD_TYPES:
+        while repr(token).strip("Token.") not in self.class_ref and token.parent is not None:
             token = token.parent
 
         return pygments.token.STANDARD_TYPES[token]
+
+    def _get_font_style(self, style_name):
+        if style_name == "bold":
+            return "font-weight: bold;"
+
+        elif style_name == "italic":
+            return "font-style: italic;"
+
+        elif style_name == "underline":
+            return "text-decoration: underline;"
+
+        else:
+            raise RuntimeError(f"Invalid text style '{style_name}'")
 
     def __call__(self, tokens):
         lines = []
         for name, source in tokens:
             lines.append(f"<span class=\"{self._get_class_name(name)}\">{source}</span>")
 
-        newl = "\n"
         return f"<style>{self.stylesheet}</style><pre>{''.join(lines)}</pre>"
 
 class Tab(QtWidgets.QWidget):
-    def __init__(self, filepath, filename, tab_index, existing, lexer=None):
+    def __init__(self, filepath, filename, tab_index, existing, lexer, colorscheme):
         super(QtWidgets.QWidget, self).__init__()
-
-        print(filepath, filename)
 
         self.lexer = lexer
         self.existing = existing
         self.raw_text = ""
-        self.colorscheme = None
         self.debounce = False
+
+        self.formatter = QtHtmlFormatter(colorscheme)
 
         self.file_path = filepath
         self.file_name = filename
@@ -107,6 +126,8 @@ class Tab(QtWidgets.QWidget):
         self.editor_pane.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.editor_pane.setObjectName(f"editorPane_{tab_index}")
 
+        self.editor_pane.setStyleSheet(f"QTextEdit {{ background: {colorscheme['Body']['background']}; color: {colorscheme['Body']['color']}; }}")
+
         self.grid_layout.addWidget(self.splitter, 0, 0, 1, 1)
 
         self.editor_pane.textChanged.connect(self.text_updated)
@@ -131,13 +152,12 @@ class Tab(QtWidgets.QWidget):
             self.sync_scroll(self.editor_pane.verticalScrollBar().value())
 
             # syntax lexing/highlighting
-            if self.lexer is not None and self.colorscheme is not None:
+            if self.lexer is not None:
                 #cursor = self.editor_pane.textCursor()
 
                 tokens = pygments.lex(self.text, self.lexer)
                 format_result = self.formatter(tokens)
 
-                #print(format_result)
                 self.debounce = True
                 self.editor_pane.setHtml(format_result)
 
@@ -156,29 +176,6 @@ class Tab(QtWidgets.QWidget):
     @property
     def modified(self):
         return self.editor_pane.document().isModified()
-
-    def load_colorscheme(self, scheme_def):
-        style_lines = []
-
-        self.editor_pane.setStyleSheet(f"QTextEdit {{ background: {scheme_def['Body']['background']}; color: {scheme_def['Body']['color']}; }}")
-        for name, data in scheme_def.items():
-            style_lines.append(f"{data['css_class']}{{{'color:' + data['color'] if data.get('color') is not None else ''};{'background:' + data['background'] if data.get('background') is not None else ''};{''.join(self._get_font_style(style) for style in data['font']) if data['font'] is not None else ''}}}")
-
-        self.colorscheme = "\n".join(style_lines)
-        self.formatter = QtHtmlFormatter(self.colorscheme)
-
-    def _get_font_style(self, style_name):
-        if style_name == "bold":
-            return "font-weight: bold;"
-
-        elif style_name == "italic":
-            return "font-style: italic;"
-
-        elif style_name == "underline":
-            return "text-decoration: underline;"
-
-        else:
-            raise RuntimeError(f"Invalid text style '{style_name}'")
 
 class PyPad(Ui_MainWindow):
     def __init__(self, window, parent=None):
@@ -263,6 +260,9 @@ class PyPad(Ui_MainWindow):
             file_name = filepath.split("/")[-1]
             filepath = "/".join(filepath.split("/")[:-1])
 
+            if filepath == "":
+                filepath = os.getcwd()
+
         try:
             lexer = pygments.lexers.get_lexer_for_filename(file_name)
         except pygments.util.ClassNotFound:
@@ -270,8 +270,7 @@ class PyPad(Ui_MainWindow):
             lexer = None
 
         tab_idx = len(self.tabs)
-        tab = Tab(filepath, file_name, tab_idx, existing, lexer)
-        tab.load_colorscheme(self.colorscheme)
+        tab = Tab(filepath, file_name, tab_idx, existing, lexer, self.colorscheme)
 
         self.tabs.append(tab)
 
@@ -281,7 +280,6 @@ class PyPad(Ui_MainWindow):
         return tab
 
     def close_tab(self, tab_idx):
-        print(tab_idx)
         if self.tabs[tab_idx]:
             self.tabWidget.removeTab(tab_idx)
             del self.tabs[tab_idx]
@@ -318,7 +316,6 @@ class PyPad(Ui_MainWindow):
     def save_file(self):
         active_tab = self.active_tab
         file = f"{active_tab.file_path}/{active_tab.file_name}"
-        print(active_tab.existing)
 
         if not active_tab.existing:
             self.save_file_as()

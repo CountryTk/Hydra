@@ -66,9 +66,3 @@ class NewCommand(SublimeTasksBase):
                     pt = sublime.Region(end, end)
                     self.view.sel().clear()
                     self.view.sel().add(pt)
-
-
-
-
-
-

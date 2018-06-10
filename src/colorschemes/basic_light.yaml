@@ -1,0 +1,18 @@
+Body:
+  background: "#EDEDED"
+  color: "#212121"
+  font:
+
+  css_class: pre
+
+Comment:
+  color: "#CC8888"
+  font:
+
+  css_class: pre .c
+
+Keyword:
+  color: "#B02288"
+  font:
+
+  css_class: pre .k
