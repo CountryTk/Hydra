@@ -44,21 +44,27 @@ class QtHtmlFormatter(Formatter):
         self.class_ref = []
 
         for name, data in style.items():
-            style_lines.append(f"{data['css_class']}{{{'color:' + data['color'] if data.get('color') is not None else ''};{'background:' + data['background'] if data.get('background') is not None else ''};{''.join(self._get_font_style(style) for style in data['font']) if data['font'] is not None else ''}}}")
+            css_class = data['css_class']
+
+            if 'inherit' in data:
+                if data['inherit'] in style:
+                    data = style[data['inherit']]
+
+            style_lines.append(f"{css_class}{{{'color:' + data['color'] + ';' if data.get('color') is not None else ''}{'background:' + data['background'] + ';' if data.get('background') is not None else ''}{''.join(self._get_font_style(font_style) for font_style in data['font']) if data['font'] is not None else ''}}}")
 
             self.class_ref.append(name)
 
         self.stylesheet = "\n".join(style_lines)
 
     def _get_class_name(self, token):
-        while repr(token).strip("Token.") not in self.class_ref and token.parent is not None:
+        while repr(token)[6:] not in self.class_ref and token.parent is not None:
             token = token.parent
 
         return pygments.token.STANDARD_TYPES[token]
 
     def _get_font_style(self, style_name):
         if style_name == "bold":
-            return "font-weight: bold;"
+            return "font-weight: 600;"
 
         elif style_name == "italic":
             return "font-style: italic;"
@@ -69,10 +75,16 @@ class QtHtmlFormatter(Formatter):
         else:
             raise RuntimeError(f"Invalid text style '{style_name}'")
 
+    def escape_html(self, text):
+        return text.replace("<", "&lt;").replace(">", "&gt;")
+
     def __call__(self, tokens):
         lines = []
         for name, source in tokens:
-            lines.append(f"<span class=\"{self._get_class_name(name)}\">{source}</span>")
+            #if "Literal" in repr(name):
+            #    print(repr(name)[6:], source)
+
+            lines.append(f"<span class=\"{self._get_class_name(name)}\">{self.escape_html(source)}</span>")
 
         return f"<style>{self.stylesheet}</style><pre>{''.join(lines)}</pre>"
 
@@ -86,6 +98,8 @@ class Tab(QtWidgets.QWidget):
         self.debounce = False
 
         self.formatter = QtHtmlFormatter(colorscheme)
+
+        editor_style = f"QTextEdit {{ background: {colorscheme['Body']['background']}; color: {colorscheme['Body']['color']}; }}"
 
         self.file_path = filepath
         self.file_name = filename
@@ -116,6 +130,7 @@ class Tab(QtWidgets.QWidget):
         self.number_pane.setReadOnly(True)
         self.number_pane.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
         self.number_pane.setObjectName(f"lineNumberPane_{tab_index}")
+        self.number_pane.setStyleSheet(editor_style)
 
         self.editor_pane = QtWidgets.QTextEdit(self.splitter)
         self.editor_pane.setFont(self.editor_font)
@@ -126,7 +141,7 @@ class Tab(QtWidgets.QWidget):
         self.editor_pane.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.editor_pane.setObjectName(f"editorPane_{tab_index}")
 
-        self.editor_pane.setStyleSheet(f"QTextEdit {{ background: {colorscheme['Body']['background']}; color: {colorscheme['Body']['color']}; }}")
+        self.editor_pane.setStyleSheet(editor_style)
 
         self.grid_layout.addWidget(self.splitter, 0, 0, 1, 1)
 
@@ -134,8 +149,8 @@ class Tab(QtWidgets.QWidget):
         self.editor_pane.verticalScrollBar().valueChanged.connect(self.sync_scroll)
 
         self.text_updated()
-        self.editor_pane.setFocus()
         self.editor_pane.moveCursor(QtGui.QTextCursor.Start, QtGui.QTextCursor.MoveAnchor)
+        self.editor_pane.setFocus()
 
     def sync_scroll(self, value):
         if self.number_pane.verticalScrollBar().value() != value:
@@ -153,16 +168,18 @@ class Tab(QtWidgets.QWidget):
 
             # syntax lexing/highlighting
             if self.lexer is not None:
-                #cursor = self.editor_pane.textCursor()
+                edit_cursor = self.editor_pane.textCursor()
+                cursor_pos = edit_cursor.position()
 
                 tokens = pygments.lex(self.text, self.lexer)
                 format_result = self.formatter(tokens)
 
+                #print(format_result)
                 self.debounce = True
                 self.editor_pane.setHtml(format_result)
 
-                #self.editor_pane.setTextCursor(cursor)
-                self.editor_pane.ensureCursorVisible()
+                edit_cursor.setPosition(cursor_pos)
+                self.editor_pane.setTextCursor(edit_cursor)
 
     @property
     def text(self):
