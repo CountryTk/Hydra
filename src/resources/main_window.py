@@ -32,42 +32,6 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabsClosable(True)
         self.tabWidget.setMovable(True)
         self.tabWidget.setObjectName("tabWidget")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.tab)
-        self.gridLayout_2.setContentsMargins(3, 3, 3, 3)
-        self.gridLayout_2.setHorizontalSpacing(6)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.splitter = QtWidgets.QSplitter(self.tab)
-        self.splitter.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter.setChildrenCollapsible(False)
-        self.splitter.setObjectName("splitter")
-        self.textEdit_2 = QtWidgets.QTextEdit(self.splitter)
-        self.textEdit_2.setMaximumSize(QtCore.QSize(50, 16777215))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.textEdit_2.setFont(font)
-        self.textEdit_2.setStyleSheet("")
-        self.textEdit_2.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.textEdit_2.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.textEdit_2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.textEdit_2.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.textEdit_2.setUndoRedoEnabled(False)
-        self.textEdit_2.setReadOnly(True)
-        self.textEdit_2.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.textEdit_2.setObjectName("textEdit_2")
-        self.textEdit = QtWidgets.QTextEdit(self.splitter)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.textEdit.setFont(font)
-        self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.textEdit.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.textEdit.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.textEdit.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.textEdit.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.textEdit.setObjectName("textEdit")
-        self.gridLayout_2.addWidget(self.splitter, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab, "")
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -144,17 +108,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.textEdit_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Noto Sans\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"right\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Iosevka\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Tab 1"))
         self.menuFile.setTitle(_translate("MainWindow", "F&ile"))
         self.menuEdit.setTitle(_translate("MainWindow", "E&dit"))
         self.menuSearch.setTitle(_translate("MainWindow", "Se&arch"))

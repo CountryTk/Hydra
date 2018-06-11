@@ -358,8 +358,8 @@ class Main(QMainWindow):
             return True
         if self.saved is False:
             ret = QMessageBox.question(self, 'Warning',
-                                       '<h4><p>The document was modified.</p>\n' \
-                                       '<p>Do you want to save changes?</p></h4>',
+                                       'The document was modified.\n' \
+                                       'Do you want to save changes?',
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 
             if ret == QMessageBox.Yes:
