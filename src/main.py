@@ -469,6 +469,7 @@ class Main(QMainWindow):
 
 
     def indenting(self):
+        print("indenting:start")
         textBlock = self.editor.toPlainText()
 
         try:
@@ -481,19 +482,25 @@ class Main(QMainWindow):
             tmpStr3 = tmpStr2.replace("\n", "\n    ")
             print("tmpStr3:"+tmpStr3)
 
+            tmpStrStart = tmpStr[0:self.startBlock5]
+            tmpStrEnd = tmpStr[self.endBlock5:len(tmpStr)]
+
+            print("tmpStrStart:"+tmpStrStart)
+            print("tmpStrEnd:"+tmpStrEnd)
+
             textCursor_1 = self.editor.textCursor()
             if (textCursor_1.hasSelection() == True):
                 # textCursor_1.select(QTextCursor.BlockUnderCursor)
-                textCursor_1.beginEditBlock()
-                textCursor_1.insertText(tmpStr3+"")
-                # textCursor_1.insertText(tmpStr3+"\n")
-                textCursor_1.endEditBlock()
-            # pass
-
+                self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
+                # textCursor_1.beginEditBlock()
+                # textCursor_1.insertText(tmpStr3+"")
+                # textCursor_1.endEditBlock()
         except:
             print("except:indenting")
             print(sys.exc_info())
             pass
+
+        print("indenting:end")
 
 
     def saveButton(self):
