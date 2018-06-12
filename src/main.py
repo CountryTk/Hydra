@@ -221,15 +221,34 @@ class Main(QMainWindow):
         print("anchor_int:"+str(anchor_int))
 
         if(self.anchor_int2!=anchor_int):
-            possible_cursor.select(QTextCursor.BlockUnderCursor)
             self.anchorLineStart = possible_cursor.selectionStart()
             self.anchorLineEnd   = possible_cursor.selectionEnd()
 
         print("self.anchorLineStart:"+str(self.anchorLineStart))
         print("self.anchorLineEnd:"+str(self.anchorLineEnd))
 
-        print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+
-              textBlock[self.anchorLineStart:self.anchorLineEnd])
+        print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
+              +textBlock[self.anchorLineStart:self.anchorLineEnd])
+
+
+        print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
+        possible_cursor.select(QTextCursor.BlockUnderCursor)
+        # test downward
+        print("# test downward")
+        if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+            print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+            print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
+                +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+            # print("\n"
+            #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+            pass
+        # test   upward
+        print("# test   upward")
+        if(self.anchorLineStart>possible_cursor.selectionStart()):
+            print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+            print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
+                +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
+            pass
 
 
         # self.startBlock3=textCursor_1.selectionStart()
@@ -244,8 +263,9 @@ class Main(QMainWindow):
         print("redoAvailable")
 
     def selectionChanged(self):
-        print("======================================")
-        print('selectionChanged ')
+        pass
+        # print("======================================")
+        # print('selectionChanged ')
         # try:
         #
         #     qrekt = self.editor.cursorRect()
