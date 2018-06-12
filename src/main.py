@@ -163,6 +163,9 @@ class Main(QMainWindow):
         self.anchorLineStart = 0
         self.anchorLineEnd = 0
 
+        self.startBlock5 = 0
+        self.endBlock5   = 0
+
 
         # gg64du02
         # self.centralWidget = self.centralWidget()
@@ -275,21 +278,21 @@ class Main(QMainWindow):
             print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
             possible_cursor.select(QTextCursor.BlockUnderCursor)
 
-            # test downward
-            # print("# test downward")
-            if(self.anchorLineEnd<possible_cursor.selectionEnd()):
-                print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
-                # print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
-                #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
-                pass
-
-            # test   upward
-            # print("# test   upward")
-            if(self.anchorLineStart>possible_cursor.selectionStart()):
-                print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
-                # print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
-                #     +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
-                pass
+            # # test downward
+            # # print("# test downward")
+            # if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+            #     print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+            #     # print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
+            #     #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+            #     pass
+            #
+            # # test   upward
+            # # print("# test   upward")
+            # if(self.anchorLineStart>possible_cursor.selectionStart()):
+            #     print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+            #     # print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
+            #     #     +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
+            #     pass
 
 
 
@@ -307,12 +310,13 @@ class Main(QMainWindow):
                     # print("anchor_int:" + str(anchor_intI))
                     pass
 
-                print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+                # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
 
                 print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"
                     +textBlock[anchor_intI:possible_cursor.selectionEnd()])
-                # print("\n"
-                #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+
+                self.startBlock5 = anchor_intI
+                self.endBlock5 = possible_cursor.selectionEnd()
                 pass
             # test   upward
             # print("# test   upward")
@@ -332,10 +336,17 @@ class Main(QMainWindow):
 
                 print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"
                     +textBlock[possible_cursor.selectionStart():anchor_intI])
+
+                self.startBlock5 = possible_cursor.selectionStart()
+                self.endBlock5 = anchor_intI
                 pass
+
+            print("textBlock[self.startBlock5:self.endBlock5]:"+
+                  textBlock[self.startBlock5:self.endBlock5])
         except:
             traceback.print_stack
             pass
+
 
         # # ==============================
 
