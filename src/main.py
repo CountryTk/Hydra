@@ -491,10 +491,9 @@ class Main(QMainWindow):
             textCursor_1 = self.editor.textCursor()
             if (textCursor_1.hasSelection() == True):
                 # textCursor_1.select(QTextCursor.BlockUnderCursor)
+                textCursor_1.beginEditBlock()
                 self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
-                # textCursor_1.beginEditBlock()
-                # textCursor_1.insertText(tmpStr3+"")
-                # textCursor_1.endEditBlock()
+                textCursor_1.endEditBlock()
         except:
             print("except:indenting")
             print(sys.exc_info())
