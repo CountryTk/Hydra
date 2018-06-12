@@ -31,11 +31,6 @@ class NumberBar(QWidget):
         self.setLayout(layout)
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
-        # # gg64du02
-        # self.editor.selectionChanged.connect(self.testselectionChanged)
-        # # //selectionChanged ()
-
-
         self.update_width('1')
 
 
@@ -90,15 +85,6 @@ class NumberBar(QWidget):
                 block = block.next()
 
             painter.end()
-
-# # QWidget.mousePressEvent()
-class QWidgetLOL(QWidget):
-    # def __init__(self, parent=QWidget):
-    #     super().__init__()
-    #     print("lolilol1")
-    def mousePressEvent(self):
-        print("lolilol2")
-        # http: // pyqt.sourceforge.net / Docs / PyQt4 / qplaintextedit.html
 
 class Main(QMainWindow):
     def __init__(self):
@@ -198,66 +184,6 @@ class Main(QMainWindow):
         textBlock = self.editor.toPlainText()
         print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
 
-        # # ======================
-
-        # strAnchor1 = ""
-        # strAnchor2 = ""
-        #
-        # try:
-        #     strAnchor1 = textBlock[anchor_int]
-        #     print("strAnchor1:"+str(strAnchor1))
-        # except:
-        #     print("except:cursorPositionChanged1")
-        #     print(sys.exc_info())
-        #     try:
-        #         strAnchor2 = textBlock[anchor_int-1]
-        #         print("strAnchor2:" + str(strAnchor2))
-        #     except:
-        #         print("except:cursorPositionChanged2")
-        #         print(sys.exc_info())
-        #         pass
-        #     pass
-        #
-        # strAnchor = ""
-        # if(strAnchor1 != ""):
-        #     anchor_int =anchor_int
-        # if(strAnchor2 != ""):
-        #     anchor_int = anchor_int -1
-        #
-        # # strAnchor is a int
-        # print("anchor_int:"+str(anchor_int))
-        #
-        # if(self.anchor_int2!=anchor_int):
-        #     # possible_cursor.select(QTextCursor.BlockUnderCursor)
-        #     self.anchorLineStart = possible_cursor.selectionStart()
-        #     self.anchorLineEnd   = possible_cursor.selectionEnd()
-        #
-        # print("self.anchorLineStart:"+str(self.anchorLineStart))
-        # print("self.anchorLineEnd:"+str(self.anchorLineEnd))
-        #
-        # print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
-        #       +textBlock[self.anchorLineStart:self.anchorLineEnd])
-        #
-        #
-        # print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
-        # possible_cursor.select(QTextCursor.BlockUnderCursor)
-        # # test downward
-        # print("# test downward")
-        # if(self.anchorLineEnd<possible_cursor.selectionEnd()):
-        #     print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
-        #     print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
-        #         +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
-        #     # print("\n"
-        #     #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
-        #     pass
-        # # test   upward
-        # print("# test   upward")
-        # if(self.anchorLineStart>possible_cursor.selectionStart()):
-        #     print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
-        #     print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
-        #         +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
-        #     pass
-
         # # ==================================
 
         try:
@@ -347,11 +273,7 @@ class Main(QMainWindow):
             traceback.print_stack
             pass
 
-
         # # ==============================
-
-
-
 
         print("+++++++++++++++++++++++++++++++++++2")
     def modificationChanged(self):
@@ -361,9 +283,7 @@ class Main(QMainWindow):
         print("redoAvailable")
 
     def selectionChanged(self):
-        # print("======================================")
         # print('selectionChanged ')
-        # print("======================================")
         pass
     def textChanged(self):
         print('textChanged ')
@@ -371,10 +291,6 @@ class Main(QMainWindow):
         print("undoAvailable")
     # def updateRequest(self):
     #     print("updateRequest")
-
-
-
-
 
     def onStart(self):
         with open("../config.json", "r") as jsonFile:
@@ -402,8 +318,6 @@ class Main(QMainWindow):
             ''')
 
     def exit(self):
-        # I want to know when this is defined
-        # print("def exit(self):")
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
         self.exitAct.setStatusTip('Exit application')
@@ -473,6 +387,7 @@ class Main(QMainWindow):
         textBlock = self.editor.toPlainText()
 
         try:
+
             # self.startBlock5
             # self.endBlock5
 
@@ -494,6 +409,7 @@ class Main(QMainWindow):
                 textCursor_1.beginEditBlock()
                 self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
                 textCursor_1.endEditBlock()
+
         except:
             print("except:indenting")
             print(sys.exc_info())
@@ -695,11 +611,7 @@ class Main(QMainWindow):
         layoutV.addLayout(layoutH)
 
         # class QWidget
-
         mainWindow = QWidget(self)
-
-        # gg64du02
-        # mainWindow = QWidgetLOL(self)
 
         mainWindow.setLayout(layoutV)
         self.editor.setFont(self.font)
