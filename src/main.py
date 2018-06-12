@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QFileDialog,
 
 # debug
 import time
+import traceback
 
 file_o = None
 lineBarColor = QColor(53, 53, 53)
@@ -183,7 +184,7 @@ class Main(QMainWindow):
         textCursor_1 = self.editor.textCursor()
         if (textCursor_1.hasSelection() == True):
             print("textCursor_1.hasSelection() == True")
-            textCursor_1.select(QTextCursor.BlockUnderCursor)
+            # textCursor_1.select(QTextCursor.BlockUnderCursor)
             print("textCursor_1.selectionStart():"+str(textCursor_1.selectionStart())+
                   "textCursor_1.selectionEnd():" +str(textCursor_1.selectionEnd()))
 
@@ -192,67 +193,153 @@ class Main(QMainWindow):
         print("anchor_int:" + str(anchor_int))
 
         textBlock = self.editor.toPlainText()
+        print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
 
-        strAnchor1 = ""
-        strAnchor2 = ""
+        # # ======================
+
+        # strAnchor1 = ""
+        # strAnchor2 = ""
+        #
+        # try:
+        #     strAnchor1 = textBlock[anchor_int]
+        #     print("strAnchor1:"+str(strAnchor1))
+        # except:
+        #     print("except:cursorPositionChanged1")
+        #     print(sys.exc_info())
+        #     try:
+        #         strAnchor2 = textBlock[anchor_int-1]
+        #         print("strAnchor2:" + str(strAnchor2))
+        #     except:
+        #         print("except:cursorPositionChanged2")
+        #         print(sys.exc_info())
+        #         pass
+        #     pass
+        #
+        # strAnchor = ""
+        # if(strAnchor1 != ""):
+        #     anchor_int =anchor_int
+        # if(strAnchor2 != ""):
+        #     anchor_int = anchor_int -1
+        #
+        # # strAnchor is a int
+        # print("anchor_int:"+str(anchor_int))
+        #
+        # if(self.anchor_int2!=anchor_int):
+        #     # possible_cursor.select(QTextCursor.BlockUnderCursor)
+        #     self.anchorLineStart = possible_cursor.selectionStart()
+        #     self.anchorLineEnd   = possible_cursor.selectionEnd()
+        #
+        # print("self.anchorLineStart:"+str(self.anchorLineStart))
+        # print("self.anchorLineEnd:"+str(self.anchorLineEnd))
+        #
+        # print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
+        #       +textBlock[self.anchorLineStart:self.anchorLineEnd])
+        #
+        #
+        # print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
+        # possible_cursor.select(QTextCursor.BlockUnderCursor)
+        # # test downward
+        # print("# test downward")
+        # if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+        #     print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+        #     print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
+        #         +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+        #     # print("\n"
+        #     #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+        #     pass
+        # # test   upward
+        # print("# test   upward")
+        # if(self.anchorLineStart>possible_cursor.selectionStart()):
+        #     print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+        #     print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
+        #         +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
+        #     pass
+
+        # # ==================================
 
         try:
-            strAnchor1 = textBlock[anchor_int]
-            print("strAnchor1:"+str(strAnchor1))
-        except:
-            print("except:cursorPositionChanged1")
-            print(sys.exc_info())
-            try:
-                strAnchor2 = textBlock[anchor_int-1]
-                print("strAnchor2:" + str(strAnchor2))
-            except:
-                print("except:cursorPositionChanged2")
-                print(sys.exc_info())
+            print("textBlock[anchor_int]:" + textBlock[anchor_int])
+
+            if(self.anchor_int2!=anchor_int):
+                # possible_cursor.select(QTextCursor.BlockUnderCursor)
+                self.anchorLineStart = possible_cursor.selectionStart()
+                self.anchorLineEnd   = possible_cursor.selectionEnd()
+
+            print("self.anchorLineStart:"+str(self.anchorLineStart))
+            print("self.anchorLineEnd:"+str(self.anchorLineEnd))
+
+            print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
+                  +textBlock[self.anchorLineStart:self.anchorLineEnd])
+
+
+            print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
+            possible_cursor.select(QTextCursor.BlockUnderCursor)
+
+            # test downward
+            # print("# test downward")
+            if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+                print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+                # print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
+                #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
                 pass
+
+            # test   upward
+            # print("# test   upward")
+            if(self.anchorLineStart>possible_cursor.selectionStart()):
+                print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+                # print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
+                #     +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
+                pass
+
+
+
+            # test downward
+            # print("# test downward")
+            if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+                print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+
+                i = 0
+                anchor_intI = anchor_int - i
+                while (textBlock[anchor_intI] != "\n"):
+                    # print("while")
+                    # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+                    anchor_intI = anchor_intI - 1
+                    # print("anchor_int:" + str(anchor_intI))
+                    pass
+
+                print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+
+                print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"
+                    +textBlock[anchor_intI:possible_cursor.selectionEnd()])
+                # print("\n"
+                #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+                pass
+            # test   upward
+            # print("# test   upward")
+            if(self.anchorLineStart>possible_cursor.selectionStart()):
+                print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+
+                i = 0
+                anchor_intI = anchor_int + i
+                while (textBlock[anchor_intI] != "\n"):
+                    # print("while")
+                    # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+                    anchor_intI = anchor_intI + 1
+                    # print("anchor_int:" + str(anchor_intI))
+                    pass
+
+                # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+
+                print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"
+                    +textBlock[possible_cursor.selectionStart():anchor_intI])
+                pass
+        except:
+            traceback.print_stack
             pass
 
-        strAnchor = ""
-        if(strAnchor1 != ""):
-            anchor_int =anchor_int
-        if(strAnchor2 != ""):
-            anchor_int = anchor_int -1
-
-        # strAnchor is a int
-        print("anchor_int:"+str(anchor_int))
-
-        if(self.anchor_int2!=anchor_int):
-            self.anchorLineStart = possible_cursor.selectionStart()
-            self.anchorLineEnd   = possible_cursor.selectionEnd()
-
-        print("self.anchorLineStart:"+str(self.anchorLineStart))
-        print("self.anchorLineEnd:"+str(self.anchorLineEnd))
-
-        print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
-              +textBlock[self.anchorLineStart:self.anchorLineEnd])
+        # # ==============================
 
 
-        print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
-        possible_cursor.select(QTextCursor.BlockUnderCursor)
-        # test downward
-        print("# test downward")
-        if(self.anchorLineEnd<possible_cursor.selectionEnd()):
-            print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
-            print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
-                +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
-            # print("\n"
-            #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
-            pass
-        # test   upward
-        print("# test   upward")
-        if(self.anchorLineStart>possible_cursor.selectionStart()):
-            print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
-            print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
-                +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
-            pass
-
-
-        # self.startBlock3=textCursor_1.selectionStart()
-        # self.endBlock3  =textCursor_1.selectionEnd()
 
 
         print("+++++++++++++++++++++++++++++++++++2")
