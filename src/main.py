@@ -166,11 +166,21 @@ class Main(QMainWindow):
     # def mousePressEvent(self, QMouseEvent):
     #     print("def mousePressEvent(self, QMouseEvent):mousePressEvent")
 
-    def blockCountChanged(test):
+    def blockCountChanged(self):
         print("blockCountChanged")
-    def copyAvailable(test):
+    def copyAvailable(self):
+        print("+++++++++++++++++++++++++++++++++++")
         print("copyAvailable")
-    def cursorPositionChanged(test):
+        textCursor_1 = self.editor.textCursor()
+        if (textCursor_1.hasSelection() == True):
+            print("textCursor_1.hasSelection() == True")
+            textCursor_1.select(QTextCursor.BlockUnderCursor)
+            self.startBlock = textCursor_1.selectionStart()
+            print("self.startBlock:"+str(self.startBlock))
+
+        print("+++++++++++++++++++++++++++++++++++")
+
+    def cursorPositionChanged(self):
         print("cursorPositionChanged")
     def modificationChanged(self):
         print("modificationChanged")
@@ -286,6 +296,7 @@ class Main(QMainWindow):
                 anchor_int_changed = False
 
                 if(self.anchor_int != anchor_int):
+                    print("self.anchor_int != anchor_int")
                     self.anchor_int = anchor_int
                     anchor_int_changed = True
                     self.startBlock2 = 0
@@ -316,6 +327,7 @@ class Main(QMainWindow):
 
                 print("str(textBlock[int(self.endBlock2):int(self.endBlock)]):"+str(textBlock[int(self.endBlock2):int(self.endBlock)]))
 
+                print("selection downward almost work")
                 print("str(textBlock[int(self.startBlock2):int(self.endBlock)]:"+str(textBlock[int(self.startBlock2):int(self.endBlock)]))
 
                 print("str(textBlock[int(self.startBlock):int(self.endBlock)]):"+str(textBlock[int(self.startBlock):int(self.endBlock)]))
