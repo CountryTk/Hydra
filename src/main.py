@@ -148,6 +148,8 @@ class Main(QMainWindow):
         self.editor.textChanged.connect(self.textChanged)
         self.editor.undoAvailable.connect(self.undoAvailable)
 
+        self.anchor_int = 0
+
 
 
         # self.editor.updateRequest.connect(self.updateRequest)
@@ -211,19 +213,20 @@ class Main(QMainWindow):
 
 
     def selectionChanged(self):
+        print("======================================")
         print('selectionChanged ')
         try:
+
             qrekt = self.editor.cursorRect()
-            # qrekt = self.editor.document()
-            print("qrekt:"+str(qrekt))
+            # print("qrekt:"+str(qrekt))
             qrekt_height = self.editor.height()
-            print("qrekt_height:"+str(qrekt_height))
+            # print("qrekt_height:"+str(qrekt_height))
 
             self_cursor_cursor = self.editor.cursor()
-            print("self_cursor_cursor:"+str(self_cursor_cursor))
+            # print("self_cursor_cursor:"+str(self_cursor_cursor))
 
             self_cursor_cursor_pos = self_cursor_cursor.pos()
-            print("self_cursor_cursor_pos:"+str(self_cursor_cursor_pos))
+            # print("self_cursor_cursor_pos:"+str(self_cursor_cursor_pos))
 
             # possible_cursor = self.cursor.document()
             # # possible_cursor = self.cursor.atStart()
@@ -235,18 +238,18 @@ class Main(QMainWindow):
             # print("possible_cursor:" + str(possible_cursor))
 
             possible_cursor = self.editor.textCursor()
-            print("possible_cursor:" + str(possible_cursor))
+            # print("possible_cursor:" + str(possible_cursor))
             possible_cursor_tmp = possible_cursor.selectedText()
-            print("possible_cursor_tmp:" + str(possible_cursor_tmp))
+            # print("possible_cursor_tmp:" + str(possible_cursor_tmp))
 
             anchor_int = possible_cursor.anchor()
             print("anchor_int:"+str(anchor_int))
 
             blockNumber = possible_cursor.blockNumber()
-            print("blockNumber:"+str(blockNumber))
+            # print("blockNumber:"+str(blockNumber))
 
             print('++++')
-            print("testSelectionChanged:start:" + str(time.time()))
+            # print("testSelectionChanged:start:" + str(time.time()))
 
             # http://pyqt.sourceforge.net/Docs/PyQt4/qplaintextedit.html
             # http://pyqt.sourceforge.net/Docs/PyQt4/qtextcursor.html
@@ -265,40 +268,58 @@ class Main(QMainWindow):
                 print("selectedText2:" + str(selectedText2))
 
 
-                print("str(textCursor_1.selectionEnd()):"
-                      + str(textCursor_1.selectionEnd()))
+                # print("str(textCursor_1.selectionEnd()):"
+                #       + str(textCursor_1.selectionEnd()))
 
-
-                self.endBlock = textCursor_1.selectionEnd()
-                print("endBlock:"+str(self.endBlock))
 
                 self.startBlock = textCursor_1.selectionStart()
                 print("startBlock:"+str(self.startBlock))
+
+                self.endBlock = textCursor_1.selectionEnd()
+                print("endBlock:"+str(self.endBlock))
 
 
                 textBlock = self.editor.toPlainText()
                 # print("textBlock:"+str(textBlock))
                 print("textBlock[self.startBlock:self.endBlock]:"+str(textBlock[self.startBlock:self.endBlock]))
 
-                # if(textCursor_1.selectionStart()>anchor_int):
-                if(int(textCursor_1.selectionStart())>int(anchor_int)):
-                    print()
-                    self.startBlock2 = textCursor_1.selectionStart()
+                anchor_int_changed = False
 
-                if(int(textCursor_1.selectionEnd())<int(anchor_int)):
+                if(self.anchor_int != anchor_int):
+                    self.anchor_int = anchor_int
+                    anchor_int_changed = True
+                    self.startBlock2 = 0
+                    self.endBlock2 = 0
+                    # No sh*t
+                    self.startBlock = 0
+                    self.endBlock = 0
+
+
+                print("self.anchor_int:"+str(self.anchor_int))
+
+                # if(int(textCursor_1.selectionStart())>int(anchor_int)):
+                if((int(textCursor_1.selectionStart())>int(anchor_int))):
+                    if(anchor_int_changed==True):
+                        print()
+                        self.startBlock2 = textCursor_1.selectionStart()
+
+                # if(int(textCursor_1.selectionEnd())<int(anchor_int)):
+                if((int(textCursor_1.selectionEnd())<int(anchor_int))):
+                    # if(anchor_int_changed==False):
                     print()
                     self.endBlock2 = textCursor_1.selectionEnd()
-
-                # if(self.endBlock2<self.startBlock2):
-                #     tmpIntQuack = self.endBlock2
-                #     self.endBlock2 = self.startBlock2
-                #     self.startBlock2 = tmpIntQuack
 
                 print("self.startBlock2:"+str(self.startBlock2))
                 print("self.endBlock2:"+str(self.endBlock2))
 
-                print("textBlock[self.startBlock2:self.endBlock2]:"
-                      +str(textBlock[self.endBlock2:self.startBlock2]))
+                print("textBlock[self.startBlock2:self.endBlock2]:"+str(textBlock[int(self.endBlock2):int(self.startBlock2)]))
+
+                print("str(textBlock[int(self.endBlock2):int(self.endBlock)]):"+str(textBlock[int(self.endBlock2):int(self.endBlock)]))
+
+                print("str(textBlock[int(self.startBlock2):int(self.endBlock)]:"+str(textBlock[int(self.startBlock2):int(self.endBlock)]))
+
+                print("str(textBlock[int(self.startBlock):int(self.endBlock)]):"+str(textBlock[int(self.startBlock):int(self.endBlock)]))
+
 
 
                 print("======================================")
