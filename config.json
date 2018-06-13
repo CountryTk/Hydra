@@ -1,17 +1,17 @@
 {
   "editor": [
     {
-      "windowStaysOnTop": true,
+      "windowStaysOnTop": false,
 
-      "editorFont": "Consolas",
+      "editorFont": "Iosevka",
 
-      "editorFontSize": 14,
+      "editorFontSize": 12,
 
       "editorColor": "#303030",
 
       "windowColor": "#303030",
 
-      "windowText": "#FFFFFF",
+      "windowText": "#36fc0a",
 
       "alternateBase": "#FFFFFF",
 
@@ -29,7 +29,9 @@
 
       "HighlightedTextColor": "#000000",
 
-      "TabWidth": 45
+      "TabWidth": 45,
+
+      "DontUseNativeDialog": false
 
     }
   ],
@@ -41,7 +43,13 @@
 
       "functionFormatColor": "#FF9500",
 
-      "quotationFormatColor": "#039135"
+      "quotationFormatColor": "#039135",
+
+      "magicFormatColor": "#ff6666",
+
+      "decoratorFormatColor": "#ff00e7",
+
+      "intFormatColor": "#70DBFF"
 
     }
   ]
