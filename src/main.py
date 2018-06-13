@@ -98,7 +98,7 @@ class Main(QMainWindow):
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
         self.filename = ''
-        self.setWindowIcon(QtGui.QIcon('resources/Python-logo-notext.svg_..png'))
+        self.setWindowIcon(QtGui.QIcon('resources/Python-logo-notext.svg_.png'))
         self.exit()
         self.new()
         self.run_m()
