@@ -184,8 +184,10 @@ class Main(QMainWindow):
         print("anchor_int:" + str(anchor_int))
 
         textBlock = self.editor.toPlainText()
-        print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
-
+        try:
+            print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
+        except IndexError:
+            print("You did Ctrl+A + delete")
         # # ==================================
 
         try:
@@ -714,7 +716,7 @@ class Highlighter(QSyntaxHighlighter):
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))
-        self.highlightingRules.append((QRegExp('class [A-Za-z]+'), classFormat))
+        self.highlightingRules.append((QRegExp('class'), classFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
