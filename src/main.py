@@ -12,9 +12,15 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QFileDialog,
                              QMessageBox, QPlainTextEdit, QVBoxLayout, QWidget,
                              qApp)
 
+# debug
+import time
+import traceback
+
 file_o = None
 lineBarColor = QColor(53, 53, 53)
 lineHighlightColor = QColor('#00FF04')
+
+# QWidget
 
 
 class NumberBar(QWidget):
@@ -27,6 +33,11 @@ class NumberBar(QWidget):
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
 
+
+    def mousePressEvent(self, QMouseEvent):
+        print("class NumberBar(QWidget):mousePressEvent")
+
+
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
@@ -36,6 +47,7 @@ class NumberBar(QWidget):
 
     def update_width(self, string):
         width = self.fontMetrics().width(str(string)) + 10
+        print("update_width:width:"+str(width))
         if self.width() != width:
             self.setFixedWidth(width)
 
@@ -74,7 +86,6 @@ class NumberBar(QWidget):
 
             painter.end()
 
-
 class Main(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -83,7 +94,7 @@ class Main(QMainWindow):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.data = None
         self.setGeometry(0, 0, 800, 600)
-        #self.editor = QPlainTextEdit()
+        # self.editor = QPlainTextEdit()
         self.numbers = NumberBar(self.editor)
         self.move(0, 0)
         self.filename = ''
@@ -99,6 +110,7 @@ class Main(QMainWindow):
         self.pyFileOpened = False
         self.copy()
         self.paste()
+        self.indent()
         self.all()
         self.printPreview()
         self.redo()
@@ -109,6 +121,178 @@ class Main(QMainWindow):
         self.initUI()
         self.setWindowTitle('PyPad')
         self.files = None
+        # gg64du02
+        self.editor.selectionChanged.connect(self.selectionChanged)
+        self.startBlock = 0;
+        self.endBlock = 0;
+        self.startBlock2 = 0;
+        self.endBlock2 = 0;
+        # //selectionChanged ()
+        self.editor.blockCountChanged.connect(self.blockCountChanged)
+        self.editor.copyAvailable.connect(self.copyAvailable)
+        self.editor.cursorPositionChanged.connect(self.cursorPositionChanged)
+        self.editor.modificationChanged.connect(self.modificationChanged)
+        self.editor.redoAvailable.connect(self.redoAvailable)
+        self.editor.selectionChanged.connect(self.selectionChanged)
+        self.editor.textChanged.connect(self.textChanged)
+        self.editor.undoAvailable.connect(self.undoAvailable)
+
+        self.anchor_int = 0
+
+        # self.editor.updateRequest.connect(self.updateRequest)
+        # updateRequest
+
+        self.startBlock3 = 0;
+        self.endBlock3 = 0;
+
+        self.anchorLineStart = 0
+        self.anchorLineEnd   = 0
+        self.anchor_int2 = 0
+        self.anchorLineStart = 0
+        self.anchorLineEnd = 0
+
+        self.startBlock5 = 0
+        self.endBlock5   = 0
+
+
+        # gg64du02
+        # self.centralWidget = self.centralWidget()
+
+    # class Qwidget():
+    #     def mousePressEvent():
+    #         print("tupeupatest")
+    # # besion de QWidget
+    # def mousePressEvent(self, QMouseEvent):
+    #     print("def mousePressEvent(self, QMouseEvent):mousePressEvent")
+
+    def blockCountChanged(self):
+        print("blockCountChanged")
+    def copyAvailable(self):
+        print("copyAvailable")
+    def cursorPositionChanged(self):
+        print("+++++++++++++++++++++++++++++++++++1")
+        print("cursorPositionChanged")
+        textCursor_1 = self.editor.textCursor()
+        if (textCursor_1.hasSelection() == True):
+            print("textCursor_1.hasSelection() == True")
+            # textCursor_1.select(QTextCursor.BlockUnderCursor)
+            print("textCursor_1.selectionStart():"+str(textCursor_1.selectionStart())+
+                  "textCursor_1.selectionEnd():" +str(textCursor_1.selectionEnd()))
+
+        possible_cursor = self.editor.textCursor()
+        anchor_int = possible_cursor.anchor()
+        print("anchor_int:" + str(anchor_int))
+
+        textBlock = self.editor.toPlainText()
+        print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
+
+        # # ==================================
+
+        try:
+            print("textBlock[anchor_int]:" + textBlock[anchor_int])
+
+            if(self.anchor_int2!=anchor_int):
+                # possible_cursor.select(QTextCursor.BlockUnderCursor)
+                self.anchorLineStart = possible_cursor.selectionStart()
+                self.anchorLineEnd   = possible_cursor.selectionEnd()
+
+            print("self.anchorLineStart:"+str(self.anchorLineStart))
+            print("self.anchorLineEnd:"+str(self.anchorLineEnd))
+
+            print("textBlock[self.anchorLineStart:self.anchorLineEnd]:"+"\n"
+                  +textBlock[self.anchorLineStart:self.anchorLineEnd])
+
+
+            print("possible_cursor.select(QTextCursor.BlockUnderCursor)")
+            possible_cursor.select(QTextCursor.BlockUnderCursor)
+
+            # # test downward
+            # # print("# test downward")
+            # if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+            #     print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+            #     # print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"+"\n"
+            #     #     +textBlock[self.anchorLineStart:possible_cursor.selectionEnd()])
+            #     pass
+            #
+            # # test   upward
+            # # print("# test   upward")
+            # if(self.anchorLineStart>possible_cursor.selectionStart()):
+            #     print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+            #     # print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"+"\n"
+            #     #     +textBlock[possible_cursor.selectionStart():self.anchorLineEnd])
+            #     pass
+
+
+
+            # test downward
+            # print("# test downward")
+            if(self.anchorLineEnd<possible_cursor.selectionEnd()):
+                print("if(self.anchorLineEnd<possible_cursor.selectionEnd()):")
+
+                i = 0
+                anchor_intI = anchor_int - i
+                while (textBlock[anchor_intI] != "\n"):
+                    # print("while")
+                    # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+                    anchor_intI = anchor_intI - 1
+                    # print("anchor_int:" + str(anchor_intI))
+                    pass
+
+                # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+
+                print("textBlock[self.anchorLineStart:possible_cursor.selectionEnd()]:"
+                    +textBlock[anchor_intI:possible_cursor.selectionEnd()])
+
+                self.startBlock5 = anchor_intI
+                self.endBlock5 = possible_cursor.selectionEnd()
+                pass
+            # test   upward
+            # print("# test   upward")
+            if(self.anchorLineStart>possible_cursor.selectionStart()):
+                print("if(self.anchorLineStart>possible_cursor.selectionStart()):")
+
+                i = 0
+                anchor_intI = anchor_int + i
+                while (textBlock[anchor_intI] != "\n"):
+                    # print("while")
+                    # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+                    anchor_intI = anchor_intI + 1
+                    # print("anchor_int:" + str(anchor_intI))
+                    pass
+
+                # print("textBlock[anchor_intI]:" + textBlock[anchor_intI])
+
+                print("textBlock[possible_cursor.selectionStart():self.anchorLineEnd]:"
+                    +textBlock[possible_cursor.selectionStart():anchor_intI])
+
+                self.startBlock5 = possible_cursor.selectionStart()
+                self.endBlock5 = anchor_intI
+                pass
+
+            print("textBlock[self.startBlock5:self.endBlock5]:"+
+                  textBlock[self.startBlock5:self.endBlock5])
+        except:
+            traceback.print_stack
+            pass
+
+        # # ==============================
+
+        print("+++++++++++++++++++++++++++++++++++2")
+    def modificationChanged(self):
+        print("modificationChanged")
+
+    def redoAvailable(self):
+        print("redoAvailable")
+
+    def selectionChanged(self):
+        # print('selectionChanged ')
+        pass
+    def textChanged(self):
+        print('textChanged ')
+    def undoAvailable(self):
+        print("undoAvailable")
+    # def updateRequest(self):
+    #     print("updateRequest")
 
     def onStart(self):
         with open("../config.json", "r") as jsonFile:
@@ -138,7 +322,6 @@ class Main(QMainWindow):
 |                           |
 #############################
 ''')
-
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -218,6 +401,8 @@ class Main(QMainWindow):
             if name[0].endswith(".py"):
                 self.highlighter = Highlighter(self.editor.document())
             text = self.editor.toPlainText()
+            # what is the content of text
+            # print("saveFileAs:text:"+text)
             file_s.write(text)
             file_s.close()
             self.setWindowTitle(self.filename)
@@ -227,6 +412,67 @@ class Main(QMainWindow):
                 print("test")
         except FileNotFoundError:
             print("Save as dialog closed")
+
+
+
+    def indenting(self):
+        print("indenting:start")
+        # TODO: allow multiples lines to work on a indent on the whole document
+        # TODO: find why the blank on the last line would not allow to indent multiples lines
+        # ======================
+        # DONE: link the multi lines indent to the key binding
+        # DONE: place the cursor at the end of the indented part
+        # DONE: allow undo
+        textBlock = self.editor.toPlainText()
+
+        try:
+
+            # self.startBlock5
+            # self.endBlock5
+
+            tmpStr =  self.editor.toPlainText()
+            tmpStr2 = textBlock[self.startBlock5:self.endBlock5]
+            print("tmpStr2:"+tmpStr2)
+            tmpStr3 = tmpStr2.replace("\n", "\n    ")
+            print("tmpStr3:"+tmpStr3)
+
+            tmpStrStart = tmpStr[0:self.startBlock5]
+            tmpStrEnd = tmpStr[self.endBlock5:len(tmpStr)]
+
+            print("tmpStrStart:"+tmpStrStart)
+            print("tmpStrEnd:"+tmpStrEnd)
+
+            textCursor_1 = self.editor.textCursor()
+            if (textCursor_1.hasSelection() == True):
+                # textCursor_1.select(QTextCursor.BlockUnderCursor)
+                textCursor_1.beginEditBlock()
+
+                # self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
+
+                # self.editor.setPlainText(tmpStrStart+tmpStr3)
+                # self.editor.moveCursor(QTextCursor.EndOfLine)
+                # self.editor.setPlainText(tmpStrEnd)
+
+                # self.editor.insertPlainText("\n")
+                # textCursor_1.select(QTextCursor.LineUnderCursor)
+                # textCursor_1.removeSelectedText()
+                # textCursor_1.insertText(tmpStr3[1:len(tmpStr3)])
+
+                self.editor.insertPlainText("")
+                textCursor_1.select(QTextCursor.LineUnderCursor)
+                textCursor_1.removeSelectedText()
+                # self.editor.insertPlainText("\n")
+                textCursor_1.insertText(tmpStr3[1:len(tmpStr3)])
+
+                textCursor_1.endEditBlock()
+
+        except:
+            print("except:indenting")
+            print(sys.exc_info())
+            pass
+
+        print("indenting:end")
+
 
     def saveButton(self):
         self.saveAct = QAction('Save', self)
@@ -320,6 +566,13 @@ class Main(QMainWindow):
         self.allAct.setStatusTip('Select all')
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
+    def indent(self):
+        self.indentAct = QAction('Indent selected line', self)
+        self.indentAct.setShortcut('Ctrl+I')
+        self.indentAct.setStatusTip('Indent selected line')
+        # ok
+        self.indentAct.triggered.connect(self.indenting)
+
     def findWindow(self):
         text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
         if not ok:
@@ -401,6 +654,7 @@ class Main(QMainWindow):
         editMenu.addAction(self.cutAct)
         editMenu.addAction(self.copyAct)
         editMenu.addAction(self.pasteAct)
+        editMenu.addAction(self.indentAct)
         editMenu.addSeparator()
         editMenu.addAction(self.allAct)
 
@@ -414,7 +668,10 @@ class Main(QMainWindow):
         layoutH.addWidget(self.editor)
         layoutV = QVBoxLayout()
         layoutV.addLayout(layoutH)
+
+        # class QWidget
         mainWindow = QWidget(self)
+
         mainWindow.setLayout(layoutV)
         self.editor.setFont(self.font)
         self.setCentralWidget(mainWindow)
