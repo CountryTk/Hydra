@@ -716,7 +716,7 @@ class Highlighter(QSyntaxHighlighter):
         classFormat = QTextCharFormat()
         classFormat.setFontWeight(QFont.Bold)
         classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))
-        self.highlightingRules.append((QRegExp('class'), classFormat))
+        self.highlightingRules.append((QRegExp('\\bclass\\b'), classFormat))
 
         self.multiLineCommentFormat = QTextCharFormat()
         self.multiLineCommentFormat.setForeground(QtGui.QColor(3, 145, 53))
