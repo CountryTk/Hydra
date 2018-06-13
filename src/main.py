@@ -407,7 +407,24 @@ class Main(QMainWindow):
             if (textCursor_1.hasSelection() == True):
                 # textCursor_1.select(QTextCursor.BlockUnderCursor)
                 textCursor_1.beginEditBlock()
-                self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
+
+                # self.editor.setPlainText(tmpStrStart+tmpStr3+tmpStrEnd)
+
+                # self.editor.setPlainText(tmpStrStart+tmpStr3)
+                # self.editor.moveCursor(QTextCursor.EndOfLine)
+                # self.editor.setPlainText(tmpStrEnd)
+
+                # self.editor.insertPlainText("\n")
+                # textCursor_1.select(QTextCursor.LineUnderCursor)
+                # textCursor_1.removeSelectedText()
+                # textCursor_1.insertText(tmpStr3[1:len(tmpStr3)])
+
+                self.editor.insertPlainText("")
+                textCursor_1.select(QTextCursor.LineUnderCursor)
+                textCursor_1.removeSelectedText()
+                # self.editor.insertPlainText("\n")
+                textCursor_1.insertText(tmpStr3[1:len(tmpStr3)])
+
                 textCursor_1.endEditBlock()
 
         except:
