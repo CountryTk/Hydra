@@ -186,6 +186,8 @@ class Main(QMainWindow):
         textBlock = self.editor.toPlainText()
         try:
             print("textBlock[anchor_int-1]:" + textBlock[anchor_int-1])
+            if textBlock[anchor_int -1] == ":":
+                self.editor.insertPlainText("\n    ")
         except IndexError:
             print("You did Ctrl+A + delete")
         # # ==================================
