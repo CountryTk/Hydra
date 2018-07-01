@@ -9,6 +9,6 @@ Required modules: PyQt5, pyautogui
 
 https://stackoverflow.com/questions/35074294/pip3-install-pyautogui-fails-with-error-code-1-mac-os
 
-Tab width is set to 45 which acts as 4 spaces.
+.
 
 ![alt text](https://raw.githubusercontent.com/Fuchsiaff/csgo_wallhack/master/2018-06-04-174804_1920x1025_scrot.png)
