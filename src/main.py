@@ -109,22 +109,21 @@ class Tabs(QWidget):
         tab.deleteLater()
         self.tabs.removeTab(index)
 
-    def addtab(self, content, fileName):
-        self.tabs.addTab(Content)
-
 
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
+
+        # Initializing the main widget where text is displayed
         self.tab = Tabs()
         self.tabsOpen = []
 
+        # initializing the functions to handle certain tasks
         self.new()
-        self.open()  # initializing the functions to handle certain tasks
+        self.open()
         self.save()
+        self.saveAs()
 
-       # self.tab = Tabs()
-       # self.tabsOpen = []
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
         self.newFileCount = 0  # Tracking how many new files are opened
@@ -148,6 +147,7 @@ class Main(QMainWindow):
         fileMenu.addAction(self.newAct)
         fileMenu.addAction(self.openAct)
         fileMenu.addAction(self.saveAct)
+        fileMenu.addAction(self.saveAsAct)
 
         self.resize(800, 600)
 
@@ -174,15 +174,14 @@ class Main(QMainWindow):
             options=options
         )
         tab_idx = len(self.tabsOpen)
-        if filenames:
+        if filenames:  # If file is selected, we can open it
             for filename in filenames:
                 with open(filename, 'r+') as file_o:
                     text = file_o.read()
                     self.is_opened = True
-                    tab = Content(text, filename)
+                    tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                     self.files = filename
                     self.tab.tabs.addTab(tab, tab.fileName)
-                    #self.tab.tabs.setCurrentIndex(tab_idx)
                     self.tabsOpen.append(self.files)
 
 
@@ -193,9 +192,12 @@ class Main(QMainWindow):
         self.newAct.triggered.connect(self.newFile)
 
     def newFile(self):
-
-        self.tab.addtab('', 'Untitled' + str(self.newFileCount) + '.txt')
-        self.newFileCount += 1  # To avoid file already exists errors
+        text = ""
+        fileName = "Untitled.txt"
+        self.is_opened = False
+        # Creates a new blank file
+        file = Content(text, fileName)
+        self.tab.tabs.addTab(file, file.fileName)
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -204,13 +206,62 @@ class Main(QMainWindow):
         self.saveAct.triggered.connect(self.saveFile)
 
     def saveFile(self):
-        active_tab = self.tab.tabs.currentWidget()
-        if self.is_opened:  # If a file is already opened
-            with open(self.files, 'w+') as saveFile:
-                self.saved = True
+        try:
+            active_tab = self.tab.tabs.currentWidget()
+            print(active_tab.fileName)
+            if self.is_opened:  # If a file is already opened
+                with open(active_tab.fileName, 'w+') as saveFile:
+                    self.saved = True
+                    print(self.tabsOpen)
+                    saveFile.write(active_tab.editor.toPlainText())
+                    print(active_tab.editor.toPlainText())
+                    saveFile.close()
+            else:
+                options = QFileDialog.Options()
+                name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                                   'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                                   options=options)
+                fileName = name[0]
+                with open(fileName, "w+") as saveFile:
+                    self.saved = True
+                    self.is_opened = True
+                    self.tabsOpen.append(fileName)
+                    saveFile.write(active_tab.editor.toPlainText())
 
-                saveFile.write(active_tab.editor.toPlainText())
-                saveFile.close()
+                    saveFile.close()
+        except AttributeError:
+            print("No files open")
+
+    def saveAs(self):
+        self.saveAsAct = QAction('Save As...')
+        self.saveAsAct.setShortcut('Ctrl+Shift+S')
+        self.saveAsAct.setStatusTip('Save a file as')
+        self.saveAsAct.triggered.connect(self.saveFileAs)
+
+    def saveFileAs(self):
+        try:
+            active_tab = self.tab.tabs.currentWidget()
+            if active_tab is not None:
+                active_index = self.tab.tabs.currentIndex()
+
+                options = QFileDialog.Options()
+                name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                                   'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                                   options=options)
+                fileName = name[0]
+                with open(fileName, "w+") as saveFile:
+                    self.saved = True
+                    self.tabsOpen.append(fileName)
+                    saveFile.write(active_tab.editor.toPlainText())
+                    text = active_tab.editor.toPlainText()
+                    newTab = Content(str(text), fileName)
+                    self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
+                    self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
+                    saveFile.close()
+            else:
+                print("No file opened")
+        except FileNotFoundError:
+            print("No file found")
 
 
 if __name__ == '__main__':
