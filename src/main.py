@@ -124,6 +124,8 @@ class Main(QMainWindow):
 
         # Initializing the functions to handle certain tasks
         self.index = 0  # Important to open the right tab when opening a new tab
+        self.index1 = 0  # Tracking opening new files
+        self.index2 = 0  # Tracking saving files as
         self.new()
         self.open()
         self.save()
@@ -255,6 +257,9 @@ class Main(QMainWindow):
         # Creates a new blank file
         file = Content(text, fileName)
         self.tab.tabs.addTab(file, file.fileName)
+        current_tab = self.tab.tabs.currentWidget()
+        self.tab.tabs.setCurrentIndex(self.index1)
+        self.index1 += 1
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -271,6 +276,7 @@ class Main(QMainWindow):
                     self.saved = True
                     print(self.tabsOpen)
                     saveFile.write(active_tab.editor.toPlainText())
+
                     print(active_tab.editor.toPlainText())
                     saveFile.close()
             else:
@@ -286,8 +292,8 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
 
                     saveFile.close()
-        except FileNotFoundError:
-            print("File dialog closed")
+        except:
+            print("File dialog closed or no file opened")
 
     def saveAs(self):
         self.saveAsAct = QAction('Save As...')
@@ -314,6 +320,12 @@ class Main(QMainWindow):
                     newTab = Content(str(text), fileName)
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
+                    newActiveTab = self.tab.tabs.currentWidget()
+                    self.tab.tabs.setCurrentIndex(self.index2)
+                    newActiveTab.editor.setFont(self.font)
+                    self.index2 += 1
+                    if fileName.endswith(".py"):
+                        self.highlighter = Highlighter(newActiveTab.editor.document())
                     saveFile.close()
             else:
                 print("No file opened")
