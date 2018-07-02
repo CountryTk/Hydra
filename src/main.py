@@ -3,7 +3,8 @@ import json
 from PyQt5.QtCore import Qt, QRect, QRegExp
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp
+from PyQt5 import QtPrintSupport
 
 
 lineBarColor = QColor(53, 53, 53)
@@ -127,6 +128,7 @@ class Main(QMainWindow):
         self.open()
         self.save()
         self.saveAs()
+        self.exit()
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -175,6 +177,8 @@ class Main(QMainWindow):
         fileMenu.addAction(self.openAct)
         fileMenu.addAction(self.saveAct)
         fileMenu.addAction(self.saveAsAct)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self.exitAct)
 
         self.resize(800, 600)
 
@@ -182,9 +186,6 @@ class Main(QMainWindow):
         tab = self.tabs.widget(index)
         tab.deleteLater()
         self.tab.removeTab(index)
-
-    def buttonClicked(self):
-        self.tab.addTab(Content("smalltext2"), "sadsad")
 
     def open(self):
         self.openAct = QAction('Open...', self)
@@ -203,32 +204,42 @@ class Main(QMainWindow):
         tab_idx = len(self.tabsOpen)
 
         if filenames:  # If file is selected, we can open it
-            for filename in filenames:
-                with open(filename, 'r+') as file_o:
-                    text = file_o.read()
-                    self.is_opened = True
-                    if filename.endswith(".py"):
-                        print("Index before: " + str(self.index))
-                        tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
-                        self.files = filename
-                        self.tabsOpen.append(self.files)
-                        print(self.tabsOpen)
+            filename = filenames[0]
+            with open(filename, 'r+') as file_o:
+                text = file_o.read()
 
-                        self.pyFileOpened = True
+                tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
+                self.is_opened = True
+                if filename.endswith(".py"):
+                    print("Index before: " + str(self.index))
+
+                    self.files = filename
+                    self.tabsOpen.append(self.files)
+                    print(self.tabsOpen)
+
+                    self.pyFileOpened = True
+                    self.tab.tabs.addTab(tab, tab.fileName)
+
+                    self.tab.tabs.setCurrentIndex(self.index)
+                    currentTab = self.tab.tabs.currentWidget()
+                    currentTab.editor.setFont(self.font)
+                    print(currentTab.fileName)
+
+                    self.highlighter = Highlighter(currentTab.editor.document())
+                    self.index += 1
+                    print("Index is: " + str(self.index))
+
+                else:
+                    if self.pyFileOpened is True:
+                        del self.highlighter
+                        print(text)
                         self.tab.tabs.addTab(tab, tab.fileName)
+                        #tab = self.tab.tabs.currentWidget()
 
-                        self.tab.tabs.setCurrentIndex(self.index)
-                        currentTab = self.tab.tabs.currentWidget()
-                        print(currentTab.fileName)
-
-                        self.highlighter = Highlighter(currentTab.editor.document())
-                        self.index += 1
-                        print("Index is: " + str(self.index))
 
                     else:
-                        if self.pyFileOpened is True:
-                            print(self.highlighter)
-                            del self.highlighter
+                        self.tab.tabs.addTab(tab, tab.fileName)
+
 
 
     def new(self):
@@ -275,8 +286,8 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
 
                     saveFile.close()
-        except AttributeError:
-            print("No files open")
+        except FileNotFoundError:
+            print("File dialog closed")
 
     def saveAs(self):
         self.saveAsAct = QAction('Save As...')
@@ -307,7 +318,14 @@ class Main(QMainWindow):
             else:
                 print("No file opened")
         except FileNotFoundError:
-            print("No file found")
+            print("File dialog closed")
+
+    def exit(self):
+        self.exitAct = QAction('Quit', self)
+        self.exitAct.setShortcut('Ctrl+Q')
+        self.exitAct.setStatusTip('Exit application')
+        self.exitAct.triggered.connect(qApp.quit)
+
 
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
