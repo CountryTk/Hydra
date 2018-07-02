@@ -1,7 +1,7 @@
 import sys
 import json
-from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QColor, QPainter, QPalette
+from PyQt5.QtCore import Qt, QRect, QRegExp
+from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout
 
@@ -179,10 +179,14 @@ class Main(QMainWindow):
                 with open(filename, 'r+') as file_o:
                     text = file_o.read()
                     self.is_opened = True
-                    tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
-                    self.files = filename
-                    self.tab.tabs.addTab(tab, tab.fileName)
-                    self.tabsOpen.append(self.files)
+                    if filename.endswith(".py"):
+                        tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
+                        self.files = filename
+
+                        self.tab.tabs.addTab(tab, tab.fileName)
+                        currentTab = self.tab.tabs.currentWidget()
+                        self.highligther = Highlighter(currentTab.editor.document())
+                        self.tabsOpen.append(self.files)
 
 
     def new(self):
@@ -262,6 +266,98 @@ class Main(QMainWindow):
                 print("No file opened")
         except FileNotFoundError:
             print("No file found")
+
+class Highlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None, *args):
+        super(Highlighter, self).__init__(parent, *args)
+        with open("../config.json", "r") as jsonFile:
+            read = jsonFile.read()
+            data = json.loads(read)
+            jsonFile.close()
+        keywordFormat = QTextCharFormat()
+        keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))
+        keywordFormat.setFontWeight(QFont.Bold)
+
+        pyKeywordPatterns = ['for', 'class', 'range',
+                             'False', 'finally', 'is',
+                             'return', 'None', 'continue',
+                             'for', 'lambda', 'try',
+                             'True', 'def', 'from',
+                             'nonlocal', 'while', 'and',
+                             'not', 'global', 'del',
+                             'with', 'as', 'elif',
+                             'if', 'or', 'yield',
+                             'assert', 'else', 'import',
+                             'pass', 'break', 'except',
+                             'in', 'raise', 'self',
+                             'async']
+
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
+
+        classFormat = QTextCharFormat()
+        classFormat.setFontWeight(QFont.Bold)
+        classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))
+        self.highlightingRules.append((QRegExp('\\bclass\\b'), classFormat))
+
+        self.multiLineCommentFormat = QTextCharFormat()
+        self.multiLineCommentFormat.setForeground(QColor(3, 145, 53))
+        functionFormat = QTextCharFormat()
+        functionFormat.setFontItalic(True)
+        functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))
+        self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
+
+        magicFormat = QTextCharFormat()
+        magicFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["magicFormatColor"]))
+        self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
+
+        decoratorFormat = QTextCharFormat()
+        decoratorFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["decoratorFormatColor"]))
+        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
+
+        intFormat = QTextCharFormat()
+        intFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["intFormatColor"]))
+        self.highlightingRules.append((QRegExp("[-+]?[0-9]+"), intFormat))
+
+        singleLineCommentFormat = QTextCharFormat()
+        singleLineCommentFormat.setForeground(QColor(107, 110, 108))
+        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
+
+        quotationFormat = QTextCharFormat()
+        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))
+        self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlightingRules:
+            expression = QRegExp(pattern)
+            index = expression.indexIn(text)
+            while index >= 0:
+                length = expression.matchedLength()
+                self.setFormat(index, length, format)
+                index = expression.indexIn(text, index + length)
+
+        self.setCurrentBlockState(0)
+
+        comment = QRegExp("'''")
+
+        if self.previousBlockState() == 1:
+            start_index = 0
+            index_step = 0
+        else:
+            start_index = comment.indexIn(text)
+            index_step = comment.matchedLength()
+
+        while start_index >= 0:
+            end = comment.indexIn(text, start_index + index_step)
+            if end != -1:
+                self.setCurrentBlockState(0)
+                length = end - start_index + comment.matchedLength()
+            else:
+                self.setCurrentBlockState(1)
+                length = len(text) - start_index
+
+            self.setFormat(start_index, length, self.multiLineCommentFormat)
+            start_index = comment.indexIn(text, start_index + length)
 
 
 if __name__ == '__main__':
