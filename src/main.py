@@ -1,7 +1,7 @@
 import sys
 import json
 from PyQt5.QtCore import Qt, QRect, QRegExp
-from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat
+from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout
 
@@ -113,12 +113,15 @@ class Tabs(QWidget):
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-
+        self.onStart()
         # Initializing the main widget where text is displayed
         self.tab = Tabs()
         self.tabsOpen = []
 
-        # initializing the functions to handle certain tasks
+        self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
+        self.setWindowTitle('PyPad')  # Setting the window title
+
+        # Initializing the functions to handle certain tasks
         self.new()
         self.open()
         self.save()
@@ -128,11 +131,32 @@ class Main(QMainWindow):
         self.setCentralWidget(self.tab)
         self.newFileCount = 0  # Tracking how many new files are opened
         self.files = None  # Tracking the current file that is open
+        self.pyFileOpened = False
         self.initUI()  # Main UI
         self.show()
 
+    def onStart(self):
+        with open("../config.json", "r") as jsonFile:
+            read = jsonFile.read()
+            self.data = json.loads(read)
+            if self.data["editor"][0]["windowStaysOnTop"] is True:
+                self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            else:
+                pass
+            if self.data["editor"][0]["DontUseNativeDialog"] is True:
+                self.DontUseNativeDialogs = True
+            else:
+                self.DontUseNativeDialogs = False
+            self.font = QFont()
+            self.font.setFamily(self.data["editor"][0]["editorFont"])
+            self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
+            #self.tabSize = self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
+            jsonFile.close()
+
     def initUI(self):
         self.statusBar()  # Initializing the status bar
+
+        self.font.setFixedPitch(True)
 
         # Creating the menu bar
 
@@ -182,11 +206,22 @@ class Main(QMainWindow):
                     if filename.endswith(".py"):
                         tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                         self.files = filename
-
-                        self.tab.tabs.addTab(tab, tab.fileName)
-                        currentTab = self.tab.tabs.currentWidget()
-                        self.highligther = Highlighter(currentTab.editor.document())
                         self.tabsOpen.append(self.files)
+                        print(self.tabsOpen)
+                        tab_idx = len(self.tabsOpen)
+                        print(tab_idx)
+
+                        self.pyFileOpened = True
+                        self.tab.tabs.addTab(tab, tab.fileName)
+                        self.tab.tabs.setCurrentIndex(tab_idx)
+                        currentTab = self.tab.tabs.currentWidget()
+                        print(currentTab.fileName)
+                        self.highlighter = Highlighter(currentTab.editor.document())
+
+                    else:
+                        if self.pyFileOpened is True:
+                            print(self.highlighter)
+                            del self.highlighter
 
 
     def new(self):
