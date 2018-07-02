@@ -122,6 +122,7 @@ class Main(QMainWindow):
         self.setWindowTitle('PyPad')  # Setting the window title
 
         # Initializing the functions to handle certain tasks
+        self.index = 0  # Important to open the right tab when opening a new tab
         self.new()
         self.open()
         self.save()
@@ -131,7 +132,9 @@ class Main(QMainWindow):
         self.setCentralWidget(self.tab)
         self.newFileCount = 0  # Tracking how many new files are opened
         self.files = None  # Tracking the current file that is open
-        self.pyFileOpened = False
+        self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting for
+        # non py files
+
         self.initUI()  # Main UI
         self.show()
 
@@ -198,25 +201,29 @@ class Main(QMainWindow):
             options=options
         )
         tab_idx = len(self.tabsOpen)
+
         if filenames:  # If file is selected, we can open it
             for filename in filenames:
                 with open(filename, 'r+') as file_o:
                     text = file_o.read()
                     self.is_opened = True
                     if filename.endswith(".py"):
+                        print("Index before: " + str(self.index))
                         tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                         self.files = filename
                         self.tabsOpen.append(self.files)
                         print(self.tabsOpen)
-                        tab_idx = len(self.tabsOpen)
-                        print(tab_idx)
 
                         self.pyFileOpened = True
                         self.tab.tabs.addTab(tab, tab.fileName)
-                        self.tab.tabs.setCurrentIndex(tab_idx)
+
+                        self.tab.tabs.setCurrentIndex(self.index)
                         currentTab = self.tab.tabs.currentWidget()
                         print(currentTab.fileName)
+
                         self.highlighter = Highlighter(currentTab.editor.document())
+                        self.index += 1
+                        print("Index is: " + str(self.index))
 
                     else:
                         if self.pyFileOpened is True:
