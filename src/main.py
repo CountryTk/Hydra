@@ -126,6 +126,8 @@ class Main(QMainWindow):
         self.index = 0  # Important to open the right tab when opening a new tab
         self.index1 = 0  # Tracking opening new files
         self.index2 = 0  # Tracking saving files as
+        self.index3 = 1  # Tracking the files that are opened after a python file is opened
+        self.index4 = 0  # Tracking when a python file isn't opened and a normal file is opened
         self.new()
         self.open()
         self.save()
@@ -220,9 +222,9 @@ class Main(QMainWindow):
                     print(self.tabsOpen)
 
                     self.pyFileOpened = True
-                    self.tab.tabs.addTab(tab, tab.fileName)
+                    index = self.tab.tabs.addTab(tab, tab.fileName)
 
-                    self.tab.tabs.setCurrentIndex(self.index)
+                    self.tab.tabs.setCurrentIndex(index)
                     currentTab = self.tab.tabs.currentWidget()
                     currentTab.editor.setFont(self.font)
                     print(currentTab.fileName)
@@ -233,14 +235,21 @@ class Main(QMainWindow):
 
                 else:
                     if self.pyFileOpened is True:
-                        del self.highlighter
+                        try:
+                            del self.highlighter
+                        except AttributeError:
+                            print("Highlighter already deleted")
                         print(text)
-                        self.tab.tabs.addTab(tab, tab.fileName)
-                        #tab = self.tab.tabs.currentWidget()
-
+                        index1 = self.tab.tabs.addTab(tab, tab.fileName)
+                        self.tab.tabs.setCurrentIndex(index1)
+                        tab = self.tab.tabs.currentWidget()
+                        tab.editor.setFont(self.font)
+                        self.index3 += 1
 
                     else:
                         self.tab.tabs.addTab(tab, tab.fileName)
+
+
 
 
 
@@ -254,12 +263,16 @@ class Main(QMainWindow):
         text = ""
         fileName = "Untitled.txt"
         self.is_opened = False
+
         # Creates a new blank file
         file = Content(text, fileName)
-        self.tab.tabs.addTab(file, file.fileName)
-        current_tab = self.tab.tabs.currentWidget()
-        self.tab.tabs.setCurrentIndex(self.index1)
-        self.index1 += 1
+
+        index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
+        self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
+        
+        widget = self.tab.tabs.currentWidget()
+        widget.editor.setFocus()
+        widget.editor.setFont(self.font)
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -315,18 +328,23 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
                     self.tabsOpen.append(fileName)
+
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
                     newTab = Content(str(text), fileName)
+
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
-                    self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
+                    index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
+
+                    self.tab.tabs.setCurrentIndex(index)
                     newActiveTab = self.tab.tabs.currentWidget()
-                    self.tab.tabs.setCurrentIndex(self.index2)
+
                     newActiveTab.editor.setFont(self.font)
-                    self.index2 += 1
+
                     if fileName.endswith(".py"):
                         self.highlighter = Highlighter(newActiveTab.editor.document())
                     saveFile.close()
+
             else:
                 print("No file opened")
         except FileNotFoundError:
