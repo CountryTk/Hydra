@@ -123,11 +123,7 @@ class Main(QMainWindow):
         self.setWindowTitle('PyPad')  # Setting the window title
 
         # Initializing the functions to handle certain tasks
-        self.index = 0  # Important to open the right tab when opening a new tab
-        self.index1 = 0  # Tracking opening new files
-        self.index2 = 0  # Tracking saving files as
-        self.index3 = 1  # Tracking the files that are opened after a python file is opened
-        self.index4 = 0  # Tracking when a python file isn't opened and a normal file is opened
+
         self.new()
         self.open()
         self.save()
@@ -215,23 +211,21 @@ class Main(QMainWindow):
                 tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                 self.is_opened = True
                 if filename.endswith(".py"):
-                    print("Index before: " + str(self.index))
 
                     self.files = filename
                     self.tabsOpen.append(self.files)
-                    print(self.tabsOpen)
 
                     self.pyFileOpened = True
                     index = self.tab.tabs.addTab(tab, tab.fileName)
 
                     self.tab.tabs.setCurrentIndex(index)
                     currentTab = self.tab.tabs.currentWidget()
+
                     currentTab.editor.setFont(self.font)
-                    print(currentTab.fileName)
+                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
                     self.highlighter = Highlighter(currentTab.editor.document())
-                    self.index += 1
-                    print("Index is: " + str(self.index))
+
 
                 else:
                     if self.pyFileOpened is True:
@@ -244,14 +238,9 @@ class Main(QMainWindow):
                         self.tab.tabs.setCurrentIndex(index1)
                         tab = self.tab.tabs.currentWidget()
                         tab.editor.setFont(self.font)
-                        self.index3 += 1
 
                     else:
                         self.tab.tabs.addTab(tab, tab.fileName)
-
-
-
-
 
     def new(self):
         self.newAct = QAction('New')
@@ -269,7 +258,7 @@ class Main(QMainWindow):
 
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
-        
+
         widget = self.tab.tabs.currentWidget()
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
@@ -277,6 +266,7 @@ class Main(QMainWindow):
     def save(self):
         self.saveAct = QAction('Save')
         self.saveAct.setShortcut('Ctrl+S')
+
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.saveFile)
 
@@ -284,6 +274,7 @@ class Main(QMainWindow):
         try:
             active_tab = self.tab.tabs.currentWidget()
             print(active_tab.fileName)
+
             if self.is_opened:  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     self.saved = True
@@ -301,6 +292,7 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
                     self.is_opened = True
+
                     self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
 
@@ -311,6 +303,7 @@ class Main(QMainWindow):
     def saveAs(self):
         self.saveAsAct = QAction('Save As...')
         self.saveAsAct.setShortcut('Ctrl+Shift+S')
+
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(self.saveFileAs)
 
@@ -340,8 +333,9 @@ class Main(QMainWindow):
                     newActiveTab = self.tab.tabs.currentWidget()
 
                     newActiveTab.editor.setFont(self.font)
+                    newActiveTab.editor.setFocus()
 
-                    if fileName.endswith(".py"):
+                    if fileName.endswith(".py"):  # If we are dealing with a python file we use highlighting on it
                         self.highlighter = Highlighter(newActiveTab.editor.document())
                     saveFile.close()
 
