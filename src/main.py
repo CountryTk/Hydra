@@ -28,7 +28,7 @@ class NumberBar(QWidget):
                 self.update()
 
     def update_width(self, string):
-        width = self.fontMetrics().width(str(string)) + 10
+        width = self.fontMetrics().width(str(string)) + 40
         print("update_width:width:" + str(width))
         if self.width() != width:
             self.setFixedWidth(width)
