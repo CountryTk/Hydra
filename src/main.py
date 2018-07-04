@@ -5,6 +5,7 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp
 from PyQt5 import QtPrintSupport
+from pyautogui import hotkey
 
 
 lineBarColor = QColor(53, 53, 53)
@@ -19,10 +20,6 @@ class NumberBar(QWidget):
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
-
-    def mousePressEvent(self, QMouseEvent):
-        print("class NumberBar(QWidget):mousePressEvent")
-
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
@@ -74,7 +71,7 @@ class NumberBar(QWidget):
 
 class Content(QWidget):
     def __init__(self, text, fileName):
-        super(QWidget, self).__init__()
+        super().__init__()
         self.editor = QPlainTextEdit()
         self.text = text
         self.fileName = fileName
@@ -90,7 +87,7 @@ class Content(QWidget):
 class Tabs(QWidget):
 
     def __init__(self, parent=None):
-        super(QWidget, self).__init__(parent)
+        super().__init__(parent)
         self.layout = QVBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
@@ -113,7 +110,7 @@ class Tabs(QWidget):
 
 class Main(QMainWindow):
     def __init__(self, parent=None):
-        super(Main, self).__init__(parent)
+        super().__init__(parent)
         self.onStart()
         # Initializing the main widget where text is displayed
         self.tab = Tabs()
@@ -129,6 +126,12 @@ class Main(QMainWindow):
         self.save()
         self.saveAs()
         self.exit()
+        self.undo()
+        self.redo()
+        self.cut()
+        self.copy()
+        self.paste()
+        self.all()
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -144,18 +147,22 @@ class Main(QMainWindow):
         with open("../config.json", "r") as jsonFile:
             read = jsonFile.read()
             self.data = json.loads(read)
+
             if self.data["editor"][0]["windowStaysOnTop"] is True:
                 self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
             else:
                 pass
             if self.data["editor"][0]["DontUseNativeDialog"] is True:
                 self.DontUseNativeDialogs = True
+
             else:
                 self.DontUseNativeDialogs = False
             self.font = QFont()
             self.font.setFamily(self.data["editor"][0]["editorFont"])
+
             self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
-            #self.tabSize = self.editor.setTabStopWidth(self.data["editor"][0]["TabWidth"])
+            self.tabSize = self.data["editor"][0]["TabWidth"]
             jsonFile.close()
 
     def initUI(self):
@@ -179,6 +186,21 @@ class Main(QMainWindow):
         fileMenu.addAction(self.saveAsAct)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
+
+        # Creating the edit menu
+
+        editMenu = menu.addMenu('Edit')
+
+        # Adding options to it
+
+        editMenu.addAction(self.undoAct)
+        editMenu.addAction(self.redoAct)
+        editMenu.addSeparator()
+        editMenu.addAction(self.cutAct)
+        editMenu.addAction(self.copyAct)
+        editMenu.addAction(self.pasteAct)
+        editMenu.addSeparator()
+        editMenu.addAction(self.allAct)
 
         self.resize(800, 600)
 
@@ -226,21 +248,24 @@ class Main(QMainWindow):
 
                     self.highlighter = Highlighter(currentTab.editor.document())
 
-
                 else:
                     if self.pyFileOpened is True:
                         try:
                             del self.highlighter
                         except AttributeError:
                             print("Highlighter already deleted")
-                        print(text)
+
                         index1 = self.tab.tabs.addTab(tab, tab.fileName)
                         self.tab.tabs.setCurrentIndex(index1)
                         tab = self.tab.tabs.currentWidget()
                         tab.editor.setFont(self.font)
 
                     else:
-                        self.tab.tabs.addTab(tab, tab.fileName)
+
+                        index2 = self.tab.tabs.addTab(tab, tab.fileName)
+                        self.tab.tabs.setCurrentIndex(index2)
+                        tab1 = self.tab.tabs.currentWidget()
+                        tab1.editor.setFont(self.font)
 
     def new(self):
         self.newAct = QAction('New')
@@ -262,6 +287,7 @@ class Main(QMainWindow):
         widget = self.tab.tabs.currentWidget()
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
+        widget.editor.setTabStopWidth(self.tabSize)
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -273,15 +299,13 @@ class Main(QMainWindow):
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
-            print(active_tab.fileName)
 
             if self.is_opened:  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     self.saved = True
-                    print(self.tabsOpen)
                     saveFile.write(active_tab.editor.toPlainText())
 
-                    print(active_tab.editor.toPlainText())
+
                     saveFile.close()
             else:
                 options = QFileDialog.Options()
@@ -347,8 +371,51 @@ class Main(QMainWindow):
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
+
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
+
+    def undo(self):
+        self.undoAct = QAction('Undo', self)
+        self.undoAct.setShortcut('Ctrl+Z')
+
+        self.undoAct.setStatusTip('Undo')
+        self.undoAct.triggered.connect(lambda: hotkey('ctrl', 'z'))
+
+    def redo(self):
+        self.redoAct = QAction('Redo', self)
+        self.redoAct.setShortcut('Shift+Ctrl+Z')
+
+        self.redoAct.setStatusTip('Redo')
+        self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
+
+    def cut(self):
+        self.cutAct = QAction('Cut', self)
+        self.cutAct.setShortcut('Ctrl+X')
+
+        self.cutAct.setStatusTip('Cut')
+        self.cutAct.triggered.connect(lambda: hotkey('ctrl', 'x'))
+
+    def copy(self):
+        self.copyAct = QAction('Copy', self)
+        self.copyAct.setShortcut('Ctrl+C')
+
+        self.copyAct.setStatusTip('Copy')
+        self.copyAct.triggered.connect(lambda: hotkey('ctrl', 'c'))
+
+    def paste(self):
+        self.pasteAct = QAction('Paste', self)
+        self.pasteAct.setShortcut('Ctrl+V')
+
+        self.pasteAct.setStatusTip('Paste')
+        self.pasteAct.triggered.connect(lambda: hotkey('ctrl', 'v'))
+
+    def all(self):
+        self.allAct = QAction('Select all', self)
+        self.allAct.setShortcut('Ctrl+A')
+
+        self.allAct.setStatusTip('Select all')
+        self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
 
 class Highlighter(QSyntaxHighlighter):
