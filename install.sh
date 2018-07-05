@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 INSTALL_DIR="$HOME/pypad/"
@@ -9,15 +10,15 @@ function main() {
         echo " "
         echo "Installing"
         run_structure >> /var/log/pypad.log
+        echo " "
         echo "All done. Cleaning up. Remove install.sh and directory manually for now."
         cleanup
 }
 
 function run_structure() {
-        while true; do
-                sudo touch /opt/pypad/
-                sudo cp $INSTALL_DIR/* /opt/pypad
-        done
+
+        sudo touch /opt/pypad/
+        sudo cp $INSTALL_DIR/* /opt/pypad
 }
 
 function create_files() {
@@ -28,8 +29,7 @@ function create_files() {
 
 function cleanup() {
         sudo rm -rf $I
-        find . ! - name '$INSTALL_DIR/install.sh' -type f -exec rm -f {} +
+        cd $HOME
 }
-
 
 main
