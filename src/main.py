@@ -146,6 +146,7 @@ class Main(QMainWindow):
         self.newFileCount = 0  # Tracking how many new files are opened
         self.files = None  # Tracking the current file that is open
         self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting for
+        self.cFileOpened = False
         # non py files
 
         self.initUI()  # Main UI
@@ -274,7 +275,7 @@ class Main(QMainWindow):
                     self.chighlighter = cHighlighter(currentTab.editor.document())
 
                 else:
-                    if self.pyFileOpened is True or self.cFileOpened:
+                    if self.pyFileOpened or self.cFileOpened:
                         try:
                             del self.pyhighlighter
                             del self.chighlighter
