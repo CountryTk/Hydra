@@ -17,8 +17,8 @@ function main() {
 }
 
 function run_structure() {
-        sudo touch /opt/pypad/
-        sudo cp $INSTALL_DIR/* /opt/pypad
+        sudo mkdir /opt/pypad/
+        sudo cp $INSTALL_DIR/pypad/* /opt/pypad
 }
 
 function create_files() {
