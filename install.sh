@@ -4,8 +4,6 @@ INSTALL_DIR="$HOME/pypad/"
 PYPAD_DIR="/usr/bin/pypad"
 MAIN_DIR="/opt/pypad"
 
-
-
 function main() {
         echo "Creating filestructure for pypad"
         echo " "
