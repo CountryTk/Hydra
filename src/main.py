@@ -255,12 +255,29 @@ class Main(QMainWindow):
                     currentTab.editor.setTabStopWidth(self.tabSize)
                     currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                    self.highlighter = Highlighter(currentTab.editor.document())
+                    self.pyhighlighter = pyHighlighter(currentTab.editor.document())
+                elif filename.endswith(".c"):
+
+                    self.files = filename
+                    self.tabsOpen.append(self.files)
+
+                    self.cFileOpened = True
+                    index = self.tab.tabs.addTab(tab, tab.fileName)
+
+                    self.tab.tabs.setCurrentIndex(index)
+                    currentTab = self.tab.tabs.currentWidget()
+
+                    currentTab.editor.setFont(self.font)
+                    currentTab.editor.setTabStopWidth(self.tabSize)
+
+                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+                    self.chighlighter = cHighlighter(currentTab.editor.document())
 
                 else:
-                    if self.pyFileOpened is True:
+                    if self.pyFileOpened is True or self.cFileOpened:
                         try:
-                            del self.highlighter
+                            del self.pyhighlighter
+                            del self.chighlighter
                         except AttributeError:
                             print("Highlighter already deleted")
 
@@ -369,7 +386,11 @@ class Main(QMainWindow):
                     newActiveTab.editor.setFocus()
 
                     if fileName.endswith(".py"):  # If we are dealing with a python file we use highlighting on it
-                        self.highlighter = Highlighter(newActiveTab.editor.document())
+                        self.pyhighlighter = pyHighlighter(newActiveTab.editor.document())
+                        newActiveTab.editor.setTabStopWidth(self.tabSize)
+                    elif fileName.endswith(".c"):
+                        self.chighlighter = cHighlighter(newActiveTab.editor.document())
+                        newActiveTab.editor.setTabStopWidth(self.tabSize)
                     saveFile.close()
 
             else:
@@ -427,9 +448,9 @@ class Main(QMainWindow):
         self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
 
-class Highlighter(QSyntaxHighlighter):
+class pyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
-        super(Highlighter, self).__init__(parent, *args)
+        super(pyHighlighter, self).__init__(parent, *args)
         with open("../config.json", "r") as jsonFile:
             read = jsonFile.read()
             data = json.loads(read)
@@ -451,6 +472,15 @@ class Highlighter(QSyntaxHighlighter):
                              'pass', 'break', 'except',
                              'in', 'raise', 'self',
                              'async']
+
+        cKeywordPatterns = ['auto', 'break', 'case', 'char', 'const',
+                            'const', 'continue', 'default', 'do',
+                            'double', 'else', 'enum', 'extern',
+                            'float', 'for', 'goto', 'if',
+                            'int', 'long', 'register', 'return',
+                            'short', 'signed', 'sizeof', 'static',
+                            'struct', 'switch', 'typedef', 'union',
+                            'unsigned', 'void', 'volatile', 'while']
 
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
 
@@ -519,6 +549,93 @@ class Highlighter(QSyntaxHighlighter):
             self.setFormat(start_index, length, self.multiLineCommentFormat)
             start_index = comment.indexIn(text, start_index + length)
 
+
+class cHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None, *args):
+        super(cHighlighter, self).__init__(parent, *args)
+        with open("../config.json", "r") as jsonFile:
+            read = jsonFile.read()
+            data = json.loads(read)
+            jsonFile.close()
+        keywordFormat = QTextCharFormat()
+        keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))
+        keywordFormat.setFontWeight(QFont.Bold)
+
+        cKeywordPatterns = ['auto', 'break', 'case', 'char', 'const',
+                            'const', 'continue', 'default', 'do',
+                            'double', 'else', 'enum', 'extern',
+                            'float', 'for', 'goto', 'if',
+                            'int', 'long', 'register', 'return',
+                            'short', 'signed', 'sizeof', 'static',
+                            'struct', 'switch', 'typedef', 'union',
+                            'unsigned', 'void', 'volatile', 'while']
+
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in cKeywordPatterns]
+
+        classFormat = QTextCharFormat()
+        classFormat.setFontWeight(QFont.Bold)
+        classFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["classFormatColor"]))
+        self.highlightingRules.append((QRegExp('\\bclass\\b'), classFormat))
+
+        self.multiLineCommentFormat = QTextCharFormat()
+        self.multiLineCommentFormat.setForeground(QColor(3, 145, 53))
+        functionFormat = QTextCharFormat()
+        functionFormat.setFontItalic(True)
+        functionFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["functionFormatColor"]))
+        self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
+
+        magicFormat = QTextCharFormat()
+        magicFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["magicFormatColor"]))
+        self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
+
+        decoratorFormat = QTextCharFormat()
+        decoratorFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["decoratorFormatColor"]))
+        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
+
+        intFormat = QTextCharFormat()
+        intFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["intFormatColor"]))
+        self.highlightingRules.append((QRegExp("[-+]?[0-9]+"), intFormat))
+
+        singleLineCommentFormat = QTextCharFormat()
+        singleLineCommentFormat.setForeground(QColor(107, 110, 108))
+        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
+
+        quotationFormat = QTextCharFormat()
+        quotationFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["quotationFormatColor"]))
+        self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
+        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlightingRules:
+            expression = QRegExp(pattern)
+            index = expression.indexIn(text)
+            while index >= 0:
+                length = expression.matchedLength()
+                self.setFormat(index, length, format)
+                index = expression.indexIn(text, index + length)
+
+        self.setCurrentBlockState(0)
+
+        comment = QRegExp("'''")
+
+        if self.previousBlockState() == 1:
+            start_index = 0
+            index_step = 0
+        else:
+            start_index = comment.indexIn(text)
+            index_step = comment.matchedLength()
+
+        while start_index >= 0:
+            end = comment.indexIn(text, start_index + index_step)
+            if end != -1:
+                self.setCurrentBlockState(0)
+                length = end - start_index + comment.matchedLength()
+            else:
+                self.setCurrentBlockState(1)
+                length = len(text) - start_index
+
+            self.setFormat(start_index, length, self.multiLineCommentFormat)
+            start_index = comment.indexIn(text, start_index + length)
 
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
