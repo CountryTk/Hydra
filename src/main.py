@@ -16,7 +16,7 @@ class NumberBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.editor = parent
-        layout = QVBoxLayout(self)
+        #layout = QVBoxLayout(self)
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
@@ -67,6 +67,14 @@ class NumberBar(QWidget):
                 block = block.next()
 
             painter.end()
+
+
+class Search(QWidget):
+    pass
+
+
+class Directory(QWidget):
+    pass
 
 
 class Content(QWidget):
@@ -244,6 +252,7 @@ class Main(QMainWindow):
                     currentTab = self.tab.tabs.currentWidget()
 
                     currentTab.editor.setFont(self.font)
+                    currentTab.editor.setTabStopWidth(self.tabSize)
                     currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
                     self.highlighter = Highlighter(currentTab.editor.document())
