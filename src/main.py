@@ -1,10 +1,11 @@
 import sys
 import json
-from PyQt5.QtCore import Qt, QRect, QRegExp
+import os
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp
-from PyQt5 import QtPrintSupport
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel
+
 from pyautogui import hotkey
 
 
@@ -16,10 +17,10 @@ class NumberBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.editor = parent
-        #layout = QVBoxLayout(self)
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
+
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
@@ -73,8 +74,32 @@ class Search(QWidget):
     pass
 
 
-class Directory(QWidget):
-    pass
+class Directory(QTreeView):
+    def __init__(self, path):
+        QTreeView.__init__(self)
+        model = QFileSystemModel()
+        self.setModel(model)
+
+        model.setRootPath(QDir.rootPath())
+        self.setRootIndex(model.index(path))
+
+        self.setIndentation(10)
+        self.setAnimated(True)
+
+        self.setSortingEnabled(True)
+        self.setWindowTitle("Dir View")
+
+        self.hideColumn(1)
+        self.resize(200, 600)
+
+        self.hideColumn(2)
+        self.hideColumn(3)
+
+        self.doubleClicked.connect(self.test)
+        self.show()
+    def test(self, signal):
+        file_path = self.model().filePath(signal)
+        return file_path
 
 
 class Content(QWidget):
@@ -122,6 +147,7 @@ class Main(QMainWindow):
         self.onStart()
         # Initializing the main widget where text is displayed
         self.tab = Tabs()
+
         self.tabsOpen = []
 
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -145,9 +171,8 @@ class Main(QMainWindow):
         self.setCentralWidget(self.tab)
         self.newFileCount = 0  # Tracking how many new files are opened
         self.files = None  # Tracking the current file that is open
-        self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting for
+        self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
         self.cFileOpened = False
-        # non py files
 
         self.initUI()  # Main UI
         self.show()
@@ -242,7 +267,7 @@ class Main(QMainWindow):
                 tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                 self.is_opened = True
                 if filename.endswith(".py"):
-
+                    dirPath =  os.path.dirname(filename)
                     self.files = filename
                     self.tabsOpen.append(self.files)
 
@@ -255,8 +280,10 @@ class Main(QMainWindow):
                     currentTab.editor.setFont(self.font)
                     currentTab.editor.setTabStopWidth(self.tabSize)
                     currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+                    print(currentTab.editor.document())
 
                     self.pyhighlighter = pyHighlighter(currentTab.editor.document())
+                    self.dir = Directory(dirPath)
                 elif filename.endswith(".c"):
 
                     self.files = filename
