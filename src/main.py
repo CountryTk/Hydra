@@ -133,9 +133,6 @@ class Tabs(QWidget):
         self.tabs.setMovable(True)   # TODO: make this customizable
         self.tabs.setTabShape(1)  # TODO: make this customizable
         self.tabs.tabCloseRequested.connect(self.closeTab)
-        welcome = QWidget(self)
-        self.tabs.addTab(welcome, "To start using PyPad, please open your project or\n"
-                                  " open a new file")
 
         # Add tabs to widget
         #self.layout.addWidget(self.tabs)
@@ -257,7 +254,10 @@ class Main(QMainWindow):
         self.openAct.triggered.connect(self.openFile)
 
     def openFile(self):
+        if hasattr(self, 'dir'):
+            self.tab.layout.removeWidget(self.dir)
         options = QFileDialog.Options()
+
         filenames, _ = QFileDialog.getOpenFileNames(
             self, 'Open a file', '',
             'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
@@ -274,15 +274,17 @@ class Main(QMainWindow):
                 if filename.endswith(".py"):
                     dirPath = os.path.dirname(filename)
                     self.files = filename
-                    self.tabsOpen.append(self.files)
 
+                    self.tabsOpen.append(self.files)
                     self.pyFileOpened = True
 
-                    index = self.tab.tabs.addTab(tab, tab.fileName)  # This is the index which we will use to set the current index
-                    self.dir = Directory(dirPath)  # Creating the directory widget
+                    index = self.tab.tabs.addTab(tab,
+                                                 tab.fileName)  # This is the index which we will use to set the current index
+                    self.dir = Directory(dirPath)  # # this will spawn the directory
 
                     self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
                     self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+
                     self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
                     self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
@@ -292,14 +294,21 @@ class Main(QMainWindow):
                     currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
                     currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                    self.pyhighlighter = pyHighlighter(currentTab.editor.document())  # Creating the highlighter for python
-
+                    self.pyhighlighter = pyHighlighter(
+                        currentTab.editor.document())  # Creating the highlighter for python
                 elif filename.endswith(".c"):
 
                     self.files = filename
+                    dirPath = os.path.dirname(filename) # getting the dir path
                     self.tabsOpen.append(self.files)
 
                     self.cFileOpened = True
+                    self.dir = Directory(dirPath)  # this will spawn the directory
+
+                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
+                    self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+
+                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
                     index = self.tab.tabs.addTab(tab, tab.fileName)
 
                     self.tab.tabs.setCurrentIndex(index)
@@ -318,15 +327,30 @@ class Main(QMainWindow):
                             del self.chighlighter
                         except AttributeError:
                             print("Highlighter already deleted")
+                        dirPath = os.path.dirname(filename)  # getting the dir path
+                        self.dir = Directory(dirPath)  # this will spawn the directory
+
+                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
+                        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+
+                        self.tab.setLayout(self.tab.layout)
 
                         index1 = self.tab.tabs.addTab(tab, tab.fileName)
                         self.tab.tabs.setCurrentIndex(index1)
+
                         tab = self.tab.tabs.currentWidget()
                         tab.editor.setFont(self.font)
 
                     else:
+                        dirPath = os.path.dirname(filename) # getting the dir path
+                        self.dir = Directory(dirPath)  # # this will spawn the directory
 
+                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
+                        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+
+                        self.tab.setLayout(self.tab.layout)  # Finally we set the layout
                         index2 = self.tab.tabs.addTab(tab, tab.fileName)
+
                         self.tab.tabs.setCurrentIndex(index2)
                         tab1 = self.tab.tabs.currentWidget()
                         tab1.editor.setFont(self.font)
@@ -345,6 +369,9 @@ class Main(QMainWindow):
         # Creates a new blank file
         file = Content(text, fileName)
 
+        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+
+        self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
 
