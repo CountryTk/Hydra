@@ -12,6 +12,8 @@ Required modules: PyQt5, pyautogui
 
 ```mkdir pypad && cd pypad```
 
+```git init && git pull https://github.com/Fuchsiaff/PyPad```
+
 ```chmod +x install.sh```
 
 ```./install.sh```
