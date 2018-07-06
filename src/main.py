@@ -283,7 +283,7 @@ class Main(QMainWindow):
                     self.dir = Directory(dirPath)  # # this will spawn the directory
 
                     self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
                     self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
@@ -296,6 +296,7 @@ class Main(QMainWindow):
 
                     self.pyhighlighter = pyHighlighter(
                         currentTab.editor.document())  # Creating the highlighter for python
+
                 elif filename.endswith(".c"):
 
                     self.files = filename
@@ -306,7 +307,7 @@ class Main(QMainWindow):
                     self.dir = Directory(dirPath)  # this will spawn the directory
 
                     self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
                     self.tab.setLayout(self.tab.layout)  # Finally we set the layout
                     index = self.tab.tabs.addTab(tab, tab.fileName)
@@ -325,13 +326,15 @@ class Main(QMainWindow):
                         try:
                             del self.pyhighlighter
                             del self.chighlighter
+
                         except AttributeError:
                             print("Highlighter already deleted")
+
                         dirPath = os.path.dirname(filename)  # getting the dir path
                         self.dir = Directory(dirPath)  # this will spawn the directory
 
                         self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
                         self.tab.setLayout(self.tab.layout)
 
@@ -346,7 +349,7 @@ class Main(QMainWindow):
                         self.dir = Directory(dirPath)  # # this will spawn the directory
 
                         self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
                         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
                         index2 = self.tab.tabs.addTab(tab, tab.fileName)
