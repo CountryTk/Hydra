@@ -4,7 +4,7 @@ import os
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel
 
 from pyautogui import hotkey
 
@@ -75,8 +75,8 @@ class Search(QWidget):
 
 
 class Directory(QTreeView):
-    def __init__(self, path, parent):
-        QTreeView.__init__(self, parent)
+    def __init__(self, path):
+        super().__init__()
 
         self.layout = QHBoxLayout()
         model = QFileSystemModel()
@@ -119,23 +119,27 @@ class Content(QWidget):
         self.hbox.addWidget(self.editor)
 
 
+
 class Tabs(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
+        self.layout = QHBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
-        self.tabs.resize(300, 200)
-
 
         # Add tabs
         self.tabs.setTabsClosable(True)
+        self.tabs.setMovable(True)   # TODO: make this customizable
+        self.tabs.setTabShape(1)  # TODO: make this customizable
         self.tabs.tabCloseRequested.connect(self.closeTab)
+        welcome = QWidget(self)
+        self.tabs.addTab(welcome, "To start using PyPad, please open your project or\n"
+                                  " open a new file")
 
         # Add tabs to widget
-        self.layout.addWidget(self.tabs)
-        self.setLayout(self.layout)
+        #self.layout.addWidget(self.tabs)
+
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
@@ -265,27 +269,31 @@ class Main(QMainWindow):
             filename = filenames[0]
             with open(filename, 'r+') as file_o:
                 text = file_o.read()
-
                 tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
                 self.is_opened = True
                 if filename.endswith(".py"):
-                    dirPath =  os.path.dirname(filename)
+                    dirPath = os.path.dirname(filename)
                     self.files = filename
                     self.tabsOpen.append(self.files)
 
                     self.pyFileOpened = True
-                    index = self.tab.tabs.addTab(tab, tab.fileName)
 
-                    self.tab.tabs.setCurrentIndex(index)
+                    index = self.tab.tabs.addTab(tab, tab.fileName)  # This is the index which we will use to set the current index
+                    self.dir = Directory(dirPath)  # Creating the directory widget
+
+                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
+                    self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
+
+                    self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
                     currentTab = self.tab.tabs.currentWidget()
 
-                    currentTab.editor.setFont(self.font)
-                    currentTab.editor.setTabStopWidth(self.tabSize)
+                    currentTab.editor.setFont(self.font)  # Setting the font
+                    currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
                     currentTab.editor.setFocus()  # Setting focus to the tab after we open it
-                    print(currentTab.editor.document())
 
-                    self.pyhighlighter = pyHighlighter(currentTab.editor.document())
-                    self.dir = Directory(dirPath, self)
+                    self.pyhighlighter = pyHighlighter(currentTab.editor.document())  # Creating the highlighter for python
+
                 elif filename.endswith(".c"):
 
                     self.files = filename
