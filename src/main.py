@@ -75,8 +75,10 @@ class Search(QWidget):
 
 
 class Directory(QTreeView):
-    def __init__(self, path):
-        QTreeView.__init__(self)
+    def __init__(self, path, parent):
+        QTreeView.__init__(self, parent)
+
+        self.layout = QHBoxLayout()
         model = QFileSystemModel()
         self.setModel(model)
 
@@ -94,7 +96,7 @@ class Directory(QTreeView):
 
         self.hideColumn(2)
         self.hideColumn(3)
-
+        self.layout.addWidget(self)
         self.doubleClicked.connect(self.test)
         self.show()
     def test(self, signal):
@@ -283,7 +285,7 @@ class Main(QMainWindow):
                     print(currentTab.editor.document())
 
                     self.pyhighlighter = pyHighlighter(currentTab.editor.document())
-                    self.dir = Directory(dirPath)
+                    self.dir = Directory(dirPath, self)
                 elif filename.endswith(".c"):
 
                     self.files = filename
