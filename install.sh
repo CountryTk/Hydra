@@ -17,18 +17,18 @@ function main() {
 }
 
 function run_structure() {
-        sudo mkdir /opt/pypad/
-        sudo cp $INSTALL_DIR/pypad/* /opt/pypad
+        mkdir /opt/pypad/
+        cp -r $INSTALL_DIR/pypad  /opt/
 }
 
 function create_files() {
-        sudo touch $PYPAD_DIR
-        sudo chmod +x $PYPAD_DIR
+        touch $PYPAD_DIR
+        chmod +x $PYPAD_DIR
         echo "python3 $MAIN_DIR/src/main.py" > $PYPAD_DIR
 }
 
 function cleanup() {
-        sudo rm -rf $INSTALL_DIR/pypad/
+        rm -rf $INSTALL_DIR/pypad/
 }
 
 main
