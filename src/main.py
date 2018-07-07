@@ -75,8 +75,10 @@ class Search(QWidget):
 
 
 class Directory(QTreeView):
-    def __init__(self):
+    def __init__(self, callback):
         super().__init__()
+
+        self.open_callback = callback
 
         self.layout = QHBoxLayout()
         self.model = QFileSystemModel()
@@ -95,15 +97,15 @@ class Directory(QTreeView):
         self.hideColumn(2)
         self.hideColumn(3)
         self.layout.addWidget(self)
-        self.doubleClicked.connect(self.test)
+        self.doubleClicked.connect(self.openFile)
         self.show()
 
-    def open(self, path):
+    def openDirectory(self, path):
         self.setRootIndex(self.model.index(path))
 
-    def test(self, signal):
-        file_path = self.model().filePath(signal)
-        return file_path
+    def openFile(self, signal):
+        file_path = self.model.filePath(signal)
+        self.open_callback(file_path)
 
 
 class Content(QWidget):
@@ -123,13 +125,13 @@ class Content(QWidget):
 
 class Tabs(QWidget):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, callback):
+        super().__init__()
         self.layout = QHBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
 
-        self.directory = Directory()
+        self.directory = Directory(callback)
 
         # Add tabs
         self.tabs.setTabsClosable(True)
@@ -158,7 +160,7 @@ class Main(QMainWindow):
         super().__init__(parent)
         self.onStart()
         # Initializing the main widget where text is displayed
-        self.tab = Tabs()
+        self.tab = Tabs(self.openFile)
 
         self.tabsOpen = []
 
@@ -270,7 +272,7 @@ class Main(QMainWindow):
             index = self.tab.tabs.addTab(tab,
                                          tab.fileName)  # This is the index which we will use to set the current index
 
-            self.tab.directory.open(dirPath)
+            self.tab.directory.openDirectory(dirPath)
             self.tab.showDirectory()
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
