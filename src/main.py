@@ -240,11 +240,6 @@ class Main(QMainWindow):
 
         self.resize(800, 600)
 
-    def closeTab(self, index):
-        tab = self.tabs.widget(index)
-        tab.deleteLater()
-        self.tab.removeTab(index)
-
     def open(self):
         self.openAct = QAction('Open...', self)
         self.openAct.setShortcut('Ctrl+O')
