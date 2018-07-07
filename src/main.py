@@ -99,6 +99,7 @@ class Directory(QTreeView):
         self.layout.addWidget(self)
         self.doubleClicked.connect(self.test)
         self.show()
+
     def test(self, signal):
         file_path = self.model().filePath(signal)
         return file_path
@@ -119,7 +120,6 @@ class Content(QWidget):
         self.hbox.addWidget(self.editor)
 
 
-
 class Tabs(QWidget):
 
     def __init__(self, parent=None):
@@ -135,8 +135,7 @@ class Tabs(QWidget):
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
         # Add tabs to widget
-        #self.layout.addWidget(self.tabs)
-
+        # self.layout.addWidget(self.tabs)
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
@@ -704,6 +703,7 @@ class cHighlighter(QSyntaxHighlighter):
 
             self.setFormat(start_index, length, self.multiLineCommentFormat)
             start_index = comment.indexIn(text, start_index + length)
+
 
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
