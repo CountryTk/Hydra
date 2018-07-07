@@ -210,7 +210,7 @@ class Main(QMainWindow):
             'Paste': {'shortcut': 'Ctrl+V'},
             'Select All': {'shortcut': 'Ctrl+A'},
             'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': self.newFile},
-            'Open...': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': self.openFile},
+            'Open...': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': self.openFileFromMenu},
             'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
             'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
             'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
@@ -242,7 +242,7 @@ class Main(QMainWindow):
 
         self.resize(800, 600)
 
-    def openFile(self):
+    def openFileFromMenu(self):
         self.tab.hideDirectory()
         options = QFileDialog.Options()
 
@@ -255,44 +255,47 @@ class Main(QMainWindow):
 
         if filenames:  # If file is selected, we can open it
             filename = filenames[0]
-            with open(filename, 'r+') as file_o:
-                text = file_o.read()
-                tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
+            self.openFile(filename)
 
-                dirPath = os.path.dirname(filename)
-                self.files = filename
+    def openFile(self, filename):
+        with open(filename, 'r+') as file_o:
+            text = file_o.read()
+            tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
 
-                self.tabsOpen.append(self.files)
+            dirPath = os.path.dirname(filename)
+            self.files = filename
 
-                index = self.tab.tabs.addTab(tab,
-                                             tab.fileName)  # This is the index which we will use to set the current index
-                
-                self.tab.directory.open(dirPath)
-                self.tab.showDirectory()
+            self.tabsOpen.append(self.files)
 
-                self.tab.setLayout(self.tab.layout)  # Finally we set the layout
+            index = self.tab.tabs.addTab(tab,
+                                         tab.fileName)  # This is the index which we will use to set the current index
 
-                self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
-                currentTab = self.tab.tabs.currentWidget()
+            self.tab.directory.open(dirPath)
+            self.tab.showDirectory()
 
-                currentTab.editor.setFont(self.font)  # Setting the font
-                currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-                currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+            self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
-                if filename.endswith(".py"):
-                    self.pyFileOpened = True
-                    self.pyhighlighter = pyHighlighter(
-                        currentTab.editor.document())  # Creating the highlighter for python
+            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
+            currentTab = self.tab.tabs.currentWidget()
 
-                elif filename.endswith(".c"):
-                    self.cFileOpened = True
-                    self.chighlighter = cHighlighter(currentTab.editor.document())
+            currentTab.editor.setFont(self.font)  # Setting the font
+            currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+            currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                else:
-                    if self.pyFileOpened:
-                        self.pyhighlighter
-                    if self.cFileOpened:
-                        del self.chighlighter
+            if filename.endswith(".py"):
+                self.pyFileOpened = True
+                self.pyhighlighter = pyHighlighter(
+                    currentTab.editor.document())  # Creating the highlighter for python
+
+            elif filename.endswith(".c"):
+                self.cFileOpened = True
+                self.chighlighter = cHighlighter(currentTab.editor.document())
+
+            else:
+                if self.pyFileOpened:
+                    del self.pyhighlighter
+                if self.cFileOpened:
+                    del self.chighlighter
 
     def newFile(self):
         text = ""
