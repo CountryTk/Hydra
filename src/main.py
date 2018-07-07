@@ -249,92 +249,42 @@ class Main(QMainWindow):
             with open(filename, 'r+') as file_o:
                 text = file_o.read()
                 tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
+
+                dirPath = os.path.dirname(filename)
+                self.files = filename
+
+                self.tabsOpen.append(self.files)
+
+                index = self.tab.tabs.addTab(tab,
+                                             tab.fileName)  # This is the index which we will use to set the current index
+                self.dir = Directory(dirPath)  # # this will spawn the directory
+
+                self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
+                self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+
+                self.tab.setLayout(self.tab.layout)  # Finally we set the layout
+
+                self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
+                currentTab = self.tab.tabs.currentWidget()
+
+                currentTab.editor.setFont(self.font)  # Setting the font
+                currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+                currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+
                 if filename.endswith(".py"):
-                    dirPath = os.path.dirname(filename)
-                    self.files = filename
-
-                    self.tabsOpen.append(self.files)
                     self.pyFileOpened = True
-
-                    index = self.tab.tabs.addTab(tab,
-                                                 tab.fileName)  # This is the index which we will use to set the current index
-                    self.dir = Directory(dirPath)  # # this will spawn the directory
-
-                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-
-                    self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
-                    currentTab = self.tab.tabs.currentWidget()
-
-                    currentTab.editor.setFont(self.font)  # Setting the font
-                    currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
-
                     self.pyhighlighter = pyHighlighter(
                         currentTab.editor.document())  # Creating the highlighter for python
 
                 elif filename.endswith(".c"):
-
-                    self.files = filename
-                    dirPath = os.path.dirname(filename) # getting the dir path
-                    self.tabsOpen.append(self.files)
-
                     self.cFileOpened = True
-                    self.dir = Directory(dirPath)  # this will spawn the directory
-
-                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-                    index = self.tab.tabs.addTab(tab, tab.fileName)
-
-                    self.tab.tabs.setCurrentIndex(index)
-                    currentTab = self.tab.tabs.currentWidget()
-
-                    currentTab.editor.setFont(self.font)
-                    currentTab.editor.setTabStopWidth(self.tabSize)
-
-                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
                     self.chighlighter = cHighlighter(currentTab.editor.document())
 
                 else:
-                    if self.pyFileOpened or self.cFileOpened:
-                        try:
-                            del self.pyhighlighter
-                            del self.chighlighter
-
-                        except AttributeError:
-                            print("Highlighter already deleted")
-
-                        dirPath = os.path.dirname(filename)  # getting the dir path
-                        self.dir = Directory(dirPath)  # this will spawn the directory
-
-                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                        self.tab.setLayout(self.tab.layout)
-
-                        index1 = self.tab.tabs.addTab(tab, tab.fileName)
-                        self.tab.tabs.setCurrentIndex(index1)
-
-                        tab = self.tab.tabs.currentWidget()
-                        tab.editor.setFont(self.font)
-
-                    else:
-                        dirPath = os.path.dirname(filename) # getting the dir path
-                        self.dir = Directory(dirPath)  # # this will spawn the directory
-
-                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                        self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-                        index2 = self.tab.tabs.addTab(tab, tab.fileName)
-
-                        self.tab.tabs.setCurrentIndex(index2)
-                        tab1 = self.tab.tabs.currentWidget()
-                        tab1.editor.setFont(self.font)
+                    if self.pyFileOpened:
+                        self.pyhighlighter
+                    if self.cFileOpened:
+                        del self.chighlighter
 
     def newFile(self):
         text = ""
