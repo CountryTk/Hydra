@@ -75,15 +75,13 @@ class Search(QWidget):
 
 
 class Directory(QTreeView):
-    def __init__(self, path):
+    def __init__(self):
         super().__init__()
 
         self.layout = QHBoxLayout()
-        model = QFileSystemModel()
-        self.setModel(model)
-
-        model.setRootPath(QDir.rootPath())
-        self.setRootIndex(model.index(path))
+        self.model = QFileSystemModel()
+        self.setModel(self.model)
+        self.model.setRootPath(QDir.rootPath())
 
         self.setIndentation(10)
         self.setAnimated(True)
@@ -99,6 +97,9 @@ class Directory(QTreeView):
         self.layout.addWidget(self)
         self.doubleClicked.connect(self.test)
         self.show()
+
+    def open(self, path):
+        self.setRootIndex(self.model.index(path))
 
     def test(self, signal):
         file_path = self.model().filePath(signal)
@@ -128,6 +129,8 @@ class Tabs(QWidget):
         # Initialize tab screen
         self.tabs = QTabWidget()
 
+        self.directory = Directory()
+
         # Add tabs
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(True)   # TODO: make this customizable
@@ -141,6 +144,13 @@ class Tabs(QWidget):
         tab = self.tabs.widget(index)
         tab.deleteLater()
         self.tabs.removeTab(index)
+
+    def showDirectory(self):
+        self.layout.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
+        self.layout.addWidget(self.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+
+    def hideDirectory(self):
+        self.layout.removeWidget(self.directory)
 
 
 class Main(QMainWindow):
@@ -233,8 +243,7 @@ class Main(QMainWindow):
         self.resize(800, 600)
 
     def openFile(self):
-        if hasattr(self, 'dir'):
-            self.tab.layout.removeWidget(self.dir)
+        self.tab.hideDirectory()
         options = QFileDialog.Options()
 
         filenames, _ = QFileDialog.getOpenFileNames(
@@ -257,10 +266,9 @@ class Main(QMainWindow):
 
                 index = self.tab.tabs.addTab(tab,
                                              tab.fileName)  # This is the index which we will use to set the current index
-                self.dir = Directory(dirPath)  # # this will spawn the directory
-
-                self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+                
+                self.tab.directory.open(dirPath)
+                self.tab.showDirectory()
 
                 self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
