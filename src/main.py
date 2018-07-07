@@ -155,20 +155,6 @@ class Main(QMainWindow):
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
         self.setWindowTitle('PyPad')  # Setting the window title
 
-        # Initializing the functions to handle certain tasks
-
-        self.new()
-        self.open()
-        self.save()
-        self.saveAs()
-        self.exit()
-        self.undo()
-        self.redo()
-        self.cut()
-        self.copy()
-        self.paste()
-        self.all()
-
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
         self.newFileCount = 0  # Tracking how many new files are opened
@@ -206,45 +192,45 @@ class Main(QMainWindow):
 
         self.font.setFixedPitch(True)
 
-        # Creating the menu bar
+        shortcuts = {
+            'Undo': {'shortcut': 'Ctrl+Z'},
+            'Redo': {'shortcut': 'Shift+Ctrl+Z'},
+            'Cut': {'shortcut': 'Ctrl+X'},
+            'Copy': {'shortcut': 'Ctrl+C'},
+            'Paste': {'shortcut': 'Ctrl+V'},
+            'Select All': {'shortcut': 'Ctrl+A'},
+            'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': self.newFile},
+            'Open...': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': self.openFile},
+            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
+            'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
+            'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
+        }
 
-        menu = self.menuBar()
+        actions = {}
 
-        # Creating the file menu
+        for name, values in shortcuts.items():
+            actions[name] = QAction(name, self)
+            actions[name].setShortcut(values.get('shortcut'))
+            actions[name].setStatusTip(values.get('tip', name))
+            keys = values.get('shortcut').lower().split('+')
+            actions[name].triggered.connect(values.get('action', lambda a='ignore this', keys=keys: hotkey(*keys)))
 
-        fileMenu = menu.addMenu('File')
+        menu_bar = self.menuBar()
 
-        # Adding options to the file menu
+        menus = {
+            'File': ['New', 'Open...', 'Save', 'Save As...', 'Separator', 'Quit'],
+            'Edit': ['Undo', 'Redo', 'Separator', 'Cut', 'Copy', 'Paste', 'Separator', 'Select All'],
+        }
 
-        fileMenu.addAction(self.newAct)
-        fileMenu.addAction(self.openAct)
-        fileMenu.addAction(self.saveAct)
-        fileMenu.addAction(self.saveAsAct)
-        fileMenu.addSeparator()
-        fileMenu.addAction(self.exitAct)
-
-        # Creating the edit menu
-
-        editMenu = menu.addMenu('Edit')
-
-        # Adding options to it
-
-        editMenu.addAction(self.undoAct)
-        editMenu.addAction(self.redoAct)
-        editMenu.addSeparator()
-        editMenu.addAction(self.cutAct)
-        editMenu.addAction(self.copyAct)
-        editMenu.addAction(self.pasteAct)
-        editMenu.addSeparator()
-        editMenu.addAction(self.allAct)
+        for name, items in menus.items():
+            menu = menu_bar.addMenu(name)
+            for item in items:
+                if item == 'Separator':
+                    menu.addSeparator()
+                    continue
+                menu.addAction(actions[item])
 
         self.resize(800, 600)
-
-    def open(self):
-        self.openAct = QAction('Open...', self)
-        self.openAct.setShortcut('Ctrl+O')
-        self.openAct.setStatusTip('Open a file')
-        self.openAct.triggered.connect(self.openFile)
 
     def openFile(self):
         if hasattr(self, 'dir'):
@@ -350,12 +336,6 @@ class Main(QMainWindow):
                         tab1 = self.tab.tabs.currentWidget()
                         tab1.editor.setFont(self.font)
 
-    def new(self):
-        self.newAct = QAction('New')
-        self.newAct.setShortcut('Ctrl+N')
-        self.newAct.setStatusTip('Create a new file')
-        self.newAct.triggered.connect(self.newFile)
-
     def newFile(self):
         text = ""
         fileName = "Untitled.txt"
@@ -373,13 +353,6 @@ class Main(QMainWindow):
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
-
-    def save(self):
-        self.saveAct = QAction('Save')
-        self.saveAct.setShortcut('Ctrl+S')
-
-        self.saveAct.setStatusTip('Save a file')
-        self.saveAct.triggered.connect(self.saveFile)
 
     def saveFile(self):
         try:
@@ -407,13 +380,6 @@ class Main(QMainWindow):
                     saveFile.close()
         except:
             print("File dialog closed or no file opened")
-
-    def saveAs(self):
-        self.saveAsAct = QAction('Save As...')
-        self.saveAsAct.setShortcut('Ctrl+Shift+S')
-
-        self.saveAsAct.setStatusTip('Save a file as')
-        self.saveAsAct.triggered.connect(self.saveFileAs)
 
     def saveFileAs(self):
         try:
@@ -455,55 +421,6 @@ class Main(QMainWindow):
                 print("No file opened")
         except FileNotFoundError:
             print("File dialog closed")
-
-    def exit(self):
-        self.exitAct = QAction('Quit', self)
-        self.exitAct.setShortcut('Ctrl+Q')
-
-        self.exitAct.setStatusTip('Exit application')
-        self.exitAct.triggered.connect(qApp.quit)
-
-    def undo(self):
-        self.undoAct = QAction('Undo', self)
-        self.undoAct.setShortcut('Ctrl+Z')
-
-        self.undoAct.setStatusTip('Undo')
-        self.undoAct.triggered.connect(lambda: hotkey('ctrl', 'z'))
-
-    def redo(self):
-        self.redoAct = QAction('Redo', self)
-        self.redoAct.setShortcut('Shift+Ctrl+Z')
-
-        self.redoAct.setStatusTip('Redo')
-        self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
-
-    def cut(self):
-        self.cutAct = QAction('Cut', self)
-        self.cutAct.setShortcut('Ctrl+X')
-
-        self.cutAct.setStatusTip('Cut')
-        self.cutAct.triggered.connect(lambda: hotkey('ctrl', 'x'))
-
-    def copy(self):
-        self.copyAct = QAction('Copy', self)
-        self.copyAct.setShortcut('Ctrl+C')
-
-        self.copyAct.setStatusTip('Copy')
-        self.copyAct.triggered.connect(lambda: hotkey('ctrl', 'c'))
-
-    def paste(self):
-        self.pasteAct = QAction('Paste', self)
-        self.pasteAct.setShortcut('Ctrl+V')
-
-        self.pasteAct.setStatusTip('Paste')
-        self.pasteAct.triggered.connect(lambda: hotkey('ctrl', 'v'))
-
-    def all(self):
-        self.allAct = QAction('Select all', self)
-        self.allAct.setShortcut('Ctrl+A')
-
-        self.allAct.setStatusTip('Select all')
-        self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
 
 class pyHighlighter(QSyntaxHighlighter):
