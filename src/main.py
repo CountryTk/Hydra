@@ -249,7 +249,6 @@ class Main(QMainWindow):
         self.openAct = QAction('Open...', self)
         self.openAct.setShortcut('Ctrl+O')
         self.openAct.setStatusTip('Open a file')
-        self.is_opened = False
         self.openAct.triggered.connect(self.openFile)
 
     def openFile(self):
@@ -269,7 +268,6 @@ class Main(QMainWindow):
             with open(filename, 'r+') as file_o:
                 text = file_o.read()
                 tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
-                self.is_opened = True
                 if filename.endswith(".py"):
                     dirPath = os.path.dirname(filename)
                     self.files = filename
@@ -366,7 +364,6 @@ class Main(QMainWindow):
     def newFile(self):
         text = ""
         fileName = "Untitled.txt"
-        self.is_opened = False
 
         # Creates a new blank file
         file = Content(text, fileName)
@@ -393,7 +390,7 @@ class Main(QMainWindow):
         try:
             active_tab = self.tab.tabs.currentWidget()
 
-            if self.is_opened:  # If a file is already opened
+            if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     self.saved = True
                     saveFile.write(active_tab.editor.toPlainText())
@@ -408,7 +405,6 @@ class Main(QMainWindow):
                 fileName = name[0]
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
-                    self.is_opened = True
 
                     self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
