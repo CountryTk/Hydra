@@ -75,15 +75,15 @@ class Search(QWidget):
 
 
 class Directory(QTreeView):
-    def __init__(self, path):
+    def __init__(self, callback):
         super().__init__()
 
-        self.layout = QHBoxLayout()
-        model = QFileSystemModel()
-        self.setModel(model)
+        self.open_callback = callback
 
-        model.setRootPath(QDir.rootPath())
-        self.setRootIndex(model.index(path))
+        self.layout = QHBoxLayout()
+        self.model = QFileSystemModel()
+        self.setModel(self.model)
+        self.model.setRootPath(QDir.rootPath())
 
         self.setIndentation(10)
         self.setAnimated(True)
@@ -97,11 +97,15 @@ class Directory(QTreeView):
         self.hideColumn(2)
         self.hideColumn(3)
         self.layout.addWidget(self)
-        self.doubleClicked.connect(self.test)
+        self.doubleClicked.connect(self.openFile)
         self.show()
-    def test(self, signal):
-        file_path = self.model().filePath(signal)
-        return file_path
+
+    def openDirectory(self, path):
+        self.setRootIndex(self.model.index(path))
+
+    def openFile(self, signal):
+        file_path = self.model.filePath(signal)
+        self.open_callback(file_path)
 
 
 class Content(QWidget):
@@ -119,14 +123,15 @@ class Content(QWidget):
         self.hbox.addWidget(self.editor)
 
 
-
 class Tabs(QWidget):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, callback):
+        super().__init__()
         self.layout = QHBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
+
+        self.directory = Directory(callback)
 
         # Add tabs
         self.tabs.setTabsClosable(True)
@@ -135,13 +140,23 @@ class Tabs(QWidget):
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
         # Add tabs to widget
-        #self.layout.addWidget(self.tabs)
-
+        # self.layout.addWidget(self.tabs)
+        self.hideDirectory()
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
         tab.deleteLater()
         self.tabs.removeTab(index)
+
+    def showDirectory(self):
+        self.directory.setVisible(True)
+        self.layout.removeWidget(self.tabs)
+        self.layout.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
+        self.layout.addWidget(self.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+
+    def hideDirectory(self):
+        self.layout.removeWidget(self.directory)
+        self.directory.setVisible(False)
 
 
 class Main(QMainWindow):
@@ -149,26 +164,12 @@ class Main(QMainWindow):
         super().__init__(parent)
         self.onStart()
         # Initializing the main widget where text is displayed
-        self.tab = Tabs()
+        self.tab = Tabs(self.openFile)
 
         self.tabsOpen = []
 
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
         self.setWindowTitle('PyPad')  # Setting the window title
-
-        # Initializing the functions to handle certain tasks
-
-        self.new()
-        self.open()
-        self.save()
-        self.saveAs()
-        self.exit()
-        self.undo()
-        self.redo()
-        self.cut()
-        self.copy()
-        self.paste()
-        self.all()
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -207,55 +208,48 @@ class Main(QMainWindow):
 
         self.font.setFixedPitch(True)
 
-        # Creating the menu bar
+        shortcuts = {
+            'Undo': {'shortcut': 'Ctrl+Z'},
+            'Redo': {'shortcut': 'Shift+Ctrl+Z'},
+            'Cut': {'shortcut': 'Ctrl+X'},
+            'Copy': {'shortcut': 'Ctrl+C'},
+            'Paste': {'shortcut': 'Ctrl+V'},
+            'Select All': {'shortcut': 'Ctrl+A'},
+            'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': self.newFile},
+            'Open...': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': self.openFileFromMenu},
+            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
+            'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
+            'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
+        }
 
-        menu = self.menuBar()
+        actions = {}
 
-        # Creating the file menu
+        for name, values in shortcuts.items():
+            actions[name] = QAction(name, self)
+            actions[name].setShortcut(values.get('shortcut'))
+            actions[name].setStatusTip(values.get('tip', name))
+            keys = values.get('shortcut').lower().split('+')
+            actions[name].triggered.connect(values.get('action', lambda a='ignore this', keys=keys: hotkey(*keys)))
 
-        fileMenu = menu.addMenu('File')
+        menu_bar = self.menuBar()
 
-        # Adding options to the file menu
+        menus = {
+            'File': ['New', 'Open...', 'Save', 'Save As...', 'Separator', 'Quit'],
+            'Edit': ['Undo', 'Redo', 'Separator', 'Cut', 'Copy', 'Paste', 'Separator', 'Select All'],
+        }
 
-        fileMenu.addAction(self.newAct)
-        fileMenu.addAction(self.openAct)
-        fileMenu.addAction(self.saveAct)
-        fileMenu.addAction(self.saveAsAct)
-        fileMenu.addSeparator()
-        fileMenu.addAction(self.exitAct)
-
-        # Creating the edit menu
-
-        editMenu = menu.addMenu('Edit')
-
-        # Adding options to it
-
-        editMenu.addAction(self.undoAct)
-        editMenu.addAction(self.redoAct)
-        editMenu.addSeparator()
-        editMenu.addAction(self.cutAct)
-        editMenu.addAction(self.copyAct)
-        editMenu.addAction(self.pasteAct)
-        editMenu.addSeparator()
-        editMenu.addAction(self.allAct)
+        for name, items in menus.items():
+            menu = menu_bar.addMenu(name)
+            for item in items:
+                if item == 'Separator':
+                    menu.addSeparator()
+                    continue
+                menu.addAction(actions[item])
 
         self.resize(800, 600)
 
-    def closeTab(self, index):
-        tab = self.tabs.widget(index)
-        tab.deleteLater()
-        self.tab.removeTab(index)
-
-    def open(self):
-        self.openAct = QAction('Open...', self)
-        self.openAct.setShortcut('Ctrl+O')
-        self.openAct.setStatusTip('Open a file')
-        self.is_opened = False
-        self.openAct.triggered.connect(self.openFile)
-
-    def openFile(self):
-        if hasattr(self, 'dir'):
-            self.tab.layout.removeWidget(self.dir)
+    def openFileFromMenu(self):
+        self.tab.hideDirectory()
         options = QFileDialog.Options()
 
         filenames, _ = QFileDialog.getOpenFileNames(
@@ -267,107 +261,51 @@ class Main(QMainWindow):
 
         if filenames:  # If file is selected, we can open it
             filename = filenames[0]
-            with open(filename, 'r+') as file_o:
-                text = file_o.read()
-                tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
-                self.is_opened = True
-                if filename.endswith(".py"):
-                    dirPath = os.path.dirname(filename)
-                    self.files = filename
+            self.openFile(filename)
 
-                    self.tabsOpen.append(self.files)
-                    self.pyFileOpened = True
+    def openFile(self, filename):
+        with open(filename, 'r+') as file_o:
+            text = file_o.read()
+            tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
 
-                    index = self.tab.tabs.addTab(tab,
-                                                 tab.fileName)  # This is the index which we will use to set the current index
-                    self.dir = Directory(dirPath)  # # this will spawn the directory
+            dirPath = os.path.dirname(filename)
+            self.files = filename
 
-                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+            self.tabsOpen.append(self.files)
 
-                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
+            index = self.tab.tabs.addTab(tab,
+                                         tab.fileName)  # This is the index which we will use to set the current index
 
-                    self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
-                    currentTab = self.tab.tabs.currentWidget()
+            self.tab.directory.openDirectory(dirPath)
+            self.tab.showDirectory()
 
-                    currentTab.editor.setFont(self.font)  # Setting the font
-                    currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+            self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
-                    self.pyhighlighter = pyHighlighter(
-                        currentTab.editor.document())  # Creating the highlighter for python
+            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
+            currentTab = self.tab.tabs.currentWidget()
 
-                elif filename.endswith(".c"):
+            currentTab.editor.setFont(self.font)  # Setting the font
+            currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+            currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                    self.files = filename
-                    dirPath = os.path.dirname(filename) # getting the dir path
-                    self.tabsOpen.append(self.files)
+            if filename.endswith(".py"):
+                self.pyFileOpened = True
+                self.pyhighlighter = pyHighlighter(
+                    currentTab.editor.document())  # Creating the highlighter for python
 
-                    self.cFileOpened = True
-                    self.dir = Directory(dirPath)  # this will spawn the directory
+            elif filename.endswith(".c"):
+                self.cFileOpened = True
+                self.chighlighter = cHighlighter(currentTab.editor.document())
 
-                    self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                    self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                    self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-                    index = self.tab.tabs.addTab(tab, tab.fileName)
-
-                    self.tab.tabs.setCurrentIndex(index)
-                    currentTab = self.tab.tabs.currentWidget()
-
-                    currentTab.editor.setFont(self.font)
-                    currentTab.editor.setTabStopWidth(self.tabSize)
-
-                    currentTab.editor.setFocus()  # Setting focus to the tab after we open it
-                    self.chighlighter = cHighlighter(currentTab.editor.document())
-
-                else:
-                    if self.pyFileOpened or self.cFileOpened:
-                        try:
-                            del self.pyhighlighter
-                            del self.chighlighter
-
-                        except AttributeError:
-                            print("Highlighter already deleted")
-
-                        dirPath = os.path.dirname(filename)  # getting the dir path
-                        self.dir = Directory(dirPath)  # this will spawn the directory
-
-                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                        self.tab.setLayout(self.tab.layout)
-
-                        index1 = self.tab.tabs.addTab(tab, tab.fileName)
-                        self.tab.tabs.setCurrentIndex(index1)
-
-                        tab = self.tab.tabs.currentWidget()
-                        tab.editor.setFont(self.font)
-
-                    else:
-                        dirPath = os.path.dirname(filename) # getting the dir path
-                        self.dir = Directory(dirPath)  # # this will spawn the directory
-
-                        self.tab.layout.addWidget(self.dir)  # Adding that directory widget in the Tab class BEFORE the tabs
-                        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
-
-                        self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-                        index2 = self.tab.tabs.addTab(tab, tab.fileName)
-
-                        self.tab.tabs.setCurrentIndex(index2)
-                        tab1 = self.tab.tabs.currentWidget()
-                        tab1.editor.setFont(self.font)
-
-    def new(self):
-        self.newAct = QAction('New')
-        self.newAct.setShortcut('Ctrl+N')
-        self.newAct.setStatusTip('Create a new file')
-        self.newAct.triggered.connect(self.newFile)
+            else:
+                if self.pyFileOpened:
+                    del self.pyhighlighter
+                if self.cFileOpened:
+                    del self.chighlighter
 
     def newFile(self):
         text = ""
         fileName = "Untitled.txt"
-        self.is_opened = False
 
         # Creates a new blank file
         file = Content(text, fileName)
@@ -383,18 +321,11 @@ class Main(QMainWindow):
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
 
-    def save(self):
-        self.saveAct = QAction('Save')
-        self.saveAct.setShortcut('Ctrl+S')
-
-        self.saveAct.setStatusTip('Save a file')
-        self.saveAct.triggered.connect(self.saveFile)
-
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
 
-            if self.is_opened:  # If a file is already opened
+            if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     self.saved = True
                     saveFile.write(active_tab.editor.toPlainText())
@@ -409,7 +340,6 @@ class Main(QMainWindow):
                 fileName = name[0]
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
-                    self.is_opened = True
 
                     self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
@@ -417,13 +347,6 @@ class Main(QMainWindow):
                     saveFile.close()
         except:
             print("File dialog closed or no file opened")
-
-    def saveAs(self):
-        self.saveAsAct = QAction('Save As...')
-        self.saveAsAct.setShortcut('Ctrl+Shift+S')
-
-        self.saveAsAct.setStatusTip('Save a file as')
-        self.saveAsAct.triggered.connect(self.saveFileAs)
 
     def saveFileAs(self):
         try:
@@ -465,55 +388,6 @@ class Main(QMainWindow):
                 print("No file opened")
         except FileNotFoundError:
             print("File dialog closed")
-
-    def exit(self):
-        self.exitAct = QAction('Quit', self)
-        self.exitAct.setShortcut('Ctrl+Q')
-
-        self.exitAct.setStatusTip('Exit application')
-        self.exitAct.triggered.connect(qApp.quit)
-
-    def undo(self):
-        self.undoAct = QAction('Undo', self)
-        self.undoAct.setShortcut('Ctrl+Z')
-
-        self.undoAct.setStatusTip('Undo')
-        self.undoAct.triggered.connect(lambda: hotkey('ctrl', 'z'))
-
-    def redo(self):
-        self.redoAct = QAction('Redo', self)
-        self.redoAct.setShortcut('Shift+Ctrl+Z')
-
-        self.redoAct.setStatusTip('Redo')
-        self.redoAct.triggered.connect(lambda: hotkey('shift', 'ctrl', 'z'))
-
-    def cut(self):
-        self.cutAct = QAction('Cut', self)
-        self.cutAct.setShortcut('Ctrl+X')
-
-        self.cutAct.setStatusTip('Cut')
-        self.cutAct.triggered.connect(lambda: hotkey('ctrl', 'x'))
-
-    def copy(self):
-        self.copyAct = QAction('Copy', self)
-        self.copyAct.setShortcut('Ctrl+C')
-
-        self.copyAct.setStatusTip('Copy')
-        self.copyAct.triggered.connect(lambda: hotkey('ctrl', 'c'))
-
-    def paste(self):
-        self.pasteAct = QAction('Paste', self)
-        self.pasteAct.setShortcut('Ctrl+V')
-
-        self.pasteAct.setStatusTip('Paste')
-        self.pasteAct.triggered.connect(lambda: hotkey('ctrl', 'v'))
-
-    def all(self):
-        self.allAct = QAction('Select all', self)
-        self.allAct.setShortcut('Ctrl+A')
-
-        self.allAct.setStatusTip('Select all')
-        self.allAct.triggered.connect(lambda: hotkey('ctrl', 'a'))
 
 
 class pyHighlighter(QSyntaxHighlighter):
@@ -704,6 +578,7 @@ class cHighlighter(QSyntaxHighlighter):
 
             self.setFormat(start_index, length, self.multiLineCommentFormat)
             start_index = comment.indexIn(text, start_index + length)
+
 
 if __name__ == '__main__':
     with open("../config.json", "r") as jsonFile:
