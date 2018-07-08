@@ -27,6 +27,7 @@ class NumberBar(QWidget):
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
+                print(scroll)
                 self.scroll(0, scroll)
             else:
                 self.update()
@@ -54,7 +55,6 @@ class NumberBar(QWidget):
                 offset = self.editor.contentOffset()
                 block_top = block_geometry.translated(offset).top()
                 number += 1
-
                 rect = QRect(0, block_top, self.width() - 5, height)
 
                 if number == current_block:
@@ -246,7 +246,7 @@ class Main(QMainWindow):
                     continue
                 menu.addAction(actions[item])
 
-        self.resize(800, 600)
+        self.resize(800, 700)
 
     def openFileFromMenu(self):
         self.tab.hideDirectory()
@@ -281,7 +281,7 @@ class Main(QMainWindow):
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
-            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the currentwidget
+            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
             currentTab = self.tab.tabs.currentWidget()
 
             currentTab.editor.setFont(self.font)  # Setting the font
@@ -310,7 +310,7 @@ class Main(QMainWindow):
         # Creates a new blank file
         file = Content(text, fileName)
 
-        self.tab.layout.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
+        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
@@ -400,6 +400,7 @@ class pyHighlighter(QSyntaxHighlighter):
         self.formats = {}
 
         for name, values in python['highlighting'].items():
+            print(name, values)
             self.formats[name] = QTextCharFormat()
 
             if values.get('bold'):
