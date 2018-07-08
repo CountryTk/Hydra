@@ -411,8 +411,8 @@ class pyHighlighter(QSyntaxHighlighter):
             for regex in util.make_list(values.get('regex', [])):
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
 
-        self.highlightingRules += [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
-                                   for pattern in python['keywords']]
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
+                                   for pattern in python['keywords']] + self.highlightingRules
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
