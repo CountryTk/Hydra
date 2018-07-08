@@ -49,6 +49,10 @@
 
       "decoratorFormatColor": "#ff00e7",
 
+      "singleLineCommentFormatColor": "#6b6e6c",
+
+      "multiLineCommentFormatColor": "#039135",
+
       "intFormatColor": "#70DBFF"
 
     }

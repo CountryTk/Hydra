@@ -391,10 +391,6 @@ class pyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
         super(pyHighlighter, self).__init__(parent, *args)
 
-        keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["keywordFormatColor"]))
-        keywordFormat.setFontWeight(QFont.Bold)
-
         pyKeywordPatterns = ['for', 'class', 'range',
                              'False', 'finally', 'is',
                              'return', 'None', 'continue',
@@ -409,49 +405,30 @@ class pyHighlighter(QSyntaxHighlighter):
                              'in', 'raise', 'self',
                              'async']
 
-        cKeywordPatterns = ['auto', 'break', 'case', 'char', 'const',
-                            'const', 'continue', 'default', 'do',
-                            'double', 'else', 'enum', 'extern',
-                            'float', 'for', 'goto', 'if',
-                            'int', 'long', 'register', 'return',
-                            'short', 'signed', 'sizeof', 'static',
-                            'struct', 'switch', 'typedef', 'union',
-                            'unsigned', 'void', 'volatile', 'while']
+        formats = {
+            'keyword': {'weight': QFont.Bold},
+            'class': {'regex': ['\\bclass\\b'], 'weight': QFont.Bold},
+            'multiLineComment': {},
+            'function': {'regex': ['[A-Za-z0-9_]+(?=\\()'], 'italic': True},
+            'magic': {'regex': ["\__[^\']*\__"]},
+            'decorator': {'regex': ['@[^\n]*']},
+            'int': {'regex': ["[-+]?[0-9]+"]},
+            'singleLineComment': {'regex': ['#[^\n]*']},
+            'quotation': {'regex': ['#[^\n]*', "\"[^\"]*\""]},
+        }
 
-        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
+        self.highlightingRules = []
+        self.formats = {}
 
-        classFormat = QTextCharFormat()
-        classFormat.setFontWeight(QFont.Bold)
-        classFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["classFormatColor"]))
-        self.highlightingRules.append((QRegExp('\\bclass\\b'), classFormat))
+        for name, values in formats.items():
+            self.formats[name] = QTextCharFormat()
+            self.formats[name].setFontWeight(values.get('weight', 0))
+            self.formats[name].setFontItalic(values.get('italic', False))
+            self.formats[name].setForeground(QColor(config["syntaxHighlightColors"][0].get(name + "FormatColor")))
+            for regex in values.get('regex', []):
+                self.highlightingRules.append((QRegExp(regex), self.formats[name]))
 
-        self.multiLineCommentFormat = QTextCharFormat()
-        self.multiLineCommentFormat.setForeground(QColor(3, 145, 53))
-        functionFormat = QTextCharFormat()
-        functionFormat.setFontItalic(True)
-        functionFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["functionFormatColor"]))
-        self.highlightingRules.append((QRegExp('[A-Za-z0-9_]+(?=\\()'), functionFormat))
-
-        magicFormat = QTextCharFormat()
-        magicFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["magicFormatColor"]))
-        self.highlightingRules.append((QRegExp("\__[^\']*\__"), magicFormat))
-
-        decoratorFormat = QTextCharFormat()
-        decoratorFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["decoratorFormatColor"]))
-        self.highlightingRules.append((QRegExp('@[^\n]*'), decoratorFormat))
-
-        intFormat = QTextCharFormat()
-        intFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["intFormatColor"]))
-        self.highlightingRules.append((QRegExp("[-+]?[0-9]+"), intFormat))
-
-        singleLineCommentFormat = QTextCharFormat()
-        singleLineCommentFormat.setForeground(QColor(107, 110, 108))
-        self.highlightingRules.append((QRegExp('#[^\n]*'), singleLineCommentFormat))
-
-        quotationFormat = QTextCharFormat()
-        quotationFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["quotationFormatColor"]))
-        self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
-        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
+        self.highlightingRules += [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword']) for pattern in pyKeywordPatterns]
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -461,7 +438,6 @@ class pyHighlighter(QSyntaxHighlighter):
                 length = expression.matchedLength()
                 self.setFormat(index, length, format)
                 index = expression.indexIn(text, index + length)
-
         self.setCurrentBlockState(0)
 
         comment = QRegExp("'''")
@@ -472,7 +448,6 @@ class pyHighlighter(QSyntaxHighlighter):
         else:
             start_index = comment.indexIn(text)
             index_step = comment.matchedLength()
-
         while start_index >= 0:
             end = comment.indexIn(text, start_index + index_step)
             if end != -1:
@@ -481,8 +456,7 @@ class pyHighlighter(QSyntaxHighlighter):
             else:
                 self.setCurrentBlockState(1)
                 length = len(text) - start_index
-
-            self.setFormat(start_index, length, self.multiLineCommentFormat)
+            self.setFormat(start_index, length, self.formats['multiLineComment'])
             start_index = comment.indexIn(text, start_index + length)
 
 
