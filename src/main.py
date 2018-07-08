@@ -141,6 +141,7 @@ class Tabs(QWidget):
 
         # Add tabs to widget
         # self.layout.addWidget(self.tabs)
+        self.hideDirectory()
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
@@ -148,11 +149,14 @@ class Tabs(QWidget):
         self.tabs.removeTab(index)
 
     def showDirectory(self):
+        self.directory.setVisible(True)
+        self.layout.removeWidget(self.tabs)
         self.layout.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
         self.layout.addWidget(self.tabs, 10)  # Adding tabs, now the directory tree will be on the left
 
     def hideDirectory(self):
         self.layout.removeWidget(self.directory)
+        self.directory.setVisible(False)
 
 
 class Main(QMainWindow):
