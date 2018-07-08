@@ -9,6 +9,6 @@ Required modules: PyQt5, pyautogui, XLib ( required to install pyautogui )
 
 https://stackoverflow.com/questions/35074294/pip3-install-pyautogui-fails-with-error-code-1-mac-os
 
-.
+
 
 ![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/2018-07-06-003240_800x600_scrot.png)
