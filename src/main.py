@@ -8,8 +8,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
 
 from pyautogui import hotkey
 
-import src.config
-config = src.config.read()
+import util
+import config
+config = config.read()
 
 lineBarColor = QColor(53, 53, 53)
 lineHighlightColor = QColor('#00FF04')
@@ -184,21 +185,23 @@ class Main(QMainWindow):
         self.show()
 
     def onStart(self):
-        if config["editor"][0]["windowStaysOnTop"] is True:
+        editor = config['editor']
+
+        if editor["windowStaysOnTop"] is True:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         else:
             pass
-        if config["editor"][0]["DontUseNativeDialog"] is True:
+        if editor["DontUseNativeDialog"] is True:
             self.DontUseNativeDialogs = True
 
         else:
             self.DontUseNativeDialogs = False
         self.font = QFont()
-        self.font.setFamily(config["editor"][0]["editorFont"])
+        self.font.setFamily(editor["editorFont"])
 
-        self.font.setPointSize(config["editor"][0]["editorFontSize"])
-        self.tabSize = config["editor"][0]["TabWidth"]
+        self.font.setPointSize(editor["editorFontSize"])
+        self.tabSize = editor["TabWidth"]
 
     def initUI(self):
         self.statusBar()  # Initializing the status bar
@@ -391,44 +394,24 @@ class pyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
         super(pyHighlighter, self).__init__(parent, *args)
 
-        pyKeywordPatterns = ['for', 'class', 'range',
-                             'False', 'finally', 'is',
-                             'return', 'None', 'continue',
-                             'for', 'lambda', 'try',
-                             'True', 'def', 'from',
-                             'nonlocal', 'while', 'and',
-                             'not', 'global', 'del',
-                             'with', 'as', 'elif',
-                             'if', 'or', 'yield',
-                             'assert', 'else', 'import',
-                             'pass', 'break', 'except',
-                             'in', 'raise', 'self',
-                             'async']
-
-        formats = {
-            'keyword': {'weight': QFont.Bold},
-            'class': {'regex': ['\\bclass\\b'], 'weight': QFont.Bold},
-            'multiLineComment': {},
-            'function': {'regex': ['[A-Za-z0-9_]+(?=\\()'], 'italic': True},
-            'magic': {'regex': ["\__[^\']*\__"]},
-            'decorator': {'regex': ['@[^\n]*']},
-            'int': {'regex': ["[-+]?[0-9]+"]},
-            'singleLineComment': {'regex': ['#[^\n]*']},
-            'quotation': {'regex': ['#[^\n]*', "\"[^\"]*\""]},
-        }
+        python = config['files']['python']
 
         self.highlightingRules = []
         self.formats = {}
 
-        for name, values in formats.items():
+        for name, values in python['highlighting'].items():
             self.formats[name] = QTextCharFormat()
-            self.formats[name].setFontWeight(values.get('weight', 0))
+
+            if values.get('bold'):
+                self.formats[name].setFontWeight(QFont.Bold)
             self.formats[name].setFontItalic(values.get('italic', False))
-            self.formats[name].setForeground(QColor(config["syntaxHighlightColors"][0].get(name + "FormatColor")))
-            for regex in values.get('regex', []):
+
+            self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
+            for regex in util.make_list(values.get('regex', [])):
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
 
-        self.highlightingRules += [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword']) for pattern in pyKeywordPatterns]
+        self.highlightingRules += [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
+                                   for pattern in python['keywords']]
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -549,17 +532,20 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(config["editor"][0]["windowColor"]))
-    palette.setColor(QPalette.WindowText, QColor(config["editor"][0]["windowText"]))
-    palette.setColor(QPalette.Base, QColor(config["editor"][0]["editorColor"]))
-    palette.setColor(QPalette.AlternateBase, QColor(config["editor"][0]["alternateBase"]))
-    palette.setColor(QPalette.ToolTipBase, QColor(config["editor"][0]["ToolTipBase"]))
-    palette.setColor(QPalette.ToolTipText, QColor(config["editor"][0]["ToolTipText"]))
-    palette.setColor(QPalette.Text, QColor(config["editor"][0]["editorText"]))
-    palette.setColor(QPalette.Button, QColor(config["editor"][0]["buttonColor"]))
-    palette.setColor(QPalette.ButtonText, QColor(config["editor"][0]["buttonTextColor"]))
-    palette.setColor(QPalette.Highlight, QColor(config["editor"][0]["HighlightColor"]).lighter())
-    palette.setColor(QPalette.HighlightedText, QColor(config["editor"][0]["HighlightedTextColor"]))
+
+    editor = config['editor']
+
+    palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
+    palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
+    palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
+    palette.setColor(QPalette.AlternateBase, QColor(editor["alternateBase"]))
+    palette.setColor(QPalette.ToolTipBase, QColor(editor["ToolTipBase"]))
+    palette.setColor(QPalette.ToolTipText, QColor(editor["ToolTipText"]))
+    palette.setColor(QPalette.Text, QColor(editor["editorText"]))
+    palette.setColor(QPalette.Button, QColor(editor["buttonColor"]))
+    palette.setColor(QPalette.ButtonText, QColor(editor["buttonTextColor"]))
+    palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+    palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
     app.setPalette(palette)
 
     ex = Main()
