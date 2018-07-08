@@ -182,26 +182,30 @@ class Main(QMainWindow):
         self.show()
 
     def onStart(self):
-        with open("../config.json", "r") as jsonFile:
-            read = jsonFile.read()
-            self.data = json.loads(read)
+        try:
+            jsonFile = open("../config.json", "r")
+        except FileNotFoundError:
+            jsonFile = open("../config.json.sample", "r")
 
-            if self.data["editor"][0]["windowStaysOnTop"] is True:
-                self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        read = jsonFile.read()
+        jsonFile.close()
+        self.data = json.loads(read)
 
-            else:
-                pass
-            if self.data["editor"][0]["DontUseNativeDialog"] is True:
-                self.DontUseNativeDialogs = True
+        if self.data["editor"][0]["windowStaysOnTop"] is True:
+            self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
-            else:
-                self.DontUseNativeDialogs = False
-            self.font = QFont()
-            self.font.setFamily(self.data["editor"][0]["editorFont"])
+        else:
+            pass
+        if self.data["editor"][0]["DontUseNativeDialog"] is True:
+            self.DontUseNativeDialogs = True
 
-            self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
-            self.tabSize = self.data["editor"][0]["TabWidth"]
-            jsonFile.close()
+        else:
+            self.DontUseNativeDialogs = False
+        self.font = QFont()
+        self.font.setFamily(self.data["editor"][0]["editorFont"])
+
+        self.font.setPointSize(self.data["editor"][0]["editorFontSize"])
+        self.tabSize = self.data["editor"][0]["TabWidth"]
 
     def initUI(self):
         self.statusBar()  # Initializing the status bar
@@ -393,10 +397,16 @@ class Main(QMainWindow):
 class pyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
         super(pyHighlighter, self).__init__(parent, *args)
-        with open("../config.json", "r") as jsonFile:
-            read = jsonFile.read()
-            data = json.loads(read)
-            jsonFile.close()
+
+        try:
+            jsonFile = open("../config.json", "r")
+        except FileNotFoundError:
+            jsonFile = open("../config.json.sample", "r")
+
+        read = jsonFile.read()
+        jsonFile.close()
+        data = json.loads(read)
+
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))
         keywordFormat.setFontWeight(QFont.Bold)
@@ -495,10 +505,16 @@ class pyHighlighter(QSyntaxHighlighter):
 class cHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
         super(cHighlighter, self).__init__(parent, *args)
-        with open("../config.json", "r") as jsonFile:
-            read = jsonFile.read()
-            data = json.loads(read)
-            jsonFile.close()
+
+        try:
+            jsonFile = open("../config.json", "r")
+        except FileNotFoundError:
+            jsonFile = open("../config.json.sample", "r")
+
+        read = jsonFile.read()
+        jsonFile.close()
+        data = json.loads(read)
+
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(QColor(data["syntaxHighlightColors"][0]["keywordFormatColor"]))
         keywordFormat.setFontWeight(QFont.Bold)
@@ -581,24 +597,30 @@ class cHighlighter(QSyntaxHighlighter):
 
 
 if __name__ == '__main__':
-    with open("../config.json", "r") as jsonFile:
-        read = jsonFile.read()
-        data = json.loads(read)
-        app = QApplication(sys.argv)
-        app.setStyle('Fusion')
-        palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(data["editor"][0]["windowColor"]))
-        palette.setColor(QPalette.WindowText, QColor(data["editor"][0]["windowText"]))
-        palette.setColor(QPalette.Base, QColor(data["editor"][0]["editorColor"]))
-        palette.setColor(QPalette.AlternateBase, QColor(data["editor"][0]["alternateBase"]))
-        palette.setColor(QPalette.ToolTipBase, QColor(data["editor"][0]["ToolTipBase"]))
-        palette.setColor(QPalette.ToolTipText, QColor(data["editor"][0]["ToolTipText"]))
-        palette.setColor(QPalette.Text, QColor(data["editor"][0]["editorText"]))
-        palette.setColor(QPalette.Button, QColor(data["editor"][0]["buttonColor"]))
-        palette.setColor(QPalette.ButtonText, QColor(data["editor"][0]["buttonTextColor"]))
-        palette.setColor(QPalette.Highlight, QColor(data["editor"][0]["HighlightColor"]).lighter())
-        palette.setColor(QPalette.HighlightedText, QColor(data["editor"][0]["HighlightedTextColor"]))
-        app.setPalette(palette)
+    try:
+        jsonFile = open("../config.json", "r")
+    except FileNotFoundError:
+        jsonFile = open("../config.json.sample", "r")
 
-        ex = Main()
-        sys.exit(app.exec_())
+    read = jsonFile.read()
+    jsonFile.close()
+    data = json.loads(read)
+
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(data["editor"][0]["windowColor"]))
+    palette.setColor(QPalette.WindowText, QColor(data["editor"][0]["windowText"]))
+    palette.setColor(QPalette.Base, QColor(data["editor"][0]["editorColor"]))
+    palette.setColor(QPalette.AlternateBase, QColor(data["editor"][0]["alternateBase"]))
+    palette.setColor(QPalette.ToolTipBase, QColor(data["editor"][0]["ToolTipBase"]))
+    palette.setColor(QPalette.ToolTipText, QColor(data["editor"][0]["ToolTipText"]))
+    palette.setColor(QPalette.Text, QColor(data["editor"][0]["editorText"]))
+    palette.setColor(QPalette.Button, QColor(data["editor"][0]["buttonColor"]))
+    palette.setColor(QPalette.ButtonText, QColor(data["editor"][0]["buttonTextColor"]))
+    palette.setColor(QPalette.Highlight, QColor(data["editor"][0]["HighlightColor"]).lighter())
+    palette.setColor(QPalette.HighlightedText, QColor(data["editor"][0]["HighlightedTextColor"]))
+    app.setPalette(palette)
+
+    ex = Main()
+    sys.exit(app.exec_())
