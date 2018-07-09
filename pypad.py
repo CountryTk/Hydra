@@ -9,7 +9,9 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
 
-    from pypad import window
+    from pypad import palette, window
+
+    app.setPalette(palette.Palette())
 
     window.main_window.show()
 
