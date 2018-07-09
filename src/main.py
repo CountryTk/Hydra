@@ -5,9 +5,11 @@ from PyQt5.QtCore import Qt, QRect, QRegExp, QDir
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel
-
+from qtconsole.qt import QtGui
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.inprocess import QtInProcessKernelManager
 from pyautogui import hotkey
-
+import random
 import util
 import config
 config = config.read()
@@ -83,7 +85,7 @@ class Directory(QTreeView):
 
         self.open_callback = callback
 
-        self.layout = QHBoxLayout()
+        #self.layout = QHBoxLayout()
         self.model = QFileSystemModel()
         self.setModel(self.model)
         self.model.setRootPath(QDir.rootPath())
@@ -99,7 +101,7 @@ class Directory(QTreeView):
 
         self.hideColumn(2)
         self.hideColumn(3)
-        self.layout.addWidget(self)
+        #self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
         self.show()
 
@@ -125,6 +127,55 @@ class Content(QWidget):
         self.hbox.addWidget(self.editor)
 
 
+class ConsoleWidget(RichJupyterWidget):
+
+    def __init__(self, parent, *args, **kwargs):
+        super(ConsoleWidget, self).__init__(parent, *args, **kwargs)
+
+        self.font_size = 6
+        self.layout = QHBoxLayout()
+        self.kernel_manager = kernel_manager = QtInProcessKernelManager()
+        kernel_manager.start_kernel(show_banner=False)
+        kernel_manager.kernel.gui = 'qt'
+        self.kernel_client = kernel_client = self._kernel_manager.client()
+        kernel_client.start_channels()
+        self.layout.addWidget(self)
+
+        def stop():
+            kernel_client.stop_channels()
+            kernel_manager.shutdown_kernel()
+            get_app_qt().exit()
+
+        self.exit_requested.connect(stop)
+
+    def push_vars(self, variableDict):
+        """
+        Given a dictionary containing name / value pairs, push those variables
+        to the Jupyter console widget
+        """
+        self.kernel_manager.kernel.shell.push(variableDict)
+
+    def clear(self):
+        """
+        Clears the terminal
+        """
+        self._control.clear()
+
+        # self.kernel_manager
+
+    def print_text(self, text):
+        """
+        Prints some plain text to the console
+        """
+        self._append_plain_text(text)
+
+    def execute_command(self, command):
+        """
+        Execute a command in the frame of the console widget
+        """
+        self._execute(command, False)
+
+
 class Tabs(QWidget):
 
     def __init__(self, callback):
@@ -132,8 +183,8 @@ class Tabs(QWidget):
         self.layout = QHBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
-
         self.directory = Directory(callback)
+        self.directory.clearSelection()
 
         # Add tabs
         self.tabs.setTabsClosable(True)
@@ -141,8 +192,6 @@ class Tabs(QWidget):
         self.tabs.setTabShape(1)  # TODO: make this customizable
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
-        # Add tabs to widget
-        # self.layout.addWidget(self.tabs)
         self.hideDirectory()
 
     def closeTab(self, index):
@@ -220,6 +269,7 @@ class Main(QMainWindow):
             'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
             'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
             'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
+            'Python console': {'shortcut': 'Ctrl+Shift+P', 'tip': 'Open a python console', 'action': self.pyConsole}
         }
 
         actions = {}
@@ -236,6 +286,7 @@ class Main(QMainWindow):
         menus = {
             'File': ['New', 'Open...', 'Save', 'Save As...', 'Separator', 'Quit'],
             'Edit': ['Undo', 'Redo', 'Separator', 'Cut', 'Copy', 'Paste', 'Separator', 'Select All'],
+            'Tools': ['Python console']
         }
 
         for name, items in menus.items():
@@ -305,8 +356,8 @@ class Main(QMainWindow):
 
     def newFile(self):
         text = ""
-        fileName = "Untitled.txt"
-
+        fileName = "New" + str(random.randint(1, 2000000)) + ".py"
+        self.pyFileOpened = True
         # Creates a new blank file
         file = Content(text, fileName)
 
@@ -317,6 +368,7 @@ class Main(QMainWindow):
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
 
         widget = self.tab.tabs.currentWidget()
+        self.pyhighlighter = pyHighlighter(widget.editor.document())  # Creating the highlighter for python file
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
@@ -388,6 +440,10 @@ class Main(QMainWindow):
                 print("No file opened")
         except FileNotFoundError:
             print("File dialog closed")
+
+    def pyConsole(self):
+        x = ConsoleWidget(self)
+        x.show()
 
 
 class pyHighlighter(QSyntaxHighlighter):
