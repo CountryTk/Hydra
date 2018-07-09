@@ -16,7 +16,7 @@ Required modules: PyQt5, pyautogui
 
 ```chmod +x install.sh```
 
-```./install.sh```
+```./install.sh (When it prompts for home directory, use "/root" no quotations)```
 
 If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
 
