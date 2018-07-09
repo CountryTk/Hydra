@@ -1,0 +1,70 @@
+{
+  "editor": {
+    "windowStaysOnTop": false,
+    "editorFont": "Iosevka",
+    "editorFontSize": 12,
+      "TabWidth": 45,
+    "colors": {
+      "editor": "#303030",
+      "editorText": "#FFFFFF",
+      "window": "#303030",
+      "windowText": "#36fc0a",
+      "alternateBase": "#FFFFFF",
+      "toolTipBase": "#FFFFFF",
+      "toolTipText": "#FFFFFF",
+      "button": "#353535",
+      "buttonText": "#FFFFFF",
+      "highlight": "#4DD2FF",
+      "highlightedText": "#000000"
+    }
+  },
+  "files": {
+    "python": {
+      "extensions": "py",
+      "indentation": 4,
+      "keywords": ["for", "class", "range", "False", "finally", "is", "return", "None", "continue", "for", "lambda",
+        "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
+        "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
+      "highlighting": {
+        "keyword": {
+          "color": "#0099FF",
+          "bold": true
+        },
+        "class": {
+          "regex": "\\bclass\\b",
+          "color": "#00FF16",
+          "bold": true
+        },
+        "function": {
+          "regex": "[A-Za-z0-9_]+(?=\\()",
+          "color": "#FF9500",
+          "italic": true
+        },
+        "magic": {
+          "regex": "\\\\__[^']*\\\\__",
+          "color": "#FF6666"
+        },
+        "decorator": {
+          "regex": "@[^\n]*",
+          "color": "#FF00E7"
+        },
+        "int": {
+          "regex": "[-+]?[0-9]+",
+          "color": "#70DBFF"
+        },
+        "quotation": {
+          "regex": ["#[^\n]*", "\"[^\"]*\""],
+          "color": "#039135"
+        },
+        "singleLineComment": {
+          "regex": "#[^\n]*",
+          "color": "#6B6E6C"
+        },
+        "multiLineComment": {
+          "regex": "[-+]?[0-9]+",
+          "color": "#039135"
+        }
+      }
+    }
+  }
+}
