@@ -33,7 +33,7 @@ class NumberBar(QWidget):
                 self.update()
 
     def update_width(self, string):
-        width = self.fontMetrics().width(str(string)) + 40
+        width = self.fontMetrics().width(str(string)) + 28
         print("update_width:width:" + str(width))
         if self.width() != width:
             self.setFixedWidth(width)
@@ -119,7 +119,6 @@ class Content(QWidget):
         self.fileName = fileName
         self.editor.setPlainText(text)
         # Create a layout for the line numbers
-
         self.hbox = QHBoxLayout(self)
         self.numbers = NumberBar(self.editor)
         self.hbox.addWidget(self.numbers)
@@ -180,6 +179,7 @@ class Main(QMainWindow):
         self.files = None  # Tracking the current file that is open
         self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
         self.cFileOpened = False
+
 
         self.initUI()  # Main UI
         self.show()
@@ -412,7 +412,7 @@ class pyHighlighter(QSyntaxHighlighter):
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
 
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
-                                   for pattern in python['keywords']] + self.highlightingRules
+                                  for pattern in python['keywords']] + self.highlightingRules
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
