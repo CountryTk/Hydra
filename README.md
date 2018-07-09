@@ -26,4 +26,4 @@ https://stackoverflow.com/questions/35074294/pip3-install-pyautogui-fails-with-e
 
 .
 
-![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/2018-07-06-003240_800x600_scrot.png)
+![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/2018-07-09-154131_1014x701_scrot.png)
