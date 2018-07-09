@@ -14,7 +14,7 @@
     "buttonTextColor": "#FFFFFF",
     "HighlightColor": "#4DD2FF",
     "HighlightedTextColor": "#000000",
-    "TabWidth": 38,
+    "TabWidth": 39,
     "DontUseNativeDialog": true
   },
   "files": {
