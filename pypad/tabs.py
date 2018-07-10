@@ -1,7 +1,4 @@
-from PyQt5.QtCore import Qt, QRect, QDir
-from PyQt5.QtGui import QColor, QPainter, QPalette, QFont, QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel
+from PyQt5.QtWidgets import QTabWidget, QHBoxLayout
 
 
 from pypad import window, editor

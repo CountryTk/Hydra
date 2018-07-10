@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QMainWindow, QHBoxLayout, QGridLayout, QPushButton, QAction
+from PyQt5.QtWidgets import QWidget, QMainWindow, QGridLayout
 
 
 from pypad import config, dialog, directory, menu, tabs
