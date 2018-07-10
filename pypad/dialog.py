@@ -20,6 +20,7 @@ class Error(QDialog):
         button.clicked.connect(self.closeEvent)
         layout.addWidget(button)
 
+        self.exec_()  # pause main thread while dialog is open
         self.setWindowTitle("Error")
         self.show()
 
