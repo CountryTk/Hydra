@@ -1,14 +1,14 @@
 import sys
-import json
 import os
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel,\
+    QTextEdit, QSplitter
+from pyautogui import hotkey
 from qtconsole.qt import QtGui
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
-from pyautogui import hotkey
 import random
 import util
 import config
@@ -85,7 +85,7 @@ class Directory(QTreeView):
 
         self.open_callback = callback
 
-        #self.layout = QHBoxLayout()
+        self.layout = QHBoxLayout()
         self.model = QFileSystemModel()
         self.setModel(self.model)
         self.model.setRootPath(QDir.rootPath())
@@ -101,7 +101,7 @@ class Directory(QTreeView):
 
         self.hideColumn(2)
         self.hideColumn(3)
-        #self.layout.addWidget(self)
+        self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
         self.show()
 
@@ -129,8 +129,8 @@ class Content(QWidget):
 
 class ConsoleWidget(RichJupyterWidget):
 
-    def __init__(self, parent, *args, **kwargs):
-        super(ConsoleWidget, self).__init__(parent, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ConsoleWidget, self).__init__(*args, **kwargs)
 
         self.font_size = 6
         self.layout = QHBoxLayout()
@@ -180,17 +180,43 @@ class Tabs(QWidget):
 
     def __init__(self, callback):
         super().__init__()
-        self.layout = QHBoxLayout(self)
+        self.layout = QVBoxLayout(self)  # Change main layout to Vertical
         # Initialize tab screen
-        self.tabs = QTabWidget()
-        self.directory = Directory(callback)
+        self.tabs = QTabWidget()  # TODO: THiss is topright
+        self.console = ConsoleWidget()  # Create console widget TODO: This is bottom
+
+        self.directory = Directory(callback)  # TODO: This is topleft
         self.directory.clearSelection()
 
         # Add tabs
+        self.tab_layout = QHBoxLayout()  # Create new layout for original tab layout
+        self.tab_layout.addWidget(self.tabs)  # Add tab widget to tab layout
+
         self.tabs.setTabsClosable(True)
-        self.tabs.setMovable(True)   # TODO: make this customizable
+        self.tabs.setMovable(True)  # TODO: make this customizable
         self.tabs.setTabShape(1)  # TODO: make this customizable
         self.tabs.tabCloseRequested.connect(self.closeTab)
+
+        # Add Console
+        self.console_layout = QHBoxLayout()  # Create console layout
+        self.console_layout.addWidget(self.console)  # Add console to console layout
+
+        # Build Layout
+        self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
+        self.layout.addLayout(self.console_layout)  # Adds 'BOTTOM' layout : console
+
+        # Creating horizontal splitter
+        self.splitterH = QSplitter(Qt.Horizontal)
+        #self.splitterH.addWidget(self.directory)
+        #self.splitterH.addWidget(self.tabs)
+
+        # Creating vertical splitter
+        self.splitterV = QSplitter(Qt.Vertical)
+        self.splitterV.addWidget(self.splitterH)
+        #self.splitterV.addWidget(self.console)
+        self.layout.addWidget(self.splitterV)
+
+        self.setLayout(self.layout)  # Sets layout of QWidget
 
         self.hideDirectory()
 
@@ -201,13 +227,24 @@ class Tabs(QWidget):
 
     def showDirectory(self):
         self.directory.setVisible(True)
-        self.layout.removeWidget(self.tabs)
-        self.layout.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
-        self.layout.addWidget(self.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+        self.tab_layout.removeWidget(self.tabs)
+        self.splitterH.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
+        self.splitterH.addWidget(self.tabs)  # Adding tabs, now the directory tree will be on the left
 
     def hideDirectory(self):
-        self.layout.removeWidget(self.directory)
+        self.tab_layout.removeWidget(self.directory)
         self.directory.setVisible(False)
+
+    """
+    Because the root layouts are set all you have to do now is just add/remove widgets from the parent layout associated.
+    This keeps the UI order set as intended as built above when initialized.
+    """
+
+    def showConsole(self):
+        self.console_layout.addWidget(self.console)
+
+    def hideConsole(self):
+        self.console_layout.removeWidget(self.console)
 
 
 class Main(QMainWindow):
@@ -228,7 +265,6 @@ class Main(QMainWindow):
         self.files = None  # Tracking the current file that is open
         self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
         self.cFileOpened = False
-
 
         self.initUI()  # Main UI
         self.show()
@@ -328,6 +364,7 @@ class Main(QMainWindow):
                                          tab.fileName)  # This is the index which we will use to set the current index
 
             self.tab.directory.openDirectory(dirPath)
+
             self.tab.showDirectory()
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
@@ -341,12 +378,12 @@ class Main(QMainWindow):
 
             if filename.endswith(".py"):
                 self.pyFileOpened = True
-                self.pyhighlighter = pyHighlighter(
+                self.pyhighlighter = PyHighlighter(
                     currentTab.editor.document())  # Creating the highlighter for python
 
             elif filename.endswith(".c"):
                 self.cFileOpened = True
-                self.chighlighter = cHighlighter(currentTab.editor.document())
+                self.chighlighter = CHighlighter(currentTab.editor.document())
 
             else:
                 if self.pyFileOpened:
@@ -361,14 +398,14 @@ class Main(QMainWindow):
         # Creates a new blank file
         file = Content(text, fileName)
 
-        self.tab.layout.addWidget(self.tab.tabs, 10)  # Adding tabs, now the directory tree will be on the left
+        self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
 
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
 
         widget = self.tab.tabs.currentWidget()
-        self.pyhighlighter = pyHighlighter(widget.editor.document())  # Creating the highlighter for python file
+        self.pyhighlighter = PyHighlighter(widget.editor.document())  # Creating the highlighter for python file
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
@@ -429,10 +466,10 @@ class Main(QMainWindow):
                     newActiveTab.editor.setFocus()
 
                     if fileName.endswith(".py"):  # If we are dealing with a python file we use highlighting on it
-                        self.pyhighlighter = pyHighlighter(newActiveTab.editor.document())
+                        self.pyhighlighter = PyHighlighter(newActiveTab.editor.document())
                         newActiveTab.editor.setTabStopWidth(self.tabSize)
                     elif fileName.endswith(".c"):
-                        self.chighlighter = cHighlighter(newActiveTab.editor.document())
+                        self.chighlighter = CHighlighter(newActiveTab.editor.document())
                         newActiveTab.editor.setTabStopWidth(self.tabSize)
                     saveFile.close()
 
@@ -442,13 +479,12 @@ class Main(QMainWindow):
             print("File dialog closed")
 
     def pyConsole(self):
-        x = ConsoleWidget(self)
-        x.show()
+        self.tab.splitterV.addWidget(self.tab.console)
 
 
-class pyHighlighter(QSyntaxHighlighter):
+class PyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
-        super(pyHighlighter, self).__init__(parent, *args)
+        super(PyHighlighter, self).__init__(parent, *args)
 
         python = config['files']['python']
 
@@ -500,9 +536,9 @@ class pyHighlighter(QSyntaxHighlighter):
             start_index = comment.indexIn(text, start_index + length)
 
 
-class cHighlighter(QSyntaxHighlighter):
+class CHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, *args):
-        super(cHighlighter, self).__init__(parent, *args)
+        super(CHighlighter, self).__init__(parent, *args)
 
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(QColor(config["syntaxHighlightColors"][0]["keywordFormatColor"]))
