@@ -1,9 +1,9 @@
 # PyPad
-A simple cross-platform python editing notepad written in python.
+A simple cross-platform python editing notepad with integrated IPython console, written in python.
 
 This editor is fully customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, pyautogui, XLib ( required to install pyautogui ) 
+Required modules: PyQt5, pyautogui, XLib ( required to install pyautogui ), IPython, qtconsole 
 
 # Installation with install.sh
 ```sudo -i```
