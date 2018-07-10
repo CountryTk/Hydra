@@ -31,7 +31,8 @@ class Tabs(QTabWidget):
 
     def new_tab(self, path: str=''):
         tab = editor.Editor(path)
-        self.addTab(tab, tab.get_name())
+        index = self.addTab(tab, tab.get_name())
+        self.setCurrentIndex(index)
 
     def open(self):
         options = QFileDialog.Options()
