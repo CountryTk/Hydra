@@ -16,21 +16,15 @@ class Config:
             app_dir = os.path.expanduser(app_dir)
             if not os.path.exists(app_dir):
                 dialog.FatalError(app_dir, "does not exist")
-                return
         else:
-            if sys.platform.startswith('linux'):
-                local_config_dir = os.path.expanduser('~/.config')
-            elif sys.platform == 'darwin':
+            local_config_dir = os.path.expanduser('~/.config')
+            if sys.platform == 'darwin':
                 local_config_dir = os.path.expanduser('~/Library/Application Support')
             elif sys.platform == 'win32':
                 local_config_dir = os.getenv('APPDATA') or ''
-            else:
-                dialog.FatalError("Couldn't find your config directory")
-                return
 
             if not os.path.exists(local_config_dir):
                 dialog.FatalError("Couldn't find your config directory")
-                return
 
             app_dir = os.path.join(local_config_dir, 'PyPad')
             if not os.path.exists(app_dir):
@@ -38,7 +32,6 @@ class Config:
                     os.mkdir(app_dir)
                 except PermissionError:
                     dialog.FatalError("Couldn't write to", local_config_dir)
-                    return
 
         self.config_path = os.path.join(app_dir, 'config.json')
         if not os.path.exists(self.config_path):
@@ -47,10 +40,8 @@ class Config:
                 shutil.copyfile(sample_dir, self.config_path)
             except PermissionError:
                 dialog.FatalError("Couldn't write to", self.config_path)
-                return
             except FileNotFoundError:
                 dialog.FatalError("Couldn't read", sample_dir)
-                return
 
         self.load()
 
