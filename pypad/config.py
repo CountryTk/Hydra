@@ -76,5 +76,8 @@ class Config:
             if item in self.data:
                 return self.data[item]
 
+    def get(self, *args):
+        return self.data.get(*args)
+
 
 config = Config()
