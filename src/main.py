@@ -203,17 +203,14 @@ class Tabs(QWidget):
 
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
-        self.layout.addLayout(self.console_layout)  # Adds 'BOTTOM' layout : console
+        #self.layout.addLayout(self.console_layout)  # Adds 'BOTTOM' layout : console
 
         # Creating horizontal splitter
         self.splitterH = QSplitter(Qt.Horizontal)
-        #self.splitterH.addWidget(self.directory)
-        #self.splitterH.addWidget(self.tabs)
 
         # Creating vertical splitter
         self.splitterV = QSplitter(Qt.Vertical)
         self.splitterV.addWidget(self.splitterH)
-        #self.splitterV.addWidget(self.console)
         self.layout.addWidget(self.splitterV)
 
         self.setLayout(self.layout)  # Sets layout of QWidget
