@@ -4,7 +4,7 @@
   "editor": {
     "editorFont": "Iosevka",
     "editorFontSize": 12,
-      "TabWidth": 45,
+    "tabWidth": 45,
     "colors": {
       "editor": "#303030",
       "editorText": "#FFFFFF",

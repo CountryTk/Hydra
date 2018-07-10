@@ -5,7 +5,7 @@ import uuid
 from PyQt5.QtWidgets import QWidget, QFileDialog, QPlainTextEdit, QGridLayout
 
 
-from pypad import dialog, numbers, window
+from pypad import config, dialog, numbers, window
 
 
 class Editor(QWidget):
@@ -16,6 +16,7 @@ class Editor(QWidget):
         self.layout = QGridLayout(self)
 
         self.editor = QPlainTextEdit()
+        self.editor.setFont(config.config.font)
 
         self.path = path
 

@@ -4,6 +4,9 @@ import json
 import shutil
 
 
+from PyQt5.QtGui import QFont
+
+
 from pypad import dialog
 
 
@@ -45,6 +48,8 @@ class Config:
 
         self.load()
 
+        self.font = self.font()
+
     def load(self):
         try:
             with open(self.config_path, 'r') as file:
@@ -78,6 +83,13 @@ class Config:
 
     def get(self, *args):
         return self.data.get(*args)
+
+    def font(self):
+        font = QFont()
+        font.setFamily(self.data['editor']['editorFont'])
+        font.setPointSize(self.data['editor']['editorFontSize'])
+        font.setFixedPitch(True)
+        return font
 
 
 config = Config()
