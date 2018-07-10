@@ -13,7 +13,7 @@ class NumberBar(QWidget):
         self.editor = parent
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
-        self.update_width('1')
+        self.update_width(len(self.editor.toPlainText().split('\n')))
 
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
