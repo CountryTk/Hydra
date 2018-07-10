@@ -1,7 +1,9 @@
+import os
+
 from PyQt5.QtWidgets import QTabWidget, QHBoxLayout, QFileDialog
 
 
-from pypad import window, editor
+from pypad import directory, editor, window
 
 
 class Tabs(QTabWidget):
@@ -40,6 +42,7 @@ class Tabs(QTabWidget):
                                                 'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
                                                 options=options)
         if files:
+            directory.directory_tree.set_root(os.path.dirname(files[0]))
             self.new_tab(files[0])
 
 

@@ -2,7 +2,7 @@ from PyQt5.QtCore import QDir
 from PyQt5.QtWidgets import QHBoxLayout, QTreeView, QFileSystemModel
 
 
-from pypad import window
+from pypad import tabs, window
 
 
 class DirectoryTree(QTreeView):
@@ -28,7 +28,7 @@ class DirectoryTree(QTreeView):
 
     def double_click(self, signal):
         file_path = self.model.filePath(signal)
-        window.main_window.open(file_path)
+        tabs.tabs.new_tab(file_path)
 
 
 directory_tree = DirectoryTree()
