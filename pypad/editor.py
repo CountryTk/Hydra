@@ -3,7 +3,7 @@ import sys
 import uuid
 
 from PyQt5.QtCore import Qt, QRect, QDir
-from PyQt5.QtGui import QColor, QPainter, QPalette, QFont, QIcon
+from PyQt5.QtGui import QColor, QPainter, QPalette, QFont, QIcon, QTextCursor
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel, QGridLayout
 

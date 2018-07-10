@@ -25,6 +25,9 @@ class Tabs(QTabWidget):
         tab.deleteLater()
         self.removeTab(index)
 
+    def get_current(self):
+        return self.widget(self.currentIndex())
+
     def change_tab(self, index):
         name = self.widget(index).get_name()
         window.main_window.set_filename(name)

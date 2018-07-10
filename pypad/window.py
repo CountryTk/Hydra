@@ -1,10 +1,11 @@
 import os
 
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QMainWindow, QHBoxLayout, QGridLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QMainWindow, QHBoxLayout, QGridLayout, QPushButton, QAction
 
 
-from pypad import directory, tabs
+from pypad import config, dialog, directory, menu, tabs
 
 
 class MainWidget(QWidget):
@@ -22,6 +23,7 @@ class MainWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.statusBar()
 
         self.setWindowTitle('PyPad')
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'resources/Python-logo-notext.png')))
@@ -29,7 +31,16 @@ class MainWindow(QMainWindow):
     def set_filename(self, name):
         self.setWindowTitle('Pypad - ' + name)
 
+    def quit(self):
+        if config.config.get('quitInstantly'):
+            QCoreApplication.instance().quit()
+        dialog.Quit()
+
+    def show(self):
+        menu.Menu()
+        main_window.setCentralWidget(main_widget)
+        super().show()
+
 
 main_window = MainWindow()
 main_widget = MainWidget()
-main_window.setCentralWidget(main_widget)

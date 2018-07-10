@@ -1,6 +1,7 @@
 {
+  "windowStaysOnTop": false,
+  "quitInstantly": false,
   "editor": {
-    "windowStaysOnTop": false,
     "editorFont": "Iosevka",
     "editorFontSize": 12,
       "TabWidth": 45,
@@ -20,13 +21,14 @@
       "lineHighlight": "#00FF04"
     }
   },
+  "menus": {
+    "File": ["New", "Open", "Save", "Save As", "Separator", "Quit"],
+    "Edit": ["Undo", "Redo", "Separator", "Cut", "Copy", "Paste", "Separator", "Select All"]
+  },
   "files": {
     "python": {
       "extensions": "py",
       "indentation": 4,
-      "keywords": ["for", "class", "range", "False", "finally", "is", "return", "None", "continue", "for", "lambda",
-        "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
-        "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
       "highlighting": {
         "keyword": {
           "color": "#0099FF",
