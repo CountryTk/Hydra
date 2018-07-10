@@ -15,7 +15,9 @@
       "button": "#353535",
       "buttonText": "#FFFFFF",
       "highlight": "#4DD2FF",
-      "highlightedText": "#000000"
+      "highlightedText": "#000000",
+      "lineBar": "#353535",
+      "lineHighlight": "#00FF04"
     }
   },
   "files": {
