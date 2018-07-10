@@ -1,6 +1,9 @@
 {
-  "windowStaysOnTop": false,
-  "quitInstantly": false,
+  "window": {
+    "windowStaysOnTop": false,
+    "quitInstantly": false,
+    "size": [800, 700]
+  },
   "editor": {
     "editorFont": "Iosevka",
     "editorFontSize": 12,

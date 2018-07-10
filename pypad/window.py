@@ -28,6 +28,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('PyPad')
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'resources/Python-logo-notext.png')))
 
+        self.resize(*config.config['window']['size'])
+
     def set_filename(self, name):
         self.setWindowTitle('Pypad - ' + name)
 
