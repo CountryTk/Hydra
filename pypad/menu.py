@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QFileDialog
 
 
 from pypad import config, tabs, window
@@ -15,11 +15,11 @@ class Menu:
             'Copy': {'shortcut': 'Ctrl+C', 'action': tabs.tabs.get_current().editor.copy},
             'Paste': {'shortcut': 'Ctrl+V', 'action': tabs.tabs.get_current().editor.paste},
             'Select All': {'shortcut': 'Ctrl+A', 'action': tabs.tabs.get_current().editor.selectAll},
-            'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': window.main_window.quit},
-            'Open': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': window.main_window.quit},
+            'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': tabs.tabs.new_tab},
+            'Open': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': tabs.tabs.open},
             'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': window.main_window.quit},
-            'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': window.main_window.quit},
-            'Save As': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': window.main_window.quit},
+            'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': tabs.tabs.get_current().save},
+            'Save As': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': tabs.tabs.get_current().save_as},
         }
 
         actions = {}

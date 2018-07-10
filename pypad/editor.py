@@ -57,3 +57,9 @@ class Editor(QWidget):
         with open(self.path, 'r') as file:
             text = file.read()
         self.editor.setPlainText(text)
+
+    def save(self):
+        pass
+
+    def save_as(self):
+        pass

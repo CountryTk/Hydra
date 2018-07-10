@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTabWidget, QHBoxLayout
+from PyQt5.QtWidgets import QTabWidget, QHBoxLayout, QFileDialog
 
 
 from pypad import window, editor
@@ -32,6 +32,14 @@ class Tabs(QTabWidget):
     def new_tab(self, path: str=''):
         tab = editor.Editor(path)
         self.addTab(tab, tab.get_name())
+
+    def open(self):
+        options = QFileDialog.Options()
+        files, _ = QFileDialog.getOpenFileNames(window.main_window, 'Open a file', '',
+                                                'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                                options=options)
+        if files:
+            self.new_tab(files[0])
 
 
 tabs = Tabs()
