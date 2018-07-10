@@ -44,10 +44,10 @@ class Editor(QWidget):
 
         path = os.path.join(temp, 'pypad-' + str(uuid.uuid4()).split('-')[0] + '.txt')
 
-        try:
-            open(path, 'a').close()
-        except PermissionError:
-            dialog.FatalError("Couldn't write to", path)
+        # try:
+        #     open(path, 'a').close()
+        # except PermissionError:
+        #     dialog.FatalError("Couldn't write to", path)
 
         self.path = path
         self.editor.setPlainText('')
