@@ -10,8 +10,40 @@ from PyQt5.QtGui import QFont
 from pypad import dialog
 
 
+class FakeDict:
+
+    def __init__(self, main=None, fallback=None):
+        super().__init__()
+        self.main = main if main else {}
+        self.fallback = fallback if fallback else {}
+
+    def get(self, key, value=None):
+        if key in self.main:
+            if key not in self.fallback:
+                self.fallback[key] = self.main[key]
+            if isinstance(self.main[key], dict):
+                return FakeDict(self.main[key], self.fallback[key])
+            else:
+                return self.main[key]
+        if key in self.fallback:
+            if isinstance(self.fallback[key], dict):
+                return FakeDict(self.fallback[key], self.fallback[key])
+            else:
+                return self.fallback[key]
+        return value
+
+    def __getitem__(self, key):
+        value = self.get(key)
+        if value:
+            return value
+        dialog.FatalError("Couldn't find", key, "in config")
+
+    def items(self):
+        return self.main.items()
+
+
 class Config:
-    data = []
+    data = fallback = []
 
     def __init__(self, app_dir: str = ''):
 
@@ -47,7 +79,6 @@ class Config:
                 dialog.FatalError("Couldn't read", sample_dir)
 
         self.load()
-
         self.font = self.font()
 
     def load(self):
@@ -55,6 +86,10 @@ class Config:
             with open(self.config_path, 'r') as file:
                 text = file.read()
                 self.data = json.loads(text)
+
+            with open(os.path.join(os.path.dirname(__file__), 'resources/config.json'), 'r') as file:
+                text = file.read()
+                self.fallback = json.loads(text)
 
         except FileNotFoundError:
             dialog.FatalError("Couldn't find", self.config_path)
@@ -69,20 +104,13 @@ class Config:
             dialog.FatalError("Couldn't find", self.config_path)
 
     def __setitem__(self, key, value):
-        self.data.__setitem__(key, value)
+        self.data.__setkey__(key, value)
 
     def __getitem__(self, key):
-        return self.data.__getitem__(key)
-
-    def __getattribute__(self, item):
-        try:
-            return super(Config, self).__getattribute__(item)
-        except AttributeError:
-            if item in self.data:
-                return self.data[item]
+        return FakeDict(self.data, self.fallback)[key]
 
     def get(self, *args):
-        return self.data.get(*args)
+        return FakeDict(self.data, self.fallback).get(*args)
 
     def font(self):
         font = QFont()
