@@ -2,13 +2,10 @@ import os
 import sys
 import uuid
 
-from PyQt5.QtCore import Qt, QRect, QDir
-from PyQt5.QtGui import QColor, QPainter, QPalette, QFont, QIcon, QTextCursor
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel, QLabel, QGridLayout
+from PyQt5.QtWidgets import QWidget, QFileDialog, QPlainTextEdit, QGridLayout
 
 
-from pypad import dialog, numbers
+from pypad import dialog, numbers, window
 
 
 class Editor(QWidget):
@@ -59,7 +56,17 @@ class Editor(QWidget):
         self.editor.setPlainText(text)
 
     def save(self):
-        pass
+        try:
+            with open(self.path, 'w') as file:
+                file.write(self.editor.toPlainText())
+        except PermissionError:
+            dialog.Error("Couldn't write to", self.path)
 
     def save_as(self):
-        pass
+        options = QFileDialog.Options()
+        paths = QFileDialog.getSaveFileName(self, 'Save File', '',
+                                            'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
+                                            options=options)
+        self.path = paths[0]
+        window.main_window.set_filename(self.path)
+        self.save()
