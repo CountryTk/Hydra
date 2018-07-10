@@ -15,7 +15,6 @@ import config
 config = config.read()
 
 lineBarColor = QColor(53, 53, 53)
-lineHighlightColor = QColor('#00FF04')
 
 
 class NumberBar(QWidget):
@@ -47,7 +46,9 @@ class NumberBar(QWidget):
             number = block.blockNumber()
             painter = QPainter(self)
             painter.fillRect(event.rect(), lineBarColor)
-            painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
+            if config['editor']['NumberBarBox']:
+                painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
+
             font = painter.font()
 
             current_block = self.editor.textCursor().block().blockNumber() + 1
@@ -132,7 +133,7 @@ class ConsoleWidget(RichJupyterWidget):
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
 
-        self.font_size = 6
+        self.font_size = 12
         self.layout = QHBoxLayout()
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
@@ -144,7 +145,7 @@ class ConsoleWidget(RichJupyterWidget):
         def stop():
             kernel_client.stop_channels()
             kernel_manager.shutdown_kernel()
-            get_app_qt().exit()
+            sys.exit()
 
         self.exit_requested.connect(stop)
 
@@ -203,7 +204,6 @@ class Tabs(QWidget):
 
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
-        #self.layout.addLayout(self.console_layout)  # Adds 'BOTTOM' layout : console
 
         # Creating horizontal splitter
         self.splitterH = QSplitter(Qt.Horizontal)
@@ -238,10 +238,11 @@ class Tabs(QWidget):
     """
 
     def showConsole(self):
-        self.console_layout.addWidget(self.console)
+        self.splitterV.addWidget(self.console)
 
     def hideConsole(self):
-        self.console_layout.removeWidget(self.console)
+        # TODO: add another widget self.splitterV.
+        pass
 
 
 class Main(QMainWindow):
@@ -274,11 +275,6 @@ class Main(QMainWindow):
 
         else:
             pass
-        if editor["DontUseNativeDialog"] is True:
-            self.DontUseNativeDialogs = True
-
-        else:
-            self.DontUseNativeDialogs = False
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
 
