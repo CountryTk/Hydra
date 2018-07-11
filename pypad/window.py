@@ -35,7 +35,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if config.config.get('window.quitInstantly'):
-            QCoreApplication.instance().quit()
+            event.accept()
+        event.ignore()
         dialog.Quit()
 
     def show(self):

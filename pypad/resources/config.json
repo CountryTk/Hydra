@@ -1,7 +1,7 @@
 {
   "window": {
     "windowStaysOnTop": false,
-    "quitInstantly": false,
+    "quitPrompt": true,
     "size": [800, 700]
   },
   "editor": {

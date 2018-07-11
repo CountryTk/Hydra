@@ -50,6 +50,7 @@ class Quit(QDialog):
         layout.addWidget(label, 0, 0, 1, 2)
 
         self.checkbox = QCheckBox("Always prompt on quit")
+        self.checkbox.setChecked(config.config.get('window.quitPrompt'))
         self.checkbox.stateChanged.connect(self.on_click)
         layout.addWidget(self.checkbox, 1, 0, 1, 2)
 
@@ -61,15 +62,17 @@ class Quit(QDialog):
         no.clicked.connect(self.closeEvent)
         layout.addWidget(no, 2, 1)
 
+        self.exec_()  # pause main thread while dialog is open
         self.setWindowTitle("Quit")
         self.show()
 
     def on_click(self, int):
-        config.config.set('window.quitInstantly', self.checkbox.isChecked())
+        config.config.set('window.quitPrompt', self.checkbox.isChecked())
         config.config.save()
 
     def closeEvent(self, event):
         dialogs.remove(self)
+        self.hide()
 
     def quit(self):
         QCoreApplication.instance().quit()
