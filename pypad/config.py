@@ -34,7 +34,7 @@ class FakeDict:
 
     def __getitem__(self, key):
         value = self.get(key)
-        if value:
+        if value is not None:
             return value
         dialog.FatalError("Couldn't find", key, "in config")
 
