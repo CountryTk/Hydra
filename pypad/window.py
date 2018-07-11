@@ -34,8 +34,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Pypad - ' + name)
 
     def closeEvent(self, event):
-        if config.config.get('window.quitInstantly'):
-            event.accept()
         event.ignore()
         dialog.Quit()
 

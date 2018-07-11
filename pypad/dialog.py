@@ -42,6 +42,10 @@ class Quit(QDialog):
 
     def __init__(self):
         super().__init__()
+
+        if not config.config.get('window.quitPrompt'):
+            QCoreApplication.instance().quit()
+
         dialogs.append(self)
 
         layout = QGridLayout(self)

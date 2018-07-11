@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QAction, QFileDialog
 
 
-from pypad import config, tabs, window
+from pypad import config, tabs, window, dialog
 
 
 class Menu:
@@ -17,7 +17,7 @@ class Menu:
             'Select All': {'shortcut': 'Ctrl+A', 'action': tabs.tabs.get_current().editor.selectAll},
             'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': tabs.tabs.new_tab},
             'Open': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': tabs.tabs.open},
-            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': window.main_window.closeEvent},
+            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': dialog.Quit},
             'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': tabs.tabs.get_current().save},
             'Save As': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': tabs.tabs.get_current().save_as},
         }
