@@ -33,7 +33,7 @@ class NumberBar(QWidget):
             height = self.fontMetrics().height()
             number = block.blockNumber()
             painter = QPainter(self)
-            painter.fillRect(event.rect(), QColor(config.config['editor']['colors']['lineBar']))
+            painter.fillRect(event.rect(), QColor(config.config.get('editor.colors.lineBar')))
             painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
             font = painter.font()
 

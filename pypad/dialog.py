@@ -65,7 +65,7 @@ class Quit(QDialog):
         self.show()
 
     def on_click(self, int):
-        config.config['window']['quitInstantly'] = self.checkbox.isChecked()
+        config.config.set('window.quitInstantly', self.checkbox.isChecked())
         config.config.save()
 
     def closeEvent(self, event):

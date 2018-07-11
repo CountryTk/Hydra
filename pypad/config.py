@@ -10,38 +10,6 @@ from PyQt5.QtGui import QFont
 from pypad import dialog
 
 
-class FakeDict:
-
-    def __init__(self, main=None, fallback=None):
-        super().__init__()
-        self.main = main if main else {}
-        self.fallback = fallback if fallback else {}
-
-    def get(self, key, value=None):
-        if key in self.main:
-            if key not in self.fallback:
-                self.fallback[key] = self.main[key]
-            if isinstance(self.main[key], dict):
-                return FakeDict(self.main[key], self.fallback[key])
-            else:
-                return self.main[key]
-        if key in self.fallback:
-            if isinstance(self.fallback[key], dict):
-                return FakeDict(self.fallback[key], self.fallback[key])
-            else:
-                return self.fallback[key]
-        return value
-
-    def __getitem__(self, key):
-        value = self.get(key)
-        if value is not None:
-            return value
-        dialog.FatalError("Couldn't find", key, "in config")
-
-    def items(self):
-        return self.main.items()
-
-
 class Config:
     data = fallback = []
 
@@ -103,14 +71,27 @@ class Config:
         except FileNotFoundError:
             dialog.FatalError("Couldn't find", self.config_path)
 
-    def __setitem__(self, key, value):
-        self.data.__setkey__(key, value)
+    def get(self, name, default=None):
+        keys = name.split('.')
+        for section in [self.data, self.fallback]:
+            try:
+                for key in keys:
+                    section = section[key]
+                return section
+            except KeyError:
+                pass
+        if default is not None:
+            return default
+        dialog.FatalError("Couldn't find", name)
 
-    def __getitem__(self, key):
-        return FakeDict(self.data, self.fallback)[key]
-
-    def get(self, *args):
-        return FakeDict(self.data, self.fallback).get(*args)
+    def set(self, name, value):
+        keys = name.split('.')
+        section = self.data
+        for key in keys[:-1]:
+            if key not in section:
+                section[key] = {}
+            section = section[key]
+        section[keys[-1]] = value
 
     def font(self):
         font = QFont()

@@ -28,13 +28,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('PyPad')
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'resources/Python-logo-notext.png')))
 
-        self.resize(*config.config['window']['size'])
+        self.resize(*config.config.get('window.size'))
 
     def set_filename(self, name):
         self.setWindowTitle('Pypad - ' + name)
 
     def closeEvent(self, event):
-        if config.config['window']['quitInstantly']:
+        if config.config.get('window.quitInstantly'):
             QCoreApplication.instance().quit()
         dialog.Quit()
 

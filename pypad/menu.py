@@ -30,7 +30,7 @@ class Menu:
             actions[name].setStatusTip(values.get('tip', name))
             actions[name].triggered.connect(values.get('action'))
 
-        for name, items in config.config['menus'].items():
+        for name, items in config.config.get('menus').items():
             menu = window.main_window.menuBar().addMenu(name)
             for item in items:
                 if item == 'Separator':

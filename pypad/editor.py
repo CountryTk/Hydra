@@ -17,7 +17,7 @@ class Editor(QWidget):
 
         self.editor = QPlainTextEdit()
         self.editor.setFont(config.config.font)
-        self.editor.setTabStopWidth(config.config['editor']['tabWidth'])
+        self.editor.setTabStopWidth(config.config.get('editor.tabWidth'))
 
         self.path = path
 
