@@ -7,11 +7,11 @@ import shutil
 from PyQt5.QtGui import QFont
 
 
-from pypad import dialog
+from pypad import dialog, utils
 
 
 class Config:
-    data = fallback = []
+    merged = main = fallback = []
 
     def __init__(self, app_dir: str = ''):
 
@@ -53,7 +53,7 @@ class Config:
         try:
             with open(self.config_path, 'r') as file:
                 text = file.read()
-                self.data = json.loads(text)
+                self.main = json.loads(text)
 
             with open(os.path.join(os.path.dirname(__file__), 'resources/config.json'), 'r') as file:
                 text = file.read()
@@ -62,10 +62,15 @@ class Config:
         except FileNotFoundError:
             dialog.FatalError("Couldn't find", self.config_path)
 
+        self.merge()
+
+    def merge(self):
+        self.merged = utils.merge(self.fallback, self.main)
+
     def save(self):
         try:
             with open(self.config_path, 'w') as file:
-                text = json.dumps(self.data)
+                text = json.dumps(self.main)
                 file.write(text)
 
         except FileNotFoundError:
@@ -73,30 +78,33 @@ class Config:
 
     def get(self, name, default=None):
         keys = name.split('.')
-        for section in [self.data, self.fallback]:
-            try:
-                for key in keys:
-                    section = section[key]
-                return section
-            except KeyError:
-                pass
-        if default is not None:
-            return default
+        section = self.merged
+        try:
+            for key in keys:
+                section = section[key]
+            return section
+        except KeyError:
+            if default is not None:
+                return default
         dialog.FatalError("Couldn't find", name)
 
     def set(self, name, value):
         keys = name.split('.')
-        section = self.data
+        section = self.main
         for key in keys[:-1]:
             if key not in section:
                 section[key] = {}
             section = section[key]
         section[keys[-1]] = value
+        self.merge()
+
+    def items(self):
+        return self.merged.items()
 
     def font(self):
         font = QFont()
-        font.setFamily(self.data['editor']['editorFont'])
-        font.setPointSize(self.data['editor']['editorFontSize'])
+        font.setFamily(self.get('editor.editorFont'))
+        font.setPointSize(self.get('editor.editorFontSize'))
         font.setFixedPitch(True)
         return font
 
