@@ -17,7 +17,7 @@ class Menu:
             'Select All': {'shortcut': 'Ctrl+A', 'action': tabs.tabs.get_current().editor.selectAll},
             'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': tabs.tabs.new_tab},
             'Open': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': tabs.tabs.open},
-            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': window.main_window.quit},
+            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': window.main_window.closeEvent},
             'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': tabs.tabs.get_current().save},
             'Save As': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': tabs.tabs.get_current().save_as},
         }

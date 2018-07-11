@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
     def set_filename(self, name):
         self.setWindowTitle('Pypad - ' + name)
 
-    def quit(self):
-        if config.config.get('quitInstantly'):
+    def closeEvent(self, event):
+        if config.config['window']['quitInstantly']:
             QCoreApplication.instance().quit()
         dialog.Quit()
 
