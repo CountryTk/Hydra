@@ -1,5 +1,9 @@
 from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QGridLayout, QCheckBox
+
+
+from pypad import config
+
 
 dialogs = []
 
@@ -45,16 +49,24 @@ class Quit(QDialog):
         label = QLabel("Are you sure you want to quit?")
         layout.addWidget(label, 0, 0, 1, 2)
 
+        self.checkbox = QCheckBox("Always prompt on quit")
+        self.checkbox.stateChanged.connect(self.on_click)
+        layout.addWidget(self.checkbox, 1, 0, 1, 2)
+
         yes = QPushButton('Yes')
         yes.clicked.connect(self.quit)
-        layout.addWidget(yes, 1, 0)
+        layout.addWidget(yes, 2, 0)
 
         no = QPushButton('No')
         no.clicked.connect(self.closeEvent)
-        layout.addWidget(no, 1, 1)
+        layout.addWidget(no, 2, 1)
 
         self.setWindowTitle("Quit")
         self.show()
+
+    def on_click(self, int):
+        config.config['window']['quitInstantly'] = self.checkbox.isChecked()
+        config.config.save()
 
     def closeEvent(self, event):
         dialogs.remove(self)
