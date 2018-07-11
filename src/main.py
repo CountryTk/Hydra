@@ -80,6 +80,14 @@ class Search(QWidget):
     pass
 
 
+class Console(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.editor = QPlainTextEdit(self)
+        self.editor.resize(780, 310)
+
+
 class Directory(QTreeView):
     def __init__(self, callback):
         super().__init__()
@@ -134,13 +142,11 @@ class ConsoleWidget(RichJupyterWidget):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
 
         self.font_size = 12
-        self.layout = QHBoxLayout()
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
         kernel_manager.kernel.gui = 'qt'
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
-        self.layout.addWidget(self)
 
         def stop():
             kernel_client.stop_channels()
@@ -183,10 +189,11 @@ class Tabs(QWidget):
         super().__init__()
         self.layout = QVBoxLayout(self)  # Change main layout to Vertical
         # Initialize tab screen
-        self.tabs = QTabWidget()  # TODO: THiss is topright
-        self.console = ConsoleWidget()  # Create console widget TODO: This is bottom
+        self.tabs = QTabWidget()  # TODO: This is topright
+        self.IPyconsole = ConsoleWidget()  # Create console widget TODO: This is bottom
+        self.Console = Console()
 
-        self.directory = Directory(callback)  # TODO: This is topleft
+        self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
 
         # Add tabs
@@ -200,7 +207,7 @@ class Tabs(QWidget):
 
         # Add Console
         self.console_layout = QHBoxLayout()  # Create console layout
-        self.console_layout.addWidget(self.console)  # Add console to console layout
+        self.console_layout.addWidget(self.IPyconsole)  # Add console to console layout
 
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
@@ -238,10 +245,11 @@ class Tabs(QWidget):
     """
 
     def showConsole(self):
-        self.splitterV.addWidget(self.console)
+        #self.splitterV.addWidget(self.console)
+        pass
 
     def hideConsole(self):
-        # TODO: add another widget self.splitterV.
+
         pass
 
 
@@ -253,7 +261,7 @@ class Main(QMainWindow):
         self.tab = Tabs(self.openFile)
 
         self.tabsOpen = []
-
+        self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
         self.setWindowTitle('PyPad')  # Setting the window title
 
@@ -298,7 +306,8 @@ class Main(QMainWindow):
             'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
             'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
             'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
-            'Python console': {'shortcut': 'Ctrl+Shift+P', 'tip': 'Open a python console', 'action': self.pyConsole}
+            'Python console': {'shortcut': 'Ctrl+Shift+P', 'tip': 'Open a python console', 'action': self.pyConsole},
+            'Console': {'shortcut': 'Ctrl+Shift+C', 'tip': 'Open a console', 'action': self.Terminal}
         }
 
         actions = {}
@@ -315,7 +324,7 @@ class Main(QMainWindow):
         menus = {
             'File': ['New', 'Open...', 'Save', 'Save As...', 'Separator', 'Quit'],
             'Edit': ['Undo', 'Redo', 'Separator', 'Cut', 'Copy', 'Paste', 'Separator', 'Select All'],
-            'Tools': ['Python console']
+            'Tools': ['Python console', 'Console']
         }
 
         for name, items in menus.items():
@@ -472,7 +481,30 @@ class Main(QMainWindow):
             print("File dialog closed")
 
     def pyConsole(self):
-        self.tab.splitterV.addWidget(self.tab.console)
+        self.pyConsoleOpened = True
+        self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+        self.o = self.tab.splitterV.indexOf(self.tab.Console)
+
+        if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
+
+            self.tab.splitterV.addWidget(self.tab.IPyconsole)
+            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+
+        if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
+
+            self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
+            self.o = self.tab.splitterV.indexOf(self.tab.Console)
+            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+
+    def Terminal(self):
+        if self.pyConsoleOpened:
+            self.o = self.tab.splitterV.indexOf(self.tab.Console)
+            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+            self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
+
+            print("Index of pyconsole: " + str(self.ind))
+            print("Index of console: " + str(self.o))
+
 
 
 class PyHighlighter(QSyntaxHighlighter):
@@ -485,7 +517,6 @@ class PyHighlighter(QSyntaxHighlighter):
         self.formats = {}
 
         for name, values in python['highlighting'].items():
-            print(name, values)
             self.formats[name] = QTextCharFormat()
 
             if values.get('bold'):
