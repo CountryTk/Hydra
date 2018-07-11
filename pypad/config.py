@@ -79,6 +79,8 @@ class Config:
     def get(self, name=None, default=None):
         if name is None:
             return self.merged
+        if isinstance(name, list) or isinstance(name, tuple):
+            name = '.'.join(name)
         keys = name.split('.')
         section = self.merged
         try:

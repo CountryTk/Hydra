@@ -26,6 +26,6 @@ class Palette(QPalette):
         #    self.setColor(getattr(QPalette, attr), QColor(config.config['editor']['colors'].get(item)))
 
         for attribute, name in colors.items():
-            self.setColor(attribute, QColor(config.config.get('editor.colors.' + name)))
+            self.setColor(attribute, QColor(config.config.get(('editor.colors', name))))
 
 
