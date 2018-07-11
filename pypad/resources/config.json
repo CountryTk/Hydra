@@ -26,7 +26,7 @@
   },
   "menus": {
     "File": ["New", "Open", "Save", "Save As", "Separator", "Quit"],
-    "Edit": ["Undo", "Redo", "Separator", "Cut", "Copy", "Paste", "Separator", "Select All"]
+    "Edit": ["Undo", "Redo", "Separator", "Cut", "Copy", "Paste", "Separator", "Select All", "Separator", "Settings"]
   },
   "files": {
     "python": {

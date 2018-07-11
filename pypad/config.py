@@ -103,6 +103,9 @@ class Config:
     def items(self):
         return self.merged.items()
 
+    def flat(self):
+        return utils.flatten(self.merged)
+
     def font(self):
         font = QFont()
         font.setFamily(self.get('editor.editorFont'))

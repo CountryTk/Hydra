@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QMainWindow, QGridLayout
 
 
-from pypad import config, dialog, directory, menu, tabs
+from pypad import config, dialog, directory, menu, tabs, settings
 
 
 class MainWidget(QWidget):
