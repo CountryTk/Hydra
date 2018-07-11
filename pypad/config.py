@@ -76,7 +76,9 @@ class Config:
         except FileNotFoundError:
             dialog.FatalError("Couldn't find", self.config_path)
 
-    def get(self, name, default=None):
+    def get(self, name=None, default=None):
+        if name is None:
+            return self.merged
         keys = name.split('.')
         section = self.merged
         try:
