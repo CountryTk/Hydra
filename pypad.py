@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication
 def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
+    app.setCursorFlashTime(0)
 
     from pypad import palette, window
 
