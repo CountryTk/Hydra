@@ -1,11 +1,11 @@
 import os
 
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QMainWindow, QGridLayout
+from PyQt5.QtWidgets import QWidget, QMainWindow, QGridLayout, QSplitter
 
 
-from pypad import config, dialog, directory, menu, tabs, settings
+from pypad import config, dialog, directory, menu, tabs
 
 
 class MainWidget(QWidget):
@@ -13,9 +13,11 @@ class MainWidget(QWidget):
         super().__init__()
 
         self.layout = QGridLayout(self)
+        self.hsplit = QSplitter(Qt.Horizontal)
+        self.layout.addWidget(self.hsplit)
 
-        self.layout.addWidget(directory.directory_tree, 0, 0, 2, 1)
-        self.layout.addWidget(tabs.tabs, 0, 1, 2, 1)
+        self.hsplit.addWidget(directory.directory_tree)
+        self.hsplit.addWidget(tabs.tabs)
 
         tabs.tabs.new_tab()
 

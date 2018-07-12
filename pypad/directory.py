@@ -16,7 +16,6 @@ class DirectoryTree(QTreeView):
         self.model.setRootPath(QDir.rootPath())
 
         self.setIndentation(10)
-        self.setFixedWidth(200)
 
         for i in range(1, 4):
             self.hideColumn(i)
