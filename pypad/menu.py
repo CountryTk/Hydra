@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QAction, QFileDialog
+from PyQt5.QtWidgets import QAction
 
 
 from pypad import config, tabs, window, dialog, settings
@@ -31,9 +31,9 @@ class Menu:
             actions[name].setStatusTip(values.get('tip', name))
             actions[name].triggered.connect(values.get('action'))
 
-        for name, items in config.config.get('menus').items():
+        for name in config.config.get('menu.order'):
             menu = window.main_window.menuBar().addMenu(name)
-            for item in items:
+            for item in config.config.get(('menu.menus', name)):
                 if item == 'Separator':
                     menu.addSeparator()
                     continue

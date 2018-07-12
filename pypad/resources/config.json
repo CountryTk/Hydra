@@ -26,9 +26,33 @@
       "lineHighlight": "#00FF04"
     }
   },
-  "menus": {
-    "File": ["New", "Open", "Save", "Save As", "Separator", "Quit"],
-    "Edit": ["Undo", "Redo", "Separator", "Cut", "Copy", "Paste", "Separator", "Select All", "Separator", "Settings"]
+  "menu": {
+    "order": [
+      "File",
+      "Edit"
+    ],
+    "menus": {
+      "File": [
+        "New",
+        "Open",
+        "Save",
+        "Save As",
+        "Separator",
+        "Quit"
+      ],
+      "Edit": [
+        "Undo",
+        "Redo",
+        "Separator",
+        "Cut",
+        "Copy",
+        "Paste",
+        "Separator",
+        "Select All",
+        "Separator",
+        "Settings"
+      ]
+    }
   },
   "files": {
     "python": {
