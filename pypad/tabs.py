@@ -28,8 +28,9 @@ class Tabs(QTabWidget):
         return self.widget(self.currentIndex())
 
     def change_tab(self, index):
-        name = self.widget(index).get_name()
-        window.main_window.set_filename(name)
+        widget = self.widget(index)
+        if widget:
+            window.main_window.set_filename(widget.get_name())
 
     def new_tab(self, path: str=''):
         tab = editor.Editor(path)
