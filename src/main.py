@@ -1,7 +1,7 @@
 import sys
 import os
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir
-from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
+from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel,\
     QTextEdit, QSplitter
@@ -12,6 +12,7 @@ from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import util
 import config
+import subprocess
 config = config.read()
 
 lineBarColor = QColor(53, 53, 53)
@@ -80,12 +81,88 @@ class Search(QWidget):
     pass
 
 
-class Console(QWidget):
+class Console(QWidget, QThread):
     def __init__(self):
         super().__init__()
 
         self.editor = QPlainTextEdit(self)
         self.editor.resize(780, 310)
+        self.execute('echo hi')
+
+    def execute(self, command):
+        """Executes a system command."""
+
+        out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        print(out+err)
+
+
+class PlainTextEdit(QPlainTextEdit):
+
+    def __init__(self):
+        super().__init__()
+
+        editor = config['editor']
+        self.font = QFont()
+
+        self.font.setFamily(editor["editorFont"])
+        self.font.setPointSize(editor["editorFontSize"])
+
+        self.replace_tabs = 4
+        self.setFont(self.font)
+
+        self.setTabStopWidth(editor["TabWidth"])
+        self.createStandardContextMenu()
+        
+        self.setWordWrapMode(QTextOption.NoWrap)
+
+    def keyPressEvent(self, e):
+        key = e.key()
+        if key not in [16777217, 16777219, 16777220]:
+            super().keyPressEvent(e)
+            return
+
+        e.accept()
+        cursor = self.textCursor()
+
+        if key == 16777217 and self.replace_tabs:
+            amount = 4 - self.textCursor().positionInBlock() % 4
+            self.insertPlainText(' ' * amount)
+
+        elif key == 16777219 and cursor.selectionStart() == cursor.selectionEnd() and self.replace_tabs and \
+                cursor.positionInBlock():
+            position = cursor.positionInBlock()
+            end = cursor.position()
+            start = end - (position % 4)
+
+            if start == end and position >= 4:
+                start -= 4
+
+            string = self.toPlainText()[start:end]
+            if not len(string.strip()):
+                for i in range(end - start):
+                    cursor.deletePreviousChar()
+            else:
+                super().keyPressEvent(e)
+
+        elif key == 16777220:
+            end = cursor.position()
+            start = end - cursor.positionInBlock()
+            line = self.toPlainText()[start:end]
+            indentation = len(line) - len(line.lstrip())
+
+            chars = '\t'
+            if self.replace_tabs:
+                chars = '    '
+                indentation /= self.replace_tabs
+
+            if line.endswith(':'):
+                if self.replace_tabs:
+                    indentation += 1
+
+            super().keyPressEvent(e)
+            self.insertPlainText(chars * int(indentation))
+        else:
+            super().keyPressEvent(e)
 
 
 class Directory(QTreeView):
@@ -125,7 +202,7 @@ class Directory(QTreeView):
 class Content(QWidget):
     def __init__(self, text, fileName):
         super().__init__()
-        self.editor = QPlainTextEdit()
+        self.editor = PlainTextEdit()
         self.text = text
         self.fileName = fileName
         self.editor.setPlainText(text)
@@ -136,7 +213,7 @@ class Content(QWidget):
         self.hbox.addWidget(self.editor)
 
 
-class ConsoleWidget(RichJupyterWidget):
+class ConsoleWidget(RichJupyterWidget, QThread):
 
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
@@ -187,11 +264,15 @@ class Tabs(QWidget):
 
     def __init__(self, callback):
         super().__init__()
-        self.layout = QVBoxLayout(self)  # Change main layout to Vertical
+        self.layout = QHBoxLayout(self)  # Change main layout to Vertical
         # Initialize tab screen
         self.tabs = QTabWidget()  # TODO: This is topright
-        self.IPyconsole = ConsoleWidget()  # Create console widget TODO: This is bottom
-        self.Console = Console()
+        self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
+
+        self.IPyconsole.start()  # Starting the FIRST thread
+        self.Console = Console()  # This is the terminal widget and the SECOND thread
+
+        self.Console.start()  # Starting the SECOND thread
 
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
@@ -491,9 +572,9 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
         if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
-
             self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
+
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
     def Terminal(self):
@@ -504,7 +585,8 @@ class Main(QMainWindow):
 
             print("Index of pyconsole: " + str(self.ind))
             print("Index of console: " + str(self.o))
-
+        else:
+            self.tab.splitterV.addWidget(self.tab.Console)
 
 
 class PyHighlighter(QSyntaxHighlighter):
