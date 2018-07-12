@@ -15,7 +15,7 @@
     "HighlightColor": "#4DD2FF",
     "HighlightedTextColor": "#000000",
     "TabWidth": 38,
-    "NumberBarBox": false
+    "NumberBarBox": true
   },
   "files": {
     "python": {
@@ -24,6 +24,52 @@
       "keywords": ["for", "class", "range", "False", "finally", "is", "return", "None", "continue", "for", "lambda",
         "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
         "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
+      "highlighting": {
+        "keyword": {
+          "color": "#0099FF",
+          "bold": true
+        },
+        "class": {
+          "regex": "\\bclass\\b",
+          "color": "#00FF16",
+          "bold": true
+        },
+        "function": {
+          "regex": "[A-Za-z0-9_]+(?=\\()",
+          "color": "#FF9500",
+          "italic": true
+        },
+        "magic": {
+          "regex": "\\\\__[^']*\\\\__",
+          "color": "#FF6666"
+        },
+        "decorator": {
+          "regex": "@[^\n]*",
+          "color": "#FF00E7"
+        },
+        "quotation": {
+          "regex": ["#[^\n]*", "\"[^\"]*\""],
+          "color": "#63ff00"
+        },
+        "singleLineComment": {
+          "regex": "#[^\n]*",
+          "color": "#6B6E6C"
+        },
+        "multiLineComment": {
+          "regex": "[-+]?[0-9]+",
+          "color": "#039135"
+        },
+        "int": {
+          "regex": "[-+]?[0-9]+",
+          "color": "#ADD4FF"
+        }
+      }
+    }, "c": {
+      "extensions": "c",
+      "indentation": 4,
+      "keywords":["auto", "break", "case", "char", "const", "const", "continue", "default", "do", "double", "else",
+        "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof",
+        "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"],
       "highlighting": {
         "keyword": {
           "color": "#0099FF",
