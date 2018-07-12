@@ -8,6 +8,8 @@
     "editorFont": "Iosevka",
     "editorFontSize": 10,
     "tabWidth": 45,
+    "replaceTabs": true,
+    "spacesInTabs": 4,
     "colors": {
       "editor": "#303030",
       "editorText": "#FFFFFF",

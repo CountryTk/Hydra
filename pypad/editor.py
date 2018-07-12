@@ -2,10 +2,75 @@ import os
 import sys
 import uuid
 
+from PyQt5.QtGui import QTextOption
 from PyQt5.QtWidgets import QWidget, QFileDialog, QPlainTextEdit, QGridLayout
 
 
 from pypad import config, dialog, numbers, window, highlighter, utils
+
+
+class PlainTextEdit(QPlainTextEdit):
+
+    def __init__(self):
+        super().__init__()
+        self.replace_tabs = False
+        if config.config.get('editor.replaceTabs'):
+            self.replace_tabs = config.config.get('editor.spacesInTabs')
+
+        self.setFont(config.config.font)
+        self.setTabStopWidth(config.config.get('editor.tabWidth'))
+
+        self.createStandardContextMenu()
+        self.setWordWrapMode(QTextOption.NoWrap)
+
+    def keyPressEvent(self, e):
+        key = e.key()
+        if key not in [16777217, 16777219, 16777220]:
+            super().keyPressEvent(e)
+            return
+
+        e.accept()
+        cursor = self.textCursor()
+
+        if key == 16777217 and self.replace_tabs:
+            amount = 4 - self.textCursor().positionInBlock() % 4
+            self.insertPlainText(' ' * amount)
+
+        elif key == 16777219 and cursor.selectionStart() == cursor.selectionEnd() and self.replace_tabs and \
+                cursor.positionInBlock():
+            position = cursor.positionInBlock()
+            end = cursor.position()
+            start = end - (position % 4)
+
+            if start == end and position >= 4:
+                start -= 4
+
+            string = self.toPlainText()[start:end]
+            if not len(string.strip()):
+                for i in range(end - start):
+                    cursor.deletePreviousChar()
+            else:
+                super().keyPressEvent(e)
+
+        elif key == 16777220:
+            end = cursor.position()
+            start = end - cursor.positionInBlock()
+            line = self.toPlainText()[start:end]
+            indentation = len(line) - len(line.lstrip())
+
+            chars = '\t'
+            if self.replace_tabs:
+                chars = '    '
+                indentation /= self.replace_tabs
+
+            if line.endswith(':'):
+                if self.replace_tabs:
+                    indentation += 1
+
+            super().keyPressEvent(e)
+            self.insertPlainText(chars * int(indentation))
+        else:
+            super().keyPressEvent(e)
 
 
 class Editor(QWidget):
@@ -15,9 +80,7 @@ class Editor(QWidget):
 
         self.layout = QGridLayout(self)
 
-        self.editor = QPlainTextEdit()
-        self.editor.setFont(config.config.font)
-        self.editor.setTabStopWidth(config.config.get('editor.tabWidth'))
+        self.editor = PlainTextEdit()
 
         self.path = path
 
