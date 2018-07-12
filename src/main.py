@@ -112,7 +112,7 @@ class PlainTextEdit(QPlainTextEdit):
 
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
-        
+
         self.setWordWrapMode(QTextOption.NoWrap)
 
     def keyPressEvent(self, e):
@@ -629,6 +629,8 @@ class PyHighlighter(QSyntaxHighlighter):
             index_step = 0
         else:
             start_index = comment.indexIn(text)
+            while start_index >= 0 and self.format(start_index+2) in self.formats.values():
+                start_index = comment.indexIn(text, start_index + 3)
             index_step = comment.matchedLength()
         while start_index >= 0:
             end = comment.indexIn(text, start_index + index_step)
