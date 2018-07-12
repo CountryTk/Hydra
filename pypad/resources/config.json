@@ -6,7 +6,7 @@
   },
   "editor": {
     "editorFont": "Iosevka",
-    "editorFontSize": 12,
+    "editorFontSize": 10,
     "tabWidth": 45,
     "colors": {
       "editor": "#303030",
@@ -34,42 +34,34 @@
       "indentation": 4,
       "highlighting": {
         "keyword": {
-          "color": "#0099FF",
+          "color": "#FF9900",
           "bold": true
         },
         "class": {
-          "regex": "\\bclass\\b",
-          "color": "#00FF16",
+          "color": "#FF9900",
           "bold": true
         },
         "function": {
-          "regex": "[A-Za-z0-9_]+(?=\\()",
-          "color": "#FF9500",
+          "color": "#69BEB1",
           "italic": true
         },
         "magic": {
-          "regex": "\\\\__[^']*\\\\__",
           "color": "#FF6666"
         },
         "decorator": {
-          "regex": "@[^\n]*",
           "color": "#FF00E7"
         },
         "int": {
-          "regex": "[-+]?[0-9]+",
           "color": "#70DBFF"
         },
-        "quotation": {
-          "regex": ["#[^\n]*", "\"[^\"]*\""],
-          "color": "#039135"
+        "string": {
+          "color": "#9DC799"
         },
-        "singleLineComment": {
-          "regex": "#[^\n]*",
+        "comment": {
           "color": "#6B6E6C"
         },
-        "multiLineComment": {
-          "regex": "[-+]?[0-9]+",
-          "color": "#039135"
+        "multiLine": {
+          "color": "#9DC799"
         }
       }
     }

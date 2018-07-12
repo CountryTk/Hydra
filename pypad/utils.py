@@ -33,3 +33,12 @@ def merge(first: dict, second: dict):
         if key not in first:
             first[key] = value
     return first
+
+
+def make_list(value):
+    """
+    make a variable into a list if not already
+    :param value: variable to be put into a list
+    :return: list containing variable
+    """
+    return [value] if not isinstance(value, list) else value

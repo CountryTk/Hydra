@@ -5,7 +5,7 @@ import uuid
 from PyQt5.QtWidgets import QWidget, QFileDialog, QPlainTextEdit, QGridLayout
 
 
-from pypad import config, dialog, numbers, window
+from pypad import config, dialog, numbers, window, highlighter, utils
 
 
 class Editor(QWidget):
@@ -25,6 +25,15 @@ class Editor(QWidget):
             self.open_file()
         else:
             self.new_file()
+
+        highlighter_class = None
+        extension = os.path.splitext(self.path)[1][1:]
+        for name, about in config.config.get('files').items():
+            if extension in utils.make_list(about['extensions']):
+                highlighter_class = getattr(highlighter, name.capitalize())
+
+        if highlighter_class:
+            self.highlighter = highlighter_class(self.editor.document())
 
         self.line_numbers = numbers.NumberBar(self.editor)
 
