@@ -92,7 +92,7 @@ class Console(QWidget, QThread):
         """Executes a system command."""
 
         out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        print(out+err)
+        return (out+err).decode()
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -582,19 +582,26 @@ class Main(QMainWindow):
 
         if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
             self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
+            print(self.o)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
     def Terminal(self):
+        active_tab = self.tab.tabs.currentWidget()
+        print(active_tab.fileName)
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
-            self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
+            if self.ind == -1:
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python " + active_tab.fileName))
+            else:
+                self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
+
 
             try:
-                self.tab.Console.execute("python " + self.currentTab.fileName)
+                self.tab.Console.execute("python " + active_tab.fileName)
             except AttributeError:
 
                 print("Can't run a file that doesn't exist...")
@@ -602,7 +609,10 @@ class Main(QMainWindow):
             self.tab.splitterV.addWidget(self.tab.Console)
 
             try:
-                self.tab.Console.execute("python " + self.currentTab.fileName)
+                active_tab = self.tab.tabs.currentWidget()
+                print(active_tab.fileName)
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python " + active_tab.fileName))
+                print(self.tab.Console.editor.toPlainText())
 
             except AttributeError:
                 print("Can't run a file that doesn't exist...")
