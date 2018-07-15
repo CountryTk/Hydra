@@ -329,9 +329,8 @@ class Tabs(QWidget, QThread):
         #self.splitterV.addWidget(self.console)
         pass
 
-    def hideConsole(self):
-
-        pass
+    def currentTab(self):
+        return self.tabs.currentWidget()
 
 
 class Main(QMainWindow):
@@ -347,6 +346,14 @@ class Main(QMainWindow):
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
         self.setWindowTitle('PyPad')  # Setting the window title
+
+        self.openPy()
+        self.openTerm()
+        self.new()
+        self.open()
+        self.save()
+        self.saveAs()
+        self.exit()
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -380,48 +387,75 @@ class Main(QMainWindow):
 
         self.font.setFixedPitch(True)
 
-        shortcuts = {
-            'Undo': {'shortcut': 'Ctrl+Z'},
-            'Redo': {'shortcut': 'Shift+Ctrl+Z'},
-            'Cut': {'shortcut': 'Ctrl+X'},
-            'Copy': {'shortcut': 'Ctrl+C'},
-            'Paste': {'shortcut': 'Ctrl+V'},
-            'Select All': {'shortcut': 'Ctrl+A'},
-            'New': {'shortcut': 'Ctrl+N', 'tip': 'Create a new file', 'action': self.newFile},
-            'Open...': {'shortcut': 'Ctrl+O', 'tip': 'Open a file', 'action': self.openFileFromMenu},
-            'Quit': {'shortcut': 'Ctrl+Q', 'tip': 'Exit application', 'action': qApp.quit},
-            'Save': {'shortcut': 'Ctrl+S', 'tip': 'Save a file', 'action': self.saveFile},
-            'Save As...': {'shortcut': 'Ctrl+Shift+S', 'tip': 'Save a file as', 'action': self.saveFileAs},
-            'Python console': {'shortcut': 'Ctrl+Shift+P', 'tip': 'Open a python console', 'action': self.pyConsole},
-            'Console': {'shortcut': 'Ctrl+Shift+C', 'tip': 'Open a console', 'action': self.Terminal}
-        }
+        menu = self.menuBar()
 
-        actions = {}
+        # Creating the file menu
 
-        for name, values in shortcuts.items():
-            actions[name] = QAction(name, self)
-            actions[name].setShortcut(values.get('shortcut'))
-            actions[name].setStatusTip(values.get('tip', name))
-            keys = values.get('shortcut').lower().split('+')
-            actions[name].triggered.connect(values.get('action', lambda a='ignore this', keys=keys: hotkey(*keys)))
+        fileMenu = menu.addMenu('File')
 
-        menu_bar = self.menuBar()
+        # Adding options to the file menu
 
-        menus = {
-            'File': ['New', 'Open...', 'Save', 'Save As...', 'Separator', 'Quit'],
-            'Edit': ['Undo', 'Redo', 'Separator', 'Cut', 'Copy', 'Paste', 'Separator', 'Select All'],
-            'Tools': ['Python console', 'Console']
-        }
+        fileMenu.addAction(self.newAct)
+        fileMenu.addAction(self.openAct)
+        fileMenu.addAction(self.saveAct)
+        fileMenu.addAction(self.saveAsAct)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self.exitAct)
 
-        for name, items in menus.items():
-            menu = menu_bar.addMenu(name)
-            for item in items:
-                if item == 'Separator':
-                    menu.addSeparator()
-                    continue
-                menu.addAction(actions[item])
-
+        toolMenu = menu.addMenu('Tools')
+        toolMenu.addAction(self.openPyAct)
+        toolMenu.addAction(self.openTermAct
+                           )
         self.resize(800, 700)
+
+    def open(self):
+        self.openAct = QAction('Open...', self)
+        self.openAct.setShortcut('Ctrl+O')
+
+        self.openAct.setStatusTip('Open a file')
+        self.openAct.triggered.connect(self.openFileFromMenu)
+
+    def new(self):
+        self.newAct = QAction('New')
+        self.newAct.setShortcut('Ctrl+N')
+
+        self.newAct.setStatusTip('Create a new file')
+        self.newAct.triggered.connect(self.newFile)
+
+    def save(self):
+        self.saveAct = QAction('Save')
+        self.saveAct.setShortcut('Ctrl+S')
+
+        self.saveAct.setStatusTip('Save a file')
+        self.saveAct.triggered.connect(self.saveFile)
+
+    def openPy(self):
+        self.openPyAct = QAction('IPython console', self)
+        self.openPyAct.setShortcut('Ctrl+Y')
+
+        self.openPyAct.setStatusTip('Open IPython console')
+        self.openPyAct.triggered.connect(self.pyConsole)
+
+    def openTerm(self):
+        self.openTermAct = QAction('Run', self)
+        self.openTermAct.setShortcut('Shift+F10')
+
+        self.openTermAct.setStatusTip('Run your code')
+        self.openTermAct.triggered.connect(self.Terminal)
+
+    def saveAs(self):
+        self.saveAsAct = QAction('Save As...')
+        self.saveAsAct.setShortcut('Ctrl+Shift+S')
+
+        self.saveAsAct.setStatusTip('Save a file as')
+        self.saveAsAct.triggered.connect(self.saveFileAs)
+
+    def exit(self):
+        self.exitAct = QAction('Quit', self)
+        self.exitAct.setShortcut('Ctrl+Q')
+
+        self.exitAct.setStatusTip('Exit application')
+        self.exitAct.triggered.connect(qApp.quit)
 
     def openFileFromMenu(self):
         self.tab.hideDirectory()
@@ -590,6 +624,7 @@ class Main(QMainWindow):
                 self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
         else:
             pass
+
     def Terminal(self):
 
         active_tab = self.tab.tabs.currentWidget()
