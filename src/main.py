@@ -269,10 +269,8 @@ class Tabs(QWidget, QThread):
         self.tabs = QTabWidget()  # TODO: This is topright
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
 
-        self.IPyconsole.start()  # Starting the FIRST thread
         self.Console = Console()  # This is the terminal widget and the SECOND thread
 
-        self.Console.start()  # Starting the SECOND thread
 
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
@@ -340,8 +338,6 @@ class Main(QMainWindow):
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
         self.tabsOpen = []
-        self.OS = sys.platform
-        print(self.OS)
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
@@ -605,25 +601,24 @@ class Main(QMainWindow):
             print("File dialog closed")
 
     def pyConsole(self):
-        if self.OS != "win32":
-            self.pyConsoleOpened = True
+      
+        self.pyConsoleOpened = True
+        self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+
+        self.o = self.tab.splitterV.indexOf(self.tab.Console)
+
+        if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
+
+            self.tab.splitterV.addWidget(self.tab.IPyconsole)
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
+        if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
+            self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
+            print(self.o)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
-            if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
-
-                self.tab.splitterV.addWidget(self.tab.IPyconsole)
-                self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
-
-            if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
-                self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
-                print(self.o)
-                self.o = self.tab.splitterV.indexOf(self.tab.Console)
-
-                self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
-        else:
-            pass
+            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+ 
 
     def Terminal(self):
 
