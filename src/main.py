@@ -200,11 +200,12 @@ class Directory(QTreeView):
 
 
 class Content(QWidget):
-    def __init__(self, text, fileName):
+    def __init__(self, text, fileName, baseName):
         super().__init__()
         self.editor = PlainTextEdit()
         self.text = text
         self.fileName = fileName
+        self.baseName = baseName
         self.editor.setPlainText(text)
         # Create a layout for the line numbers
         self.hbox = QHBoxLayout(self)
@@ -270,7 +271,6 @@ class Tabs(QWidget, QThread):
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
 
         self.Console = Console()  # This is the terminal widget and the SECOND thread
-
 
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
@@ -342,7 +342,7 @@ class Main(QMainWindow):
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
         self.setWindowTitle('PyPad')  # Setting the window title
-
+        self.tab.tabs.currentChanged.connect(lambda : self.setWindowTitle("PyPad ~ " + str(self.tab.tabs.currentWidget().baseName)))
         self.openPy()
         self.openTerm()
         self.new()
@@ -471,7 +471,8 @@ class Main(QMainWindow):
     def openFile(self, filename):
         with open(filename, 'r+') as file_o:
             text = file_o.read()
-            tab = Content(text, filename)  # Creating a tab object *IMPORTANT*
+            basename = os.path.basename(filename)
+            tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
 
             dirPath = os.path.dirname(filename)
             self.files = filename
@@ -514,7 +515,7 @@ class Main(QMainWindow):
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
         self.pyFileOpened = True
         # Creates a new blank file
-        file = Content(text, fileName)
+        file = Content(text, fileName, fileName)
 
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
 
@@ -569,10 +570,10 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
                     self.tabsOpen.append(fileName)
-
+                    baseName = os.path.basename(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
-                    newTab = Content(str(text), fileName)
+                    newTab = Content(str(text), fileName, baseName)
 
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
@@ -601,7 +602,7 @@ class Main(QMainWindow):
             print("File dialog closed")
 
     def pyConsole(self):
-      
+
         self.pyConsoleOpened = True
         self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
@@ -618,10 +619,10 @@ class Main(QMainWindow):
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
- 
+
 
     def Terminal(self):
-
+        self.tab.Console.start()
         active_tab = self.tab.tabs.currentWidget()
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
@@ -631,7 +632,6 @@ class Main(QMainWindow):
                 self.tab.Console.editor.setPlainText(self.tab.Console.execute("python " + active_tab.fileName))
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
-
 
             try:
                 self.tab.Console.execute("python " + active_tab.fileName)
