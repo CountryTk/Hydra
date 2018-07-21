@@ -106,7 +106,7 @@ class PlainTextEdit(QPlainTextEdit):
 
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
-
+        self.focused = None
         self.replace_tabs = 4
         self.setFont(self.font)
 
@@ -180,16 +180,29 @@ class Directory(QTreeView):
         self.setIndentation(10)
         self.setAnimated(True)
 
+
         self.setSortingEnabled(True)
         self.setWindowTitle("Dir View")
         self.hideColumn(1)
         self.resize(200, 600)
-
         self.hideColumn(2)
         self.hideColumn(3)
         self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
         self.show()
+
+    def focusInEvent(self, event):
+        # If we are focused then we change the selected item highlighting color
+        self.focused = True
+        print("focused")
+        palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+        app.setPalette(palette)
+
+    def focusOutEvent(self, event):
+        # If we unfocus from the QTreeView then we make the highlighted item color white
+        print(editor["UnfocusedHighlightColor"])
+        palette.setColor(QPalette.Highlight, QColor(editor["UnfocusedHighlightColor"]).lighter())
+        app.setPalette(palette)
 
     def openDirectory(self, path):
         self.setRootIndex(self.model.index(path))
@@ -202,9 +215,11 @@ class Directory(QTreeView):
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key_Delete:
+
             try:
-                fileObject = self.selectedIndexes()[0]
-                fileName = self.model.filePath(fileObject)
+                self.fileObject = self.selectedIndexes()[0]
+                print(self.fileObject)
+                fileName = self.model.filePath(self.fileObject)
 
                 confirmation = QMessageBox.question(self, "Are you sure?", "Do you really want to delete " +
                                                     str(fileName), QMessageBox.Yes | QMessageBox.No)
