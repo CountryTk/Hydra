@@ -194,13 +194,11 @@ class Directory(QTreeView):
     def focusInEvent(self, event):
         # If we are focused then we change the selected item highlighting color
         self.focused = True
-        print("focused")
         palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
         app.setPalette(palette)
 
     def focusOutEvent(self, event):
         # If we unfocus from the QTreeView then we make the highlighted item color white
-        print(editor["UnfocusedHighlightColor"])
         palette.setColor(QPalette.Highlight, QColor(editor["UnfocusedHighlightColor"]).lighter())
         app.setPalette(palette)
 
@@ -218,7 +216,6 @@ class Directory(QTreeView):
 
             try:
                 self.fileObject = self.selectedIndexes()[0]
-                print(self.fileObject)
                 fileName = self.model.filePath(self.fileObject)
 
                 confirmation = QMessageBox.question(self, "Are you sure?", "Do you really want to delete " +
@@ -228,7 +225,7 @@ class Directory(QTreeView):
                     pass
 
                 elif confirmation == 16384:  # If the user pressed yes
-                    print("File to be deleted: " + str(fileName))
+                    print("Deleted file: " + str(fileName))
 
                     if os.path.isdir(fileName):  # If it is a directory
                         shutil.rmtree(fileName)
@@ -383,7 +380,8 @@ class Main(QMainWindow):
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
         self.setWindowTitle('PyPad')  # Setting the window title
-        self.tab.tabs.currentChanged.connect(lambda : self.setWindowTitle("PyPad ~ " + str(self.tab.tabs.currentWidget().baseName)))
+        self.tab.tabs.currentChanged.connect(self.fileNameChange)
+
         self.openPy()
         self.openTerm()
         self.new()
@@ -403,6 +401,13 @@ class Main(QMainWindow):
         self.initUI()  # Main UI
 
         self.show()
+
+    def fileNameChange(self):
+        try:
+            currentFileName = self.tab.tabs.currentWidget().baseName
+            self.setWindowTitle("PyPad ~ " + str(currentFileName))
+        except AttributeError:
+            self.setWindowTitle("PyPad ~ ")
 
     def onStart(self):
         editor = config['editor']
@@ -510,53 +515,52 @@ class Main(QMainWindow):
             self.openFile(filename)
 
     def openFile(self, filename):
-        with open(filename, 'r+') as file_o:
-            text = file_o.read()
-            basename = os.path.basename(filename)
-            tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
+        try:
+            with open(filename, 'r+') as file_o:
+                text = file_o.read()
+                basename = os.path.basename(filename)
 
-            dirPath = os.path.dirname(filename)
-            self.files = filename
+                tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
 
-            self.tabsOpen.append(self.files)
+                dirPath = os.path.dirname(filename)
+                self.files = filename
 
-            index = self.tab.tabs.addTab(tab,
-                                         tab.fileName)  # This is the index which we will use to set the current index
+                self.tabsOpen.append(self.files)
 
-            self.tab.directory.openDirectory(dirPath)
+                index = self.tab.tabs.addTab(tab,
+                                             tab.fileName)  # This is the index which we will use to set the current index
 
-            self.tab.showDirectory()
+                self.tab.directory.openDirectory(dirPath)
 
-            self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-            try:
-                l = self.tab.directory.selectedIndexes()[0]
-                x = self.tab.directory.model.filePath(l)
-                print("X IS " + x)
-            except:
-                print("OOF")
-            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
+                self.tab.showDirectory()
 
-            self.currentTab = self.tab.tabs.currentWidget()
+                self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
-            self.currentTab.editor.setFont(self.font)  # Setting the font
-            self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-            self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+                self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
-            if filename.endswith(".py"):
-                self.pyFileOpened = True
-                self.pyhighlighter = PyHighlighter(
-                    self.currentTab.editor.document())  # Creating the highlighter for python
+                self.currentTab = self.tab.tabs.currentWidget()
 
-            elif filename.endswith(".c"):
-                self.cFileOpened = True
-                self.chighlighter = CHighlighter(self.currentTab.editor.document())
+                self.currentTab.editor.setFont(self.font)  # Setting the font
+                self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+                self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-            else:
-                if self.pyFileOpened:
-                    del self.pyhighlighter
-                if self.cFileOpened:
-                    del self.chighlighter
+                if filename.endswith(".py"):
+                    self.pyFileOpened = True
+                    self.pyhighlighter = PyHighlighter(
+                        self.currentTab.editor.document())  # Creating the highlighter for python
 
+                elif filename.endswith(".c"):
+                    self.cFileOpened = True
+                    self.chighlighter = CHighlighter(self.currentTab.editor.document())
+
+                else:
+                    if self.pyFileOpened:
+                        del self.pyhighlighter
+                    if self.cFileOpened:
+                        del self.chighlighter
+        except IsADirectoryError:
+            print("You can't open a directory")
+            
     def newFile(self):
         text = ""
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
@@ -617,7 +621,10 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
                     self.tabsOpen.append(fileName)
-                    baseName = os.path.basename(fileName)
+                    try:
+                        baseName = os.path.basename(fileName)
+                    except AttributeError:
+                        print("All tabs closed")
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
                     newTab = Content(str(text), fileName, baseName)
