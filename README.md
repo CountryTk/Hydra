@@ -2,7 +2,7 @@
 A simple cross-platform text editor in python.
 
 ## Installation
-`pip3 install git+https://github.com/jacobculley/PyPad.git`
+`pip3 install --upgrade git+https://github.com/Fuchsiaff/PyPad.git`
 
 ## Configuration
 User config is stored in the configuration directory for your OS
