@@ -5,7 +5,7 @@
     "editorFontSize": 12,
     "editorColor": "#303030",
     "windowColor": "#303030",
-    "windowText": "#36fc0a",
+    "windowText": "#FFFFFF",
     "alternateBase": "#FFFFFF",
     "ToolTipBase": "#FFFFFF",
     "ToolTipText": "#FFFFFF",
@@ -13,6 +13,7 @@
     "buttonColor": "#353535",
     "buttonTextColor": "#FFFFFF",
     "HighlightColor": "#4DD2FF",
+    "UnfocusedHighlightColor": "#FFFFFF",
     "HighlightedTextColor": "#000000",
     "TabWidth": 38,
     "NumberBarBox": true
