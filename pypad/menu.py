@@ -7,7 +7,9 @@ from pypad import config, tabs, window, dialog, settings
 class Menu:
 
     def __init__(self):
-
+        """
+        create items for menu bar
+        """
         shortcuts = {
             'Undo': {'shortcut': 'Ctrl+Z', 'action': tabs.tabs.get_current().editor.undo},
             'Redo': {'shortcut': 'Shift+Ctrl+Z', 'action': tabs.tabs.get_current().editor.redo},

@@ -6,6 +6,9 @@ from pypad import config
 class Palette(QPalette):
 
     def __init__(self):
+        """
+        create colour palette to apply to the application
+        """
         super().__init__()
 
         colors = {QPalette.Base: 'editor',

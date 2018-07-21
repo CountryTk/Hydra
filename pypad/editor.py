@@ -12,6 +12,9 @@ from pypad import config, dialog, numbers, window, highlighter, utils
 class PlainTextEdit(QPlainTextEdit):
 
     def __init__(self):
+        """
+        create text edit area
+        """
         super().__init__()
         self.replace_tabs = False
         if config.config.get('editor.replaceTabs'):
@@ -26,6 +29,10 @@ class PlainTextEdit(QPlainTextEdit):
         self.locked_lines = []
 
     def keyPressEvent(self, e):
+        """
+        do indentation when user enters text
+        :param e: key pressevent
+        """
         key = e.text()
         cursor = self.textCursor()
         # if the event is on a locked line except if the event is just movement or selection
@@ -100,6 +107,10 @@ class PlainTextEdit(QPlainTextEdit):
 class Editor(QWidget):
 
     def __init__(self, path: str=''):
+        """
+        create text editor, open the file if it exists and add relevant highlighting
+        :param path:
+        """
         super().__init__()
 
         self.layout = QGridLayout(self)
@@ -128,9 +139,16 @@ class Editor(QWidget):
         self.layout.addWidget(self.editor, 0, 1)
 
     def get_name(self):
+        """
+        get the file's name, does not include any directory names
+        :return: the filename
+        """
         return os.path.basename(self.path)
 
     def new_file(self):
+        """
+        create a new file
+        """
         temp = '/tmp'
         if sys.platform == 'win32':
             temp = os.getenv('temp') or ''
@@ -149,11 +167,18 @@ class Editor(QWidget):
         self.editor.setPlainText('')
 
     def open_file(self):
+        """
+        open file from set path and load into text edit area
+        """
         with open(self.path, 'r') as file:
             text = file.read()
         self.editor.setPlainText(text)
 
     def save(self):
+        """
+        save current state of the text edit area
+        :return:
+        """
         try:
             with open(self.path, 'w') as file:
                 file.write(self.editor.toPlainText())
@@ -161,6 +186,9 @@ class Editor(QWidget):
             dialog.Error("Couldn't write to", self.path)
 
     def save_as(self):
+        """
+        open prompt to set new path and call save method
+        """
         options = QFileDialog.Options()
         paths = QFileDialog.getSaveFileName(self, 'Save File', '',
                                             'All Files (*);;Python Files (*.py);;Text Files (*.txt)',

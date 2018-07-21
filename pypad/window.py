@@ -10,6 +10,9 @@ from pypad import config, dialog, directory, menu, tabs
 
 class MainWidget(QWidget):
     def __init__(self):
+        """
+        create the main widget to hold all other widgets and elements
+        """
         super().__init__()
 
         self.layout = QGridLayout(self)
@@ -24,6 +27,9 @@ class MainWidget(QWidget):
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        """
+        create the main window that contains the menu bar and main widget
+        """
         super().__init__()
         self.statusBar()
 
@@ -33,13 +39,26 @@ class MainWindow(QMainWindow):
         self.resize(*config.config.get('window.size'))
 
     def set_filename(self, name):
+        """
+        set the name of window to the currently opened file
+        :param name: name of file that is open
+        """
         self.setWindowTitle('Pypad - ' + name)
 
     def closeEvent(self, event):
+        """
+        intercept closing the window and display the quit dialog
+        :param event:
+        :return:
+        """
         event.ignore()
         dialog.Quit()
 
     def show(self):
+        """
+        show the window when everything is ready
+        :return:
+        """
         menu.Menu()
         main_window.setCentralWidget(main_widget)
         super().show()
