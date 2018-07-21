@@ -25,7 +25,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'pypad = pypad.pypad:main',
+            'pypad = pypad.app:main',
         ],
     },
 )
