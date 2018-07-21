@@ -5,6 +5,7 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
     QTextEdit, QSplitter
+
 from qtconsole.qt import QtGui
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -559,7 +560,7 @@ class Main(QMainWindow):
                         del self.chighlighter
         except IsADirectoryError:
             print("You can't open a directory")
-            
+
     def newFile(self):
         text = ""
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
@@ -675,14 +676,14 @@ class Main(QMainWindow):
 
 
     def Terminal(self):
-        self.tab.Console.start()
+        # self.tab.Console.start() <-- This seems to cause segmentation fault on some devices
         active_tab = self.tab.tabs.currentWidget()
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
             if self.ind == -1:
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python " + active_tab.fileName))
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName))
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
@@ -697,7 +698,7 @@ class Main(QMainWindow):
             try:
                 active_tab = self.tab.tabs.currentWidget()
                 print(active_tab.fileName)
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python " + active_tab.fileName))
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName))
                 print(self.tab.Console.editor.toPlainText())
 
             except AttributeError:
