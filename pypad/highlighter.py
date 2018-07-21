@@ -8,13 +8,16 @@ from pypad import config
 
 
 class Highlighter(QSyntaxHighlighter):
-    def __init__(self, parent):
+    def __init__(self, parent, file_type: str = None):
         """
         base highlighter that reads from config
         :param parent: text edit area to highlight
         """
         super().__init__(parent)
-        self.file_type = self.__class__.__name__.lower()
+
+        self.file_type = file_type
+        if not file_type:
+            self.file_type = self.__class__.__name__.lower()
 
         self.rules = self.get_rules()
         # make sure all expressions are contained in a list
@@ -32,7 +35,8 @@ class Highlighter(QSyntaxHighlighter):
             if config.config.get(('files',  self.file_type, 'highlighting', name, 'italic'), False):
                 self.formats[name].setFontItalic(True)
 
-            self.formats[name].setForeground(QColor(config.config.get(('files.python.highlighting', name, 'color'))))
+            key = ('files', self.file_type, 'highlighting', name, 'color')
+            self.formats[name].setForeground(QColor(config.config.get(key)))
 
     def highlightBlock(self, text):
         """
