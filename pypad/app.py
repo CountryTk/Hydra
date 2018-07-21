@@ -6,8 +6,12 @@ from PyQt5.QtWidgets import QApplication
 
 
 def main():
+    """
+    main function for starting PyPad
+    """
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
+    app.setCursorFlashTime(0)
 
     from pypad import palette, window
 

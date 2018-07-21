@@ -11,6 +11,9 @@ dialogs = []
 class Error(QDialog):
 
     def __init__(self, *args):
+        """
+        create error dialog
+        """
         super().__init__()
         dialogs.append(self)
 
@@ -29,18 +32,27 @@ class Error(QDialog):
         self.show()
 
     def closeEvent(self, event):
+        """
+        remove dialog when it gets closed
+        """
         dialogs.remove(self)
 
 
 class FatalError(Error):
 
     def closeEvent(self, event):
+        """
+        quit application when dialog is closed
+        """
         QCoreApplication.instance().quit()
 
 
 class Quit(QDialog):
 
     def __init__(self):
+        """
+        create a dialog when quiting the application asking if you're sure
+        """
         super().__init__()
 
         if not config.config.get('window.quitPrompt'):
@@ -71,12 +83,21 @@ class Quit(QDialog):
         self.show()
 
     def on_click(self, int):
+        """
+        save checkbox state to config
+        """
         config.config.set('window.quitPrompt', self.checkbox.isChecked())
         config.config.save()
 
     def closeEvent(self, event):
+        """
+        remove dialog when closed
+        """
         dialogs.remove(self)
         self.hide()
 
     def quit(self):
+        """
+        quit the application if the user request so
+        """
         QCoreApplication.instance().quit()

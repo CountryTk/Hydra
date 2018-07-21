@@ -8,6 +8,10 @@ from pypad import config
 
 class NumberBar(QWidget):
     def __init__(self, parent):
+        """
+        create line number bar
+        :param parent: text edit area to apply line numbers too
+        """
         super().__init__()
 
         self.editor = parent
@@ -16,6 +20,11 @@ class NumberBar(QWidget):
         self.update_width(len(self.editor.toPlainText().split('\n')))
 
     def update_on_scroll(self, rect, scroll):
+        """
+        update lines numbers after scrolling
+        :param rect:
+        :param scroll: scroll event
+        """
         if self.isVisible():
             if scroll:
                 self.scroll(0, scroll)
@@ -23,11 +32,19 @@ class NumberBar(QWidget):
                 self.update()
 
     def update_width(self, string):
+        """
+        update the width of the line number bar, only changes when the size of the numbers don't match the current size
+        :param string: current line number
+        """
         width = self.fontMetrics().width(str(string)) + 13
         if self.width() != width:
             self.setFixedWidth(width)
 
     def paintEvent(self, event):
+        """
+        draw the line number bar
+        :param event: update event
+        """
         if self.isVisible():
             block = self.editor.firstVisibleBlock()
             height = self.fontMetrics().height()

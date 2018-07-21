@@ -10,6 +10,9 @@ dialogs = []
 class Settings(QDialog):
 
     def __init__(self):
+        """
+        create settings window that displays config items in a table with their values
+        """
         super().__init__()
         dialogs.append(self)
 
@@ -50,10 +53,18 @@ class Settings(QDialog):
         self.show()
 
     def closeEvent(self, event):
+        """
+        remove window when closed
+        :param event: close event
+        """
         dialogs.remove(self)
         self.hide()
 
     def quit(self):
+        """
+        save config state and close window when quiting the window
+        :return:
+        """
         config.config.save()
         dialogs.remove(self)
         self.close()

@@ -1,6 +1,8 @@
 # PyPad
 A simple cross-platform text editor in python.
 
+## Installation
+`pip3 install git+https://github.com/jacobculley/PyPad.git`
 
 ## Configuration
 User config is stored in the configuration directory for your OS

@@ -9,6 +9,10 @@ from pypad import config
 
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent):
+        """
+        base highlighter that reads from config
+        :param parent: text edit area to highlight
+        """
         super().__init__(parent)
         self.file_type = self.__class__.__name__.lower()
 
@@ -31,6 +35,10 @@ class Highlighter(QSyntaxHighlighter):
             self.formats[name].setForeground(QColor(config.config.get(('files.python.highlighting', name, 'color'))))
 
     def highlightBlock(self, text):
+        """
+        apply highlighting rules to text block
+        :param text: text block to highlight, usually a single line
+        """
         for name, expressions in self.rules.items():
             for regex in expressions:
                 index = regex.indexIn(text)
@@ -42,9 +50,17 @@ class Highlighter(QSyntaxHighlighter):
         self.highlight_extra(text)
 
     def get_rules(self):
+        """
+        get the highlighting rules
+        :return: highlighting rules
+        """
         return {}
 
     def highlight_extra(self, text):
+        """
+        run some additional code that will apply some more complex highlighting
+        :param text: text block to highlight, usually a single line
+        """
         pass
 
 
@@ -75,7 +91,7 @@ class Python(Highlighter):
             while start_index >= 0 and self.format(start_index+2) in self.formats.values():
                 start_index = multi_line.indexIn(text, start_index + 3)
             index_step = multi_line.matchedLength()
-        
+
         while start_index >= 0:
             end = multi_line.indexIn(text, start_index + index_step)
             if end != -1:
