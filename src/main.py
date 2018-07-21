@@ -3,7 +3,7 @@ import os
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QDialog, qApp, QTreeView, QFileSystemModel,\
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
     QTextEdit, QSplitter
 from pyautogui import hotkey
 from qtconsole.qt import QtGui
@@ -12,6 +12,7 @@ from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import util
 import config
+import shutil
 import subprocess
 config = config.read()
 
@@ -181,7 +182,6 @@ class Directory(QTreeView):
 
         self.setSortingEnabled(True)
         self.setWindowTitle("Dir View")
-
         self.hideColumn(1)
         self.resize(200, 600)
 
@@ -197,6 +197,32 @@ class Directory(QTreeView):
     def openFile(self, signal):
         file_path = self.model.filePath(signal)
         self.open_callback(file_path)
+        return file_path
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Delete:
+            try:
+                fileObject = self.selectedIndexes()[0]
+                fileName = self.model.filePath(fileObject)
+
+                confirmation = QMessageBox.question(self, "Are you sure?", "Do you really want to delete " +
+                                                    str(fileName), QMessageBox.Yes | QMessageBox.No)
+
+                if confirmation == 65536:  # If the user pressed No
+                    pass
+
+                elif confirmation == 16384:  # If the user pressed yes
+                    print("File to be deleted: " + str(fileName))
+
+                    if os.path.isdir(fileName):  # If it is a directory
+                        shutil.rmtree(fileName)
+
+                    else:  # If it is a file
+                        os.remove(fileName)
+
+            except IndexError:
+                print("No file selected")
 
 
 class Content(QWidget):
@@ -487,8 +513,14 @@ class Main(QMainWindow):
             self.tab.showDirectory()
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-
+            try:
+                l = self.tab.directory.selectedIndexes()[0]
+                x = self.tab.directory.model.filePath(l)
+                print("X IS " + x)
+            except:
+                print("OOF")
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
+
             self.currentTab = self.tab.tabs.currentWidget()
 
             self.currentTab.editor.setFont(self.font)  # Setting the font
