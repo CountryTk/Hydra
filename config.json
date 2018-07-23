@@ -1,6 +1,6 @@
 {
   "editor": {
-    "windowStaysOnTop": true,
+    "windowStaysOnTop": false,
     "editorFont": "Iosevka",
     "editorFontSize": 12,
     "tabFontSize": 10.5,
