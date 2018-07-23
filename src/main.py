@@ -705,7 +705,7 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
             if self.ind == -1:
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName))
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
