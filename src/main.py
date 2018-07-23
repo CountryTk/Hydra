@@ -88,20 +88,19 @@ class Console(QWidget, QThread):
         super().__init__()
 
         self.editor = QPlainTextEdit(self)
-        font = QFont("Iosevka")
+        self.font = QFont()
+        self.font.setFamily(editor["editorFont"])
+        self.font.setPointSize(12)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.editor)
         self.setLayout(self.layout)
-        self.setFont(font)
-        font.setPointSize(15)
-
-        self.editor.resize(780, 310)
+        self.editor.setFont(self.font)
 
     def execute(self, command):
         """Executes a system command."""
 
         out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        return (out+err)#.decode()
+        return out + err
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -324,7 +323,7 @@ class Tabs(QWidget, QThread):
 
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
-
+        self.tabCounter = []
         # Add tabs
         self.tab_layout = QHBoxLayout()  # Create new layout for original tab layout
         self.tab_layout.addWidget(self.tabs)  # Add tab widget to tab layout
@@ -361,7 +360,9 @@ class Tabs(QWidget, QThread):
     def closeTab(self, index):
         tab = self.tabs.widget(index)
         tab.deleteLater()
-        self.tabs.removeTab(index)
+        for index, filename in enumerate(self.tabCounter):
+            self.tabs.removeTab(index)
+            self.tabCounter.pop(index)
 
     def showDirectory(self):
         self.directory.setVisible(True)
@@ -533,6 +534,20 @@ class Main(QMainWindow):
 
     def openFile(self, filename):
         try:
+            for index, tabName in enumerate(self.tab.tabCounter):
+                with open(filename, 'r+') as file_o:
+                    try:
+                        text = file_o.read()
+                    except UnicodeDecodeError:
+                        text = self.tab.Console.execute("cat " + str(filename))
+                    basename = os.path.basename(filename)
+
+                    tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
+                if tabName == tab.baseName:
+                    print("oof")
+                    print(self.tab.tabs.currentWidget().fileName)
+                    self.tab.tabs.removeTab(index)
+                    self.tab.tabCounter.remove(tab.baseName)
             with open(filename, 'r+') as file_o:
                 try:
                     text = file_o.read()
@@ -541,7 +556,8 @@ class Main(QMainWindow):
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
-
+                self.tab.tabCounter.append(tab.baseName)
+                print(self.tab.tabCounter)
                 dirPath = os.path.dirname(filename)
                 self.files = filename
 
@@ -578,7 +594,8 @@ class Main(QMainWindow):
                         del self.pyhighlighter
                     if self.cFileOpened:
                         del self.chighlighter
-        except (IsADirectoryError, AttributeError) as E:
+
+        except (IsADirectoryError, AttributeError, UnboundLocalError) as E:
             print(E)
 
 
@@ -590,7 +607,7 @@ class Main(QMainWindow):
         file = Content(text, fileName, fileName)
 
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
-
+        self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
@@ -695,7 +712,6 @@ class Main(QMainWindow):
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
-
     def Terminal(self):
         # self.tab.Console.start() <-- This seems to cause segmentation fault on some devices
         active_tab = self.tab.tabs.currentWidget()
@@ -711,7 +727,7 @@ class Main(QMainWindow):
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
             try:
-                self.tab.Console.execute("python " + active_tab.fileName)
+                self.tab.Console.execute("python3 " + active_tab.fileName)
             except AttributeError:
 
                 print("Can't run a file that doesn't exist...")
