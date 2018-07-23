@@ -544,8 +544,6 @@ class Main(QMainWindow):
 
                     tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
                 if tabName == tab.baseName:
-                    print("oof")
-                    print(self.tab.tabs.currentWidget().fileName)
                     self.tab.tabs.removeTab(index)
                     self.tab.tabCounter.remove(tab.baseName)
             with open(filename, 'r+') as file_o:
