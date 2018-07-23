@@ -1,17 +1,18 @@
 import sys
 import os
+import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
-    QTextEdit, QSplitter
-
-from qtconsole.qt import QtGui
+    QSplitter
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import util
 import config
+
+
 import shutil
 import subprocess
 config = config.read()
@@ -87,13 +88,20 @@ class Console(QWidget, QThread):
         super().__init__()
 
         self.editor = QPlainTextEdit(self)
+        font = QFont("Iosevka")
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.editor)
+        self.setLayout(self.layout)
+        self.setFont(font)
+        font.setPointSize(15)
+
         self.editor.resize(780, 310)
 
     def execute(self, command):
         """Executes a system command."""
 
         out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        return (out+err).decode()
+        return (out+err)#.decode()
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -108,6 +116,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
         self.replace_tabs = 4
+        self.setWordWrapMode(4)
         self.setFont(self.font)
 
         self.setTabStopWidth(editor["TabWidth"])
@@ -180,7 +189,6 @@ class Directory(QTreeView):
         self.setIndentation(10)
         self.setAnimated(True)
 
-
         self.setSortingEnabled(True)
         self.setWindowTitle("Dir View")
         self.hideColumn(1)
@@ -244,7 +252,7 @@ class Content(QWidget):
         self.text = text
         self.fileName = fileName
         self.baseName = baseName
-        self.editor.setPlainText(text)
+        self.editor.setPlainText(str(text))
         # Create a layout for the line numbers
         self.hbox = QHBoxLayout(self)
         self.numbers = NumberBar(self.editor)
@@ -306,6 +314,10 @@ class Tabs(QWidget, QThread):
         self.layout = QHBoxLayout(self)  # Change main layout to Vertical
         # Initialize tab screen
         self.tabs = QTabWidget()  # TODO: This is topright
+        font = QFont(editor['tabFont'])
+        font.setPointSize(editor["tabFontSize"]) # This is the tab's font and font size
+        self.tabs.setFont(font)
+
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
 
         self.Console = Console()  # This is the terminal widget and the SECOND thread
@@ -318,8 +330,13 @@ class Tabs(QWidget, QThread):
         self.tab_layout.addWidget(self.tabs)  # Add tab widget to tab layout
 
         self.tabs.setTabsClosable(True)
-        self.tabs.setMovable(True)  # TODO: make this customizable
-        self.tabs.setTabShape(1)  # TODO: make this customizable
+        self.tabs.setMovable(editor['tabMovable'])  # Let's you make the tabs movable
+
+        if editor['tabShape'] is True: # If tab shape is true then they have this rounded look
+            self.tabs.setTabShape(1)
+        else:
+            self.tabs.setTabShape(0) # If false, it has this boxy look
+
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
         # Add Console
@@ -381,7 +398,7 @@ class Main(QMainWindow):
 
         self.setWindowTitle('PyPad')  # Setting the window title
         self.tab.tabs.currentChanged.connect(self.fileNameChange)
-
+        self.os = sys.platform
         self.openPy()
         self.openTerm()
         self.new()
@@ -517,7 +534,10 @@ class Main(QMainWindow):
     def openFile(self, filename):
         try:
             with open(filename, 'r+') as file_o:
-                text = file_o.read()
+                try:
+                    text = file_o.read()
+                except UnicodeDecodeError:
+                    text = self.tab.Console.execute("cat " + str(filename))
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
@@ -544,7 +564,7 @@ class Main(QMainWindow):
                 self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                if filename.endswith(".py"):
+                if filename.endswith(".py") and not filename.endswith(".pyc"):
                     self.pyFileOpened = True
                     self.pyhighlighter = PyHighlighter(
                         self.currentTab.editor.document())  # Creating the highlighter for python
@@ -558,8 +578,9 @@ class Main(QMainWindow):
                         del self.pyhighlighter
                     if self.cFileOpened:
                         del self.chighlighter
-        except IsADirectoryError:
-            print("You can't open a directory")
+        except (IsADirectoryError, AttributeError) as E:
+            print(E)
+
 
     def newFile(self):
         text = ""
@@ -682,8 +703,10 @@ class Main(QMainWindow):
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+
             if self.ind == -1:
                 self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName))
+
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
@@ -698,7 +721,7 @@ class Main(QMainWindow):
             try:
                 active_tab = self.tab.tabs.currentWidget()
                 print(active_tab.fileName)
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName))
+                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
                 print(self.tab.Console.editor.toPlainText())
 
             except AttributeError:
@@ -724,9 +747,24 @@ class PyHighlighter(QSyntaxHighlighter):
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
             for regex in util.make_list(values.get('regex', [])):
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
-
+        rules = {
+            "keyword": ['\\b' + word + '\\b' for word in keyword.kwlist],
+            "class": '\\bclass\\b',
+            "function": '[A-Za-z0-9_]+(?=\\()',
+            "magic": '\__[^\']*\__',
+            "decorator": '@[^\n]*',
+            "int": '[-+]?[0-9]+',
+            "string": [r'\'((?:\\\'|[^\'])*)\'', r'\"((?:\\\"|[^\"])*)\"'],
+            "comment": '#[^\n]*',
+            "multiLine": [],
+        }
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
                                   for pattern in python['keywords']] + self.highlightingRules
+
+       # quotationFormat = QTextCharFormat()
+       # quotationFormat.setForeground(QColor(python['highlighting']['quotation']['color']))
+       # self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
+       # self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -737,6 +775,9 @@ class PyHighlighter(QSyntaxHighlighter):
                 self.setFormat(index, length, format)
                 index = expression.indexIn(text, index + length)
         self.setCurrentBlockState(0)
+        self.multiLineHighlight(text)
+
+    def multiLineHighlight(self, text):
 
         comment = QRegExp("'''")
 
@@ -774,14 +815,16 @@ class CHighlighter(QSyntaxHighlighter):
 
             if values.get('bold'):
                 self.formats[name].setFontWeight(QFont.Bold)
-            self.formats[name].setFontItalic(values.get('italic', False))
 
+            self.formats[name].setFontItalic(values.get('italic', False))
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
+
             for regex in util.make_list(values.get('regex', [])):
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
 
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
                                   for pattern in python['keywords']] + self.highlightingRules
+
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -792,9 +835,11 @@ class CHighlighter(QSyntaxHighlighter):
                 self.setFormat(index, length, format)
                 index = expression.indexIn(text, index + length)
         self.setCurrentBlockState(0)
+        self.multiLineHighlight(text)
+
+    def multiLineHighlight(self, text):
 
         comment = QRegExp("'''")
-
         if self.previousBlockState() == 1:
             start_index = 0
             index_step = 0
