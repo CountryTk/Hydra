@@ -359,10 +359,11 @@ class Tabs(QWidget, QThread):
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
+        current = self.tabs.currentWidget()
+
         tab.deleteLater()
-        for index, filename in enumerate(self.tabCounter):
-            self.tabs.removeTab(index)
-            self.tabCounter.pop(index)
+        self.tabCounter.pop(index)
+        self.tabs.removeTab(index)
 
     def showDirectory(self):
         self.directory.setVisible(True)
@@ -609,7 +610,7 @@ class Main(QMainWindow):
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
-
+        print(self.tab.tabCounter)
         widget = self.tab.tabs.currentWidget()
         self.pyhighlighter = PyHighlighter(widget.editor.document())  # Creating the highlighter for python file
         widget.editor.setFocus()
@@ -759,26 +760,13 @@ class PyHighlighter(QSyntaxHighlighter):
             self.formats[name].setFontItalic(values.get('italic', False))
 
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
-            for regex in util.make_list(values.get('regex', [])):
+            for regex in util.make_list(values.get('regex', [])): # makes regexes into a list
+
                 self.highlightingRules.append((QRegExp(regex), self.formats[name]))
-        rules = {
-            "keyword": ['\\b' + word + '\\b' for word in keyword.kwlist],
-            "class": '\\bclass\\b',
-            "function": '[A-Za-z0-9_]+(?=\\()',
-            "magic": '\__[^\']*\__',
-            "decorator": '@[^\n]*',
-            "int": '[-+]?[0-9]+',
-            "string": [r'\'((?:\\\'|[^\'])*)\'', r'\"((?:\\\"|[^\"])*)\"'],
-            "comment": '#[^\n]*',
-            "multiLine": [],
-        }
+
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
                                   for pattern in python['keywords']] + self.highlightingRules
 
-       # quotationFormat = QTextCharFormat()
-       # quotationFormat.setForeground(QColor(python['highlighting']['quotation']['color']))
-       # self.highlightingRules.append((QRegExp("'[^\']*\'"), quotationFormat))
-       # self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotationFormat))
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
