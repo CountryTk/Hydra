@@ -2,10 +2,10 @@ import sys
 import os
 import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
-from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption
+from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
-    QSplitter
+    QSplitter, QLabel
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
@@ -306,6 +306,52 @@ class ConsoleWidget(RichJupyterWidget, QThread):
         self._execute(command, False)
 
 
+class Customize(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setFixedSize(800, 600)
+
+        self.opened = False
+
+        self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
+
+        self.initUI()
+
+    def initUI(self):
+
+        firstLayoutImage = QLabel(self)
+        firstLayoutText = QLabel(self)
+
+        editor = config['editor']
+
+        self.font = QFont()
+        self.font.setFamily(editor["editorFont"])
+        self.font.setPointSize(editor["editorFontSize"])
+
+        hbox = QHBoxLayout(self)
+        pixmap = QPixmap('resources/layout1.png')
+        pixmap.scaled(64, 64)
+        firstLayoutText.setFont(self.font)
+        hbox.addWidget(firstLayoutText)
+        hbox.addWidget(firstLayoutImage)
+        firstLayoutText.setText("1) Dark themed layout")
+
+        firstLayoutImage.setPixmap(pixmap)
+        firstLayoutImage.resize(415, 287)
+        self.setWindowTitle('PyPad customization')
+
+        #print(self.layout().takeAt(0))
+        self.setLayout(hbox)
+        if self.opened:
+            self.clearLayout()
+
+        self.opened = True
+
+    def run(self):
+        self.show()
+
+
 class Tabs(QWidget, QThread):
 
     def __init__(self, callback):
@@ -360,7 +406,7 @@ class Tabs(QWidget, QThread):
     def closeTab(self, index):
         tab = self.tabs.widget(index)
         current = self.tabs.currentWidget()
-
+        print(current.fileName)
         tab.deleteLater()
         self.tabCounter.pop(index)
         self.tabs.removeTab(index)
@@ -394,6 +440,7 @@ class Main(QMainWindow):
         self.onStart()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
+        self.custom = Customize()
         self.tabsOpen = []
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -407,6 +454,7 @@ class Main(QMainWindow):
         self.open()
         self.save()
         self.saveAs()
+        self.customize()
         self.exit()
 
         # Without this, the whole layout is broken
@@ -467,6 +515,11 @@ class Main(QMainWindow):
         toolMenu.addAction(self.openPyAct)
         toolMenu.addAction(self.openTermAct
                            )
+
+        appearance = menu.addMenu('Appearance')
+
+        appearance.addAction(self.colorSchemeAct)
+
         self.resize(800, 700)
 
     def open(self):
@@ -482,6 +535,14 @@ class Main(QMainWindow):
 
         self.newAct.setStatusTip('Create a new file')
         self.newAct.triggered.connect(self.newFile)
+
+    def customize(self):
+
+        self.colorSchemeAct = QAction('Customize', self)
+        self.colorSchemeAct.setShortcut('Alt+C')
+
+        self.colorSchemeAct.setStatusTip('Select a color scheme')
+        self.colorSchemeAct.triggered.connect(self.custom.run)
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -517,6 +578,7 @@ class Main(QMainWindow):
 
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
+
 
     def openFileFromMenu(self):
         self.tab.hideDirectory()
@@ -589,7 +651,7 @@ class Main(QMainWindow):
                     self.chighlighter = CHighlighter(self.currentTab.editor.document())
 
                 else:
-                    if self.pyFileOpened:
+                    if not filename.endswith('.py'):
                         del self.pyhighlighter
                     if self.cFileOpened:
                         del self.chighlighter
@@ -612,6 +674,7 @@ class Main(QMainWindow):
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
         print(self.tab.tabCounter)
         widget = self.tab.tabs.currentWidget()
+        print(widget.baseName)
         self.pyhighlighter = PyHighlighter(widget.editor.document())  # Creating the highlighter for python file
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
@@ -658,6 +721,7 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     self.saved = True
                     self.tabsOpen.append(fileName)
+
                     try:
                         baseName = os.path.basename(fileName)
                     except AttributeError:
