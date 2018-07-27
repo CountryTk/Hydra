@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel
+    QSplitter, QLabel, QComboBox
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
@@ -313,6 +313,7 @@ class Customize(QWidget):
         self.setFixedSize(800, 600)
 
         self.opened = False
+        self.vbox = QVBoxLayout(self)  # Creating the layout
 
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
 
@@ -320,36 +321,60 @@ class Customize(QWidget):
 
     def initUI(self):
 
-        firstLayoutImage = QLabel(self)
-        firstLayoutText = QLabel(self)
+        self.firstLayoutImage = QLabel(self)
+        self.firstLayoutText = QLabel(self)
+
+        self.hbox = QHBoxLayout()
 
         editor = config['editor']
+
+        test = QComboBox(self)
+        test.addItem("Theme 1")
+        test.addItem("Theme 2")
+        test.addItem("Theme 3")
+        test.currentIndexChanged.connect(self.themes)
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
 
-        hbox = QHBoxLayout(self)
-        pixmap = QPixmap('resources/layout1.png')
-        pixmap.scaled(64, 64)
-        firstLayoutText.setFont(self.font)
-        hbox.addWidget(firstLayoutText)
-        hbox.addWidget(firstLayoutImage)
-        firstLayoutText.setText("1) Dark themed layout")
+        self.theme1 = QPixmap('resources/layout1.png')
+        self.theme2 = QPixmap('resources/layout1.png')
+        self.theme3 = QPixmap('resources/layout1.png')
 
-        firstLayoutImage.setPixmap(pixmap)
-        firstLayoutImage.resize(415, 287)
-        self.setWindowTitle('PyPad customization')
+        self.vbox.addWidget(test)
+        self.firstLayoutText.setFont(self.font)
 
-        #print(self.layout().takeAt(0))
-        self.setLayout(hbox)
-        if self.opened:
-            self.clearLayout()
+        self.hbox.addWidget(self.firstLayoutText)
+        self.hbox.addWidget(self.firstLayoutImage)
 
-        self.opened = True
+        self.firstLayoutImage.setPixmap(self.theme1)
+        self.firstLayoutText.setText("Dark theme")
+
+        self.firstLayoutImage.resize(415, 287)
+        self.vbox.addLayout(self.hbox)
+        self.setLayout(self.vbox)
 
     def run(self):
         self.show()
+
+    def themes(self, index):
+
+        if index == 0:
+
+            self.firstLayoutImage.setPixmap(self.theme1)
+            self.firstLayoutText.setText("Dark theme")
+
+        elif index == 1:
+            self.firstLayoutImage.setPixmap(self.theme3)
+            self.firstLayoutText.setText("Fancy theme")
+
+        elif index == 2:
+
+            self.firstLayoutImage.setPixmap(self.theme2)
+            self.firstLayoutText.setText("Light theme")
+        else:
+            pass
 
 
 class Tabs(QWidget, QThread):
