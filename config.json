@@ -31,41 +31,34 @@
         "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
       "highlighting": {
         "keyword": {
-          "color": "#0099FF",
           "bold": true
         },
         "class": {
-          "regex": "\\bclass\\b",
-          "color": "#00FF16",
+
+          "color": "#548A9C",
           "bold": true
         },
         "function": {
-          "regex": "[A-Za-z0-9_]+(?=\\()",
           "color": "#FF9500",
           "italic": true
         },
         "magic": {
-          "regex": "\\\\__[^']*\\\\__",
-          "color": "#FF6666"
+          "color": "#FF6666",
+          "italic": true
         },
         "decorator": {
-          "regex": "@[^\n]*",
           "color": "#FF00E7"
         },
         "quotation": {
-          "regex": ["#[^\n]*", "\"[^\"]*\""],
           "color": "#63ff00"
         },
         "singleLineComment": {
-          "regex": "#[^\n]*",
           "color": "#6B6E6C"
         },
         "multiLineComment": {
-          "regex": "[-+]?[0-9]+",
           "color": "#039135"
         },
         "int": {
-          "regex": "[-+]?[0-9]+",
           "color": "#ADD4FF"
         }
       }
@@ -81,37 +74,30 @@
           "bold": true
         },
         "class": {
-          "regex": "\\bclass\\b",
-          "color": "#00FF16",
+          "color": "#330000",
           "bold": true
         },
         "function": {
-          "regex": "[A-Za-z0-9_]+(?=\\()",
           "color": "#FF9500",
           "italic": true
         },
         "magic": {
-          "regex": "\\\\__[^']*\\\\__",
           "color": "#FF6666"
         },
         "decorator": {
-          "regex": "@[^\n]*",
+
           "color": "#FF00E7"
         },
         "quotation": {
-          "regex": ["#[^\n]*", "\"[^\"]*\""],
           "color": "#63ff00"
         },
         "singleLineComment": {
-          "regex": "#[^\n]*",
           "color": "#6B6E6C"
         },
         "multiLineComment": {
-          "regex": "[-+]?[0-9]+",
           "color": "#039135"
         },
         "int": {
-          "regex": "[-+]?[0-9]+",
           "color": "#ADD4FF"
         }
       }
