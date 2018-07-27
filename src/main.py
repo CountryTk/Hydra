@@ -840,22 +840,34 @@ class PyHighlighter(QSyntaxHighlighter):
 
         self.highlightingRules = []
         self.formats = {}
+        self.regex = {
+            "class": "\\bclass\\b",
+            "function": "[A-Za-z0-9_]+(?=\\()",
+            "magic": "\\\\__[^']*\\\\__",
+            "decorator": "@[^\n]*",
+            "quotation": "\"[^\"]*\"",
+            "singleLineComment": "#[^\n]*",
+            "multiLineComment":"[-+]?[0-9]+",
+            "int": "[-+]?[0-9]+",
+        }
 
-        for name, values in python['highlighting'].items():
+        pyKeywordPatterns = keyword.kwlist
+        keywordFormat = QTextCharFormat()
+        keywordFormat.setForeground(QColor(python['highlighting']['keyword']['color']))
+        keywordFormat.setFontWeight(QFont.Bold)
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
+        for name, values in self.regex.items():
             self.formats[name] = QTextCharFormat()
 
-            if values.get('bold'):
+            if name == "class":
                 self.formats[name].setFontWeight(QFont.Bold)
-            self.formats[name].setFontItalic(values.get('italic', False))
+
+            elif name == "function":
+                self.formats[name].setFontItalic(True)
 
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
-            for regex in util.make_list(values.get('regex', [])): # makes regexes into a list
 
-                self.highlightingRules.append((QRegExp(regex), self.formats[name]))
-
-        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
-                                  for pattern in python['keywords']] + self.highlightingRules
-
+            self.highlightingRules.append((QRegExp(values), self.formats[name]))
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
@@ -901,21 +913,34 @@ class CHighlighter(QSyntaxHighlighter):
         self.highlightingRules = []
         self.formats = {}
 
-        for name, values in python['highlighting'].items():
+        self.regex = {
+            "class": "\\bclass\\b",
+            "function": "[A-Za-z0-9_]+(?=\\()",
+            "magic": "\\\\__[^']*\\\\__",
+            "decorator": "@[^\n]*",
+            "quotation": "\"[^\"]*\"",
+            "singleLineComment": "#[^\n]*",
+            "multiLineComment": "[-+]?[0-9]+",
+            "int": "[-+]?[0-9]+",
+        }
+
+        cKeywordPatterns = keyword.kwlist
+        keywordFormat = QTextCharFormat()
+        keywordFormat.setForeground(QColor(python['highlighting']['keyword']['color']))
+        keywordFormat.setFontWeight(QFont.Bold)
+        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in cKeywordPatterns]
+        for name, values in self.regex.items():
             self.formats[name] = QTextCharFormat()
 
-            if values.get('bold'):
+            if name == "class":
                 self.formats[name].setFontWeight(QFont.Bold)
 
-            self.formats[name].setFontItalic(values.get('italic', False))
+            elif name == "function":
+                self.formats[name].setFontItalic(True)
+
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
 
-            for regex in util.make_list(values.get('regex', [])):
-                self.highlightingRules.append((QRegExp(regex), self.formats[name]))
-
-        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), self.formats['keyword'])
-                                  for pattern in python['keywords']] + self.highlightingRules
-
+            self.highlightingRules.append((QRegExp(values), self.formats[name]))
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
