@@ -29,17 +29,8 @@ class NumberBar(QWidget):
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
-        if index == 0:
-            self.config = config0
+        self.index = index
 
-        if index == 1:
-            self.config = config1
-
-        if index == 2:
-            self.config = config2
-
-        else:
-            self.config = config0
 
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
@@ -56,18 +47,26 @@ class NumberBar(QWidget):
             self.setFixedWidth(width)
 
     def paintEvent(self, event):
+        if self.index == 0:
+            config = config0
+
+        if self.index == 1:
+            self.them = config1
+
+            config = config1
+        if self.index == 2:
+            config = config2
+
+        else:
+            self.them = config0
         if self.isVisible():
             block = self.editor.firstVisibleBlock()
             height = self.fontMetrics().height()
             number = block.blockNumber()
             painter = QPainter(self)
             painter.fillRect(event.rect(), lineBarColor)
-            if config1['editor']['NumberBarBox'] is True:
+            if config['editor']['NumberBarBox'] is True:
                 painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
-
-
-            elif self.config['editor']['NumberBarBox'] is False:
-                print("Not drawn")
 
             font = painter.font()
 
@@ -124,9 +123,7 @@ class PlainTextEdit(QPlainTextEdit):
     def __init__(self):
         super().__init__()
 
-        editor = config0['editor']
         self.font = QFont()
-        python = config0['files']['python']
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
@@ -134,17 +131,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.setWordWrapMode(4)
         self.setFont(self.font)
         self.highlightingRules = []
-        self.formats = {}
-        self.regex = {
-            "class": "\\bclass\\b",
-            "function": "[A-Za-z0-9_]+(?=\\()",
-            "magic": "\\\\__[^']*\\\\__",
-            "decorator": "@[^\n]*",
-            "singleLineComment": "#[^\n]*",
-            "quotation": "\"[^\"]*\"",
-            "multiLineComment": "[-+]?[0-9]+",
-            "int": "[-+]?[0-9]+",
-        }
+
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
 
@@ -272,16 +259,17 @@ class Directory(QTreeView):
 
 
 class Content(QWidget):
-    def __init__(self, text, fileName, baseName):
+    def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
         self.editor = PlainTextEdit()
         self.text = text
         self.fileName = fileName
         self.baseName = baseName
+        self.custom = Customize()
         self.editor.setPlainText(str(text))
         # Create a layout for the line numbers
         self.hbox = QHBoxLayout(self)
-        self.numbers = NumberBar(self.editor, index=1)
+        self.numbers = NumberBar(self.editor, index=themeIndex)
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
 
@@ -337,7 +325,7 @@ class Customize(QWidget, QObject):
         super().__init__()
 
         self.setFixedSize(800, 600)
-        self.index = None
+        self.index = 0  # The first theme
         self.opened = False
         self.vbox = QVBoxLayout(self)  # Creating the layout
 
@@ -518,7 +506,6 @@ class Tabs(QWidget, QThread):
         tab.deleteLater()
         self.tabCounter.pop(index)
         self.tabs.removeTab(index)
-        print("Deleted: " + str(current.fileName))
 
     def showDirectory(self):
         self.directory.setVisible(True)
@@ -536,7 +523,6 @@ class Tabs(QWidget, QThread):
     """
 
     def showConsole(self):
-        #self.splitterV.addWidget(self.console)
         pass
 
     def currentTab(self):
@@ -583,10 +569,8 @@ class Main(QMainWindow):
             currentFileName = self.tab.tabs.currentWidget().baseName
             currentFileDocument = self.tab.tabs.currentWidget().editor.document()
             self.setWindowTitle("PyPad ~ " + str(currentFileName))
-            # print("in fileNameChange " + str(self.tab.tabs.currentWidget().editor.document()))
             if currentFileName.endswith(".py"):
                 self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
-
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
 
@@ -627,8 +611,7 @@ class Main(QMainWindow):
 
         toolMenu = menu.addMenu('Tools')
         toolMenu.addAction(self.openPyAct)
-        toolMenu.addAction(self.openTermAct
-                           )
+        toolMenu.addAction(self.openTermAct)
 
         appearance = menu.addMenu('Appearance')
 
@@ -721,7 +704,8 @@ class Main(QMainWindow):
                         text = self.tab.Console.execute("cat " + str(filename))
                     basename = os.path.basename(filename)
 
-                    tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
+                    tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
                     print("oof")
@@ -733,9 +717,8 @@ class Main(QMainWindow):
                     text = self.tab.Console.execute("cat " + str(filename))
                 basename = os.path.basename(filename)
 
-                tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
+                tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
                 self.tab.tabCounter.append(tab.baseName)
-                print(self.tab.tabCounter)
                 dirPath = os.path.dirname(filename)
                 self.files = filename
 
@@ -767,17 +750,13 @@ class Main(QMainWindow):
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
         self.pyFileOpened = True
         # Creates a new blank file
-        file = Content(text, fileName, fileName)
-
+        file = Content(text, fileName, fileName, self.custom.index)
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
         widget = self.tab.tabs.currentWidget()
-        #self.pyhighlighter = PyHighlighter(widget.editor.document(), index=self.custom.index)  # Creating the highlighter for python file
-        # print("in newFile: " + str(widget.editor.document()))
-        print(widget.editor.document())
 
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
@@ -831,7 +810,7 @@ class Main(QMainWindow):
                         print("All tabs closed")
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
-                    newTab = Content(str(text), fileName, baseName)
+                    newTab = Content(str(text), fileName, baseName, self.custom.index)
 
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
@@ -919,7 +898,7 @@ class PyHighlighter(QSyntaxHighlighter):
 
         elif index == 1:
             python = config1['files']['python']
-            print("printed")
+
         elif index == 2:
             python = config2['files']['python']
         else:
