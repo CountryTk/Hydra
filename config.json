@@ -31,7 +31,8 @@
         "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
       "highlighting": {
         "keyword": {
-          "bold": true
+          "bold": true,
+          "color": "#0099FF"
         },
         "class": {
 
@@ -49,11 +50,12 @@
         "decorator": {
           "color": "#FF00E7"
         },
-        "quotation": {
-          "color": "#63ff00"
-        },
+
         "singleLineComment": {
           "color": "#6B6E6C"
+        },
+        "quotation": {
+          "color": "#63ff00"
         },
         "multiLineComment": {
           "color": "#039135"
