@@ -1,11 +1,11 @@
 import sys
 import os
 import keyword
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSlot, pyqtSignal, QObject
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox
+    QSplitter, QLabel, QComboBox, QPushButton, QTabBar
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
@@ -15,18 +15,31 @@ import config
 
 import shutil
 import subprocess
-config = config.read()
+config0 = config.read(0)
+config1 = config.read(1)
+config2 = config.read(2)
 
 lineBarColor = QColor(53, 53, 53)
 
 
 class NumberBar(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, index=1):
         super().__init__(parent)
         self.editor = parent
         self.editor.blockCountChanged.connect(self.update_width)
         self.editor.updateRequest.connect(self.update_on_scroll)
         self.update_width('1')
+        if index == 0:
+            self.config = config0
+
+        if index == 1:
+            self.config = config1
+
+        if index == 2:
+            self.config = config2
+
+        else:
+            self.config = config0
 
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
@@ -49,8 +62,12 @@ class NumberBar(QWidget):
             number = block.blockNumber()
             painter = QPainter(self)
             painter.fillRect(event.rect(), lineBarColor)
-            if config['editor']['NumberBarBox']:
+            if config1['editor']['NumberBarBox'] is True:
                 painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
+
+
+            elif self.config['editor']['NumberBarBox'] is False:
+                print("Not drawn")
 
             font = painter.font()
 
@@ -92,7 +109,7 @@ class Console(QWidget, QThread):
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
         self.layout = QVBoxLayout()
-        self.layout.addWidget(self.editor)
+        self.layout.addWidget(self.editor, 1)
         self.setLayout(self.layout)
         self.editor.setFont(self.font)
 
@@ -104,20 +121,30 @@ class Console(QWidget, QThread):
 
 
 class PlainTextEdit(QPlainTextEdit):
-
     def __init__(self):
         super().__init__()
 
-        editor = config['editor']
+        editor = config0['editor']
         self.font = QFont()
-
+        python = config0['files']['python']
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
         self.replace_tabs = 4
         self.setWordWrapMode(4)
         self.setFont(self.font)
-
+        self.highlightingRules = []
+        self.formats = {}
+        self.regex = {
+            "class": "\\bclass\\b",
+            "function": "[A-Za-z0-9_]+(?=\\()",
+            "magic": "\\\\__[^']*\\\\__",
+            "decorator": "@[^\n]*",
+            "singleLineComment": "#[^\n]*",
+            "quotation": "\"[^\"]*\"",
+            "multiLineComment": "[-+]?[0-9]+",
+            "int": "[-+]?[0-9]+",
+        }
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
 
@@ -254,13 +281,12 @@ class Content(QWidget):
         self.editor.setPlainText(str(text))
         # Create a layout for the line numbers
         self.hbox = QHBoxLayout(self)
-        self.numbers = NumberBar(self.editor)
+        self.numbers = NumberBar(self.editor, index=1)
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
 
 
 class ConsoleWidget(RichJupyterWidget, QThread):
-
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
 
@@ -306,12 +332,12 @@ class ConsoleWidget(RichJupyterWidget, QThread):
         self._execute(command, False)
 
 
-class Customize(QWidget):
+class Customize(QWidget, QObject):
     def __init__(self):
         super().__init__()
 
         self.setFixedSize(800, 600)
-
+        self.index = None
         self.opened = False
         self.vbox = QVBoxLayout(self)  # Creating the layout
 
@@ -321,38 +347,47 @@ class Customize(QWidget):
 
     def initUI(self):
 
-        self.firstLayoutImage = QLabel(self)
-        self.firstLayoutText = QLabel(self)
+        self.LayoutImage = QLabel(self)
+        self.LayoutText = QLabel(self)
 
         self.hbox = QHBoxLayout()
 
-        editor = config['editor']
-
-        test = QComboBox(self)
-        test.addItem("Theme 1")
-        test.addItem("Theme 2")
-        test.addItem("Theme 3")
-        test.currentIndexChanged.connect(self.themes)
+        editor = config0['editor']
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
 
-        self.theme1 = QPixmap('resources/layout1.png')
+        self.combo = QComboBox(self)
+        self.combo.addItem("Theme 1")
+        self.combo.addItem("Theme 2")
+        self.combo.addItem("Theme 3")
+        self.combo.currentIndexChanged.connect(self.themes)
+        self.combo.setFont(self.font)
+
+        self.theme1 = QPixmap('resources/layout1.png')  # These are the pictures of themes
         self.theme2 = QPixmap('resources/layout1.png')
         self.theme3 = QPixmap('resources/layout1.png')
 
-        self.vbox.addWidget(test)
-        self.firstLayoutText.setFont(self.font)
+        self.vbox.addWidget(self.combo)  # Adding Combobox to vertical boxlayout so it would look better
 
-        self.hbox.addWidget(self.firstLayoutText)
-        self.hbox.addWidget(self.firstLayoutImage)
+        self.LayoutText.setFont(self.font)
 
-        self.firstLayoutImage.setPixmap(self.theme1)
-        self.firstLayoutText.setText("Dark theme")
+        self.hbox.addWidget(self.LayoutText)
+        self.hbox.addWidget(self.LayoutImage)
 
-        self.firstLayoutImage.resize(415, 287)
+        self.LayoutImage.setPixmap(self.theme1)  # This is the "main" theme
+
+        self.LayoutText.setText("Dark theme")
+
+        self.LayoutImage.resize(415, 287)
         self.vbox.addLayout(self.hbox)
+        self.selector = QPushButton(self)
+        self.selector.setFixedSize(70, 30)
+        self.selector.setLayoutDirection(Qt.RightToLeft)
+        self.selector.setText("Select")
+        self.selector.setFont(self.font)
+        self.vbox.addWidget(self.selector)
         self.setLayout(self.vbox)
 
     def run(self):
@@ -361,20 +396,68 @@ class Customize(QWidget):
     def themes(self, index):
 
         if index == 0:
-
-            self.firstLayoutImage.setPixmap(self.theme1)
-            self.firstLayoutText.setText("Dark theme")
+            self.LayoutImage.setPixmap(self.theme1)
+            self.LayoutText.setText("Dark theme")
 
         elif index == 1:
-            self.firstLayoutImage.setPixmap(self.theme3)
-            self.firstLayoutText.setText("Fancy theme")
+
+            self.LayoutImage.setPixmap(self.theme3)
+            self.LayoutText.setText("Fancy theme")
 
         elif index == 2:
 
-            self.firstLayoutImage.setPixmap(self.theme2)
-            self.firstLayoutText.setText("Light theme")
+            self.LayoutImage.setPixmap(self.theme2)
+            self.LayoutText.setText("Light theme")
+
         else:
             pass
+
+    def test(self):
+        index = self.combo.currentIndex()
+        self.index = index
+        if index == 0:
+            editor = config0['editor']
+            palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
+            palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
+            palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
+            palette.setColor(QPalette.AlternateBase, QColor(editor["alternateBase"]))
+            palette.setColor(QPalette.ToolTipBase, QColor(editor["ToolTipBase"]))
+            palette.setColor(QPalette.ToolTipText, QColor(editor["ToolTipText"]))
+            palette.setColor(QPalette.Text, QColor(editor["editorText"]))
+            palette.setColor(QPalette.Button, QColor(editor["buttonColor"]))
+            palette.setColor(QPalette.ButtonText, QColor(editor["buttonTextColor"]))
+            palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+            palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
+
+        elif index == 1:
+            editor = config0['editor']
+            palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
+            palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
+            palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
+            palette.setColor(QPalette.AlternateBase, QColor(editor["alternateBase"]))
+            palette.setColor(QPalette.ToolTipBase, QColor(editor["ToolTipBase"]))
+            palette.setColor(QPalette.ToolTipText, QColor(editor["ToolTipText"]))
+            palette.setColor(QPalette.Text, QColor(editor["editorText"]))
+            palette.setColor(QPalette.Button, QColor(editor["buttonColor"]))
+            palette.setColor(QPalette.ButtonText, QColor(editor["buttonTextColor"]))
+            palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+            palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
+
+        elif index == 2:
+            editor = config0['editor']
+            palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
+            palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
+            palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
+            palette.setColor(QPalette.AlternateBase, QColor(editor["alternateBase"]))
+            palette.setColor(QPalette.ToolTipBase, QColor(editor["ToolTipBase"]))
+            palette.setColor(QPalette.ToolTipText, QColor(editor["ToolTipText"]))
+            palette.setColor(QPalette.Text, QColor(editor["editorText"]))
+            palette.setColor(QPalette.Button, QColor(editor["buttonColor"]))
+            palette.setColor(QPalette.ButtonText, QColor(editor["buttonTextColor"]))
+            palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+            palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
+
+        app.setPalette(palette)
 
 
 class Tabs(QWidget, QThread):
@@ -402,10 +485,10 @@ class Tabs(QWidget, QThread):
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(editor['tabMovable'])  # Let's you make the tabs movable
 
-        if editor['tabShape'] is True: # If tab shape is true then they have this rounded look
+        if editor['tabShape'] is True:  # If tab shape is true then they have this rounded look
             self.tabs.setTabShape(1)
         else:
-            self.tabs.setTabShape(0) # If false, it has this boxy look
+            self.tabs.setTabShape(0)  # If false, it has this boxy look
 
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
@@ -431,10 +514,11 @@ class Tabs(QWidget, QThread):
     def closeTab(self, index):
         tab = self.tabs.widget(index)
         current = self.tabs.currentWidget()
-        print(current.fileName)
+
         tab.deleteLater()
         self.tabCounter.pop(index)
         self.tabs.removeTab(index)
+        print("Deleted: " + str(current.fileName))
 
     def showDirectory(self):
         self.directory.setVisible(True)
@@ -497,12 +581,17 @@ class Main(QMainWindow):
     def fileNameChange(self):
         try:
             currentFileName = self.tab.tabs.currentWidget().baseName
+            currentFileDocument = self.tab.tabs.currentWidget().editor.document()
             self.setWindowTitle("PyPad ~ " + str(currentFileName))
+            # print("in fileNameChange " + str(self.tab.tabs.currentWidget().editor.document()))
+            if currentFileName.endswith(".py"):
+                self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
+
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
 
     def onStart(self):
-        editor = config['editor']
+        editor = config0['editor']
 
         if editor["windowStaysOnTop"] is True:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
@@ -522,7 +611,7 @@ class Main(QMainWindow):
         self.font.setFixedPitch(True)
 
         menu = self.menuBar()
-
+        # menu.setFont(self.font)
         # Creating the file menu
 
         fileMenu = menu.addMenu('File')
@@ -562,12 +651,15 @@ class Main(QMainWindow):
         self.newAct.triggered.connect(self.newFile)
 
     def customize(self):
-
         self.colorSchemeAct = QAction('Customize', self)
         self.colorSchemeAct.setShortcut('Alt+C')
 
         self.colorSchemeAct.setStatusTip('Select a color scheme')
-        self.colorSchemeAct.triggered.connect(self.custom.run)
+        self.colorSchemeAct.triggered.connect(self.theme)
+
+    def theme(self):
+        self.custom.run()
+        self.custom.selector.clicked.connect(self.custom.test)
 
     def save(self):
         self.saveAct = QAction('Save')
@@ -614,7 +706,6 @@ class Main(QMainWindow):
             'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
             options=options
         )
-        tab_idx = len(self.tabsOpen)
 
         if filenames:  # If file is selected, we can open it
             filename = filenames[0]
@@ -633,6 +724,7 @@ class Main(QMainWindow):
                     tab = Content(text, filename, basename)  # Creating a tab object *IMPORTANT*
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
+                    print("oof")
                     self.tab.tabCounter.remove(tab.baseName)
             with open(filename, 'r+') as file_o:
                 try:
@@ -666,21 +758,6 @@ class Main(QMainWindow):
                 self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-                if filename.endswith(".py") and not filename.endswith(".pyc"):
-                    self.pyFileOpened = True
-                    self.pyhighlighter = PyHighlighter(
-                        self.currentTab.editor.document())  # Creating the highlighter for python
-
-                elif filename.endswith(".c"):
-                    self.cFileOpened = True
-                    self.chighlighter = CHighlighter(self.currentTab.editor.document())
-
-                else:
-                    if not filename.endswith('.py'):
-                        del self.pyhighlighter
-                    if self.cFileOpened:
-                        del self.chighlighter
-
         except (IsADirectoryError, AttributeError, UnboundLocalError) as E:
             print(E)
 
@@ -697,10 +774,11 @@ class Main(QMainWindow):
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
         self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
-        print(self.tab.tabCounter)
         widget = self.tab.tabs.currentWidget()
-        print(widget.baseName)
-        self.pyhighlighter = PyHighlighter(widget.editor.document())  # Creating the highlighter for python file
+        #self.pyhighlighter = PyHighlighter(widget.editor.document(), index=self.custom.index)  # Creating the highlighter for python file
+        # print("in newFile: " + str(widget.editor.document()))
+        print(widget.editor.document())
+
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
@@ -765,7 +843,7 @@ class Main(QMainWindow):
                     newActiveTab.editor.setFocus()
 
                     if fileName.endswith(".py"):  # If we are dealing with a python file we use highlighting on it
-                        self.pyhighlighter = PyHighlighter(newActiveTab.editor.document())
+                        self.pyhighlighter = PyHighlighter(newActiveTab.editor.document(), index=self.custom.index)
 
                         newActiveTab.editor.setTabStopWidth(self.tabSize)
                     elif fileName.endswith(".c"):
@@ -833,10 +911,19 @@ class Main(QMainWindow):
 
 
 class PyHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None, *args):
+    def __init__(self, parent=None, index=0, *args):
         super(PyHighlighter, self).__init__(parent, *args)
 
-        python = config['files']['python']
+        if index == 0:
+            python = config0['files']['python']
+
+        elif index == 1:
+            python = config1['files']['python']
+            print("printed")
+        elif index == 2:
+            python = config2['files']['python']
+        else:
+            python = config0['files']['python']  # This is the default config
 
         self.highlightingRules = []
         self.formats = {}
@@ -845,17 +932,20 @@ class PyHighlighter(QSyntaxHighlighter):
             "function": "[A-Za-z0-9_]+(?=\\()",
             "magic": "\\\\__[^']*\\\\__",
             "decorator": "@[^\n]*",
-            "quotation": "\"[^\"]*\"",
             "singleLineComment": "#[^\n]*",
-            "multiLineComment":"[-+]?[0-9]+",
+            "quotation": "\"[^\"]*\"",
+            "multiLineComment": "[-+]?[0-9]+",
             "int": "[-+]?[0-9]+",
         }
 
         pyKeywordPatterns = keyword.kwlist
+
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(QColor(python['highlighting']['keyword']['color']))
         keywordFormat.setFontWeight(QFont.Bold)
+
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
+
         for name, values in self.regex.items():
             self.formats[name] = QTextCharFormat()
 
@@ -892,6 +982,7 @@ class PyHighlighter(QSyntaxHighlighter):
             while start_index >= 0 and self.format(start_index+2) in self.formats.values():
                 start_index = comment.indexIn(text, start_index + 3)
             index_step = comment.matchedLength()
+
         while start_index >= 0:
             end = comment.indexIn(text, start_index + index_step)
             if end != -1:
@@ -900,6 +991,7 @@ class PyHighlighter(QSyntaxHighlighter):
             else:
                 self.setCurrentBlockState(1)
                 length = len(text) - start_index
+
             self.setFormat(start_index, length, self.formats['multiLineComment'])
             start_index = comment.indexIn(text, start_index + length)
 
@@ -924,11 +1016,16 @@ class CHighlighter(QSyntaxHighlighter):
             "int": "[-+]?[0-9]+",
         }
 
-        cKeywordPatterns = keyword.kwlist
+        cKeywordPatterns = ["auto", "break", "case", "char", "const", "const", "continue", "default", "do", "double", "else",
+        "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof",
+        "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"]
+
         keywordFormat = QTextCharFormat()
         keywordFormat.setForeground(QColor(python['highlighting']['keyword']['color']))
         keywordFormat.setFontWeight(QFont.Bold)
+
         self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in cKeywordPatterns]
+
         for name, values in self.regex.items():
             self.formats[name] = QTextCharFormat()
 
@@ -946,6 +1043,7 @@ class CHighlighter(QSyntaxHighlighter):
         for pattern, format in self.highlightingRules:
             expression = QRegExp(pattern)
             index = expression.indexIn(text)
+
             while index >= 0:
                 length = expression.matchedLength()
                 self.setFormat(index, length, format)
@@ -960,10 +1058,12 @@ class CHighlighter(QSyntaxHighlighter):
             start_index = 0
             index_step = 0
         else:
+
             start_index = comment.indexIn(text)
             while start_index >= 0 and self.format(start_index+2) in self.formats.values():
                 start_index = comment.indexIn(text, start_index + 3)
             index_step = comment.matchedLength()
+
         while start_index >= 0:
             end = comment.indexIn(text, start_index + index_step)
             if end != -1:
@@ -972,6 +1072,7 @@ class CHighlighter(QSyntaxHighlighter):
             else:
                 self.setCurrentBlockState(1)
                 length = len(text) - start_index
+
             self.setFormat(start_index, length, self.formats['multiLineComment'])
             start_index = comment.indexIn(text, start_index + length)
 
@@ -981,7 +1082,7 @@ if __name__ == '__main__':
     app.setStyle('Fusion')
     palette = QPalette()
 
-    editor = config['editor']
+    editor = config0['editor']
 
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
