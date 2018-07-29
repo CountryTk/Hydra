@@ -30,9 +30,9 @@
         "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
         "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
       "highlighting": {
-        "keyword": {
-          "bold": true,
-          "color": "#0099FF"
+        "keyword": {     
+          "color": "#0099FF",
+          "bold": true
         },
         "class": {
 
