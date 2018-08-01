@@ -2,8 +2,12 @@
   "editor": {
     "windowStaysOnTop": false,
     "editorFont": "Iosevka",
+    "menuFont": "Inconsolata",
+    "directoryFont": "Inconsolata",
     "editorFontSize": 12,
+    "menuFontSize": 10.5,
     "tabFontSize": 10.5,
+    "directoryFontSize": 10,
     "tabShape": false,
     "tabMovable": true,
     "tabFont": "Iosevka",
@@ -30,9 +34,9 @@
         "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
         "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
       "highlighting": {
-        "keyword": {     
-          "color": "#0099FF",
-          "bold": true
+        "keyword": {
+          "bold": true,
+          "color": "#0099FF"
         },
         "class": {
 
