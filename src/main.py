@@ -31,7 +31,6 @@ class NumberBar(QWidget):
         self.update_width('1')
         self.index = index
 
-
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
@@ -191,9 +190,11 @@ class PlainTextEdit(QPlainTextEdit):
 class Directory(QTreeView):
     def __init__(self, callback):
         super().__init__()
-
+        directoryFont = QFont()
+        directoryFont.setFamily(editor["directoryFont"])
+        directoryFont.setPointSize(editor["directoryFontSize"])
         self.open_callback = callback
-
+        self.setFont(directoryFont)
         self.layout = QHBoxLayout()
         self.model = QFileSystemModel()
         self.setModel(self.model)
@@ -365,16 +366,18 @@ class Customize(QWidget, QObject):
         self.hbox.addWidget(self.LayoutImage)
 
         self.LayoutImage.setPixmap(self.theme1)  # This is the "main" theme
+        self.LayoutImage.resize(415, 287)
 
         self.LayoutText.setText("Dark theme")
 
-        self.LayoutImage.resize(415, 287)
         self.vbox.addLayout(self.hbox)
+
         self.selector = QPushButton(self)
         self.selector.setFixedSize(70, 30)
         self.selector.setLayoutDirection(Qt.RightToLeft)
         self.selector.setText("Select")
         self.selector.setFont(self.font)
+
         self.vbox.addWidget(self.selector)
         self.setLayout(self.vbox)
 
@@ -418,7 +421,7 @@ class Customize(QWidget, QObject):
             palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
 
         elif index == 1:
-            editor = config0['editor']
+            editor = config1['editor']
             palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
             palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
             palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
@@ -432,7 +435,7 @@ class Customize(QWidget, QObject):
             palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
 
         elif index == 2:
-            editor = config0['editor']
+            editor = config2['editor']
             palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
             palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
             palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
@@ -452,6 +455,7 @@ class Tabs(QWidget, QThread):
 
     def __init__(self, callback):
         super().__init__()
+
         self.layout = QHBoxLayout(self)  # Change main layout to Vertical
         # Initialize tab screen
         self.tabs = QTabWidget()  # TODO: This is topright
@@ -475,6 +479,7 @@ class Tabs(QWidget, QThread):
 
         if editor['tabShape'] is True:  # If tab shape is true then they have this rounded look
             self.tabs.setTabShape(1)
+            print(editor)
         else:
             self.tabs.setTabShape(0)  # If false, it has this boxy look
 
@@ -532,10 +537,11 @@ class Tabs(QWidget, QThread):
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.onStart()
+        self.onStart(0)
+        self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
-        self.custom = Customize()
+
         self.tabsOpen = []
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -568,14 +574,26 @@ class Main(QMainWindow):
         try:
             currentFileName = self.tab.tabs.currentWidget().baseName
             currentFileDocument = self.tab.tabs.currentWidget().editor.document()
+
             self.setWindowTitle("PyPad ~ " + str(currentFileName))
+
             if currentFileName.endswith(".py"):
                 self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
+
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
 
-    def onStart(self):
-        editor = config0['editor']
+    def onStart(self, index):
+        if index == 0:
+            editor = config0['editor']
+        elif index == 1:
+            editor = config1['editor']
+
+        elif index == 2:
+            editor = config2['editor']
+
+        else:
+            editor = config0['editor']
 
         if editor["windowStaysOnTop"] is True:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
@@ -593,9 +611,11 @@ class Main(QMainWindow):
         self.statusBar()  # Initializing the status bar
 
         self.font.setFixedPitch(True)
-
+        menuFont = QFont()
+        menuFont.setFamily(editor["menuFont"])
+        menuFont.setPointSize(editor['menuFontSize'])
         menu = self.menuBar()
-        # menu.setFont(self.font)
+        menu.setFont(menuFont)
         # Creating the file menu
 
         fileMenu = menu.addMenu('File')
@@ -679,7 +699,6 @@ class Main(QMainWindow):
         self.exitAct.setStatusTip('Exit application')
         self.exitAct.triggered.connect(qApp.quit)
 
-
     def openFileFromMenu(self):
         self.tab.hideDirectory()
         options = QFileDialog.Options()
@@ -705,7 +724,7 @@ class Main(QMainWindow):
                     basename = os.path.basename(filename)
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
-
+                    # (self.onStart(self.custom.index)
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
                     print("oof")
@@ -718,6 +737,7 @@ class Main(QMainWindow):
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+                # self.onStart(self.custom.index)
                 self.tab.tabCounter.append(tab.baseName)
                 dirPath = os.path.dirname(filename)
                 self.files = filename
@@ -751,6 +771,7 @@ class Main(QMainWindow):
         self.pyFileOpened = True
         # Creates a new blank file
         file = Content(text, fileName, fileName, self.custom.index)
+        # self.onStart(self.custom.index)
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
@@ -811,7 +832,7 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
                     newTab = Content(str(text), fileName, baseName, self.custom.index)
-
+                    # self.onStart(self.custom.index)
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
 
