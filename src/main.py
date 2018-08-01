@@ -98,7 +98,7 @@ class Search(QWidget):
     pass
 
 
-class Console(QWidget, QThread):
+class Console(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -190,6 +190,7 @@ class PlainTextEdit(QPlainTextEdit):
 class Directory(QTreeView):
     def __init__(self, callback):
         super().__init__()
+
         directoryFont = QFont()
         directoryFont.setFamily(editor["directoryFont"])
         directoryFont.setPointSize(editor["directoryFontSize"])
@@ -217,11 +218,13 @@ class Directory(QTreeView):
         # If we are focused then we change the selected item highlighting color
         self.focused = True
         palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
+
         app.setPalette(palette)
 
     def focusOutEvent(self, event):
         # If we unfocus from the QTreeView then we make the highlighted item color white
         palette.setColor(QPalette.Highlight, QColor(editor["UnfocusedHighlightColor"]).lighter())
+        # self.clearSelection() Uncomment this if you want to remove all highlighting when unfocused
         app.setPalette(palette)
 
     def openDirectory(self, path):
@@ -934,6 +937,7 @@ class PyHighlighter(QSyntaxHighlighter):
             "decorator": "@[^\n]*",
             "singleLineComment": "#[^\n]*",
             "quotation": "\"[^\"]*\"",
+            "quotation2": "'[^\']*\'",
             "multiLineComment": "[-+]?[0-9]+",
             "int": "[-+]?[0-9]+",
         }
@@ -972,7 +976,7 @@ class PyHighlighter(QSyntaxHighlighter):
 
     def multiLineHighlight(self, text):
 
-        comment = QRegExp("'''")
+        comment = QRegExp('"""')
 
         if self.previousBlockState() == 1:
             start_index = 0
@@ -1011,6 +1015,7 @@ class CHighlighter(QSyntaxHighlighter):
             "magic": "\\\\__[^']*\\\\__",
             "decorator": "@[^\n]*",
             "quotation": "\"[^\"]*\"",
+
             "singleLineComment": "#[^\n]*",
             "multiLineComment": "[-+]?[0-9]+",
             "int": "[-+]?[0-9]+",
@@ -1053,7 +1058,7 @@ class CHighlighter(QSyntaxHighlighter):
 
     def multiLineHighlight(self, text):
 
-        comment = QRegExp("'''")
+        comment = QRegExp('"""')
         if self.previousBlockState() == 1:
             start_index = 0
             index_step = 0
