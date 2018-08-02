@@ -18,12 +18,14 @@ import subprocess
 config0 = config.read(0)
 config1 = config.read(1)
 config2 = config.read(2)
-
+with open("default.json") as choice:
+    choiceIndex  = int(choice.read())
+    print(choiceIndex)
 lineBarColor = QColor(53, 53, 53)
 
 
 class NumberBar(QWidget):
-    def __init__(self, parent=None, index=1):
+    def __init__(self, parent=None, index=choiceIndex):
         super().__init__(parent)
         self.editor = parent
         self.editor.blockCountChanged.connect(self.update_width)
@@ -41,23 +43,23 @@ class NumberBar(QWidget):
 
     def update_width(self, string):
         width = self.fontMetrics().width(str(string)) + 28
-        print("update_width:width:" + str(width))
         if self.width() != width:
             self.setFixedWidth(width)
 
     def paintEvent(self, event):
-        if self.index == 0:
+        if self.index == "0":
             config = config0
 
-        if self.index == 1:
-            self.them = config1
+        elif self.index == "1":
 
             config = config1
-        if self.index == 2:
+
+        elif self.index == "2":
             config = config2
 
         else:
-            self.them = config0
+
+            config = config0
         if self.isVisible():
             block = self.editor.firstVisibleBlock()
             height = self.fontMetrics().height()
@@ -98,10 +100,9 @@ class Search(QWidget):
     pass
 
 
-class Console(QWidget):
+class Console(QWidget, QThread):
     def __init__(self):
         super().__init__()
-
         self.editor = QPlainTextEdit(self)
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
@@ -329,7 +330,13 @@ class Customize(QWidget, QObject):
         super().__init__()
 
         self.setFixedSize(800, 600)
-        self.index = 0  # The first theme
+        with open("default.json", "r") as selectedIndex:
+            self.index = selectedIndex.read()
+            if self.index == "":
+                self.index = 0
+                print("empty")
+            selectedIndex.close()
+
         self.opened = False
         self.vbox = QVBoxLayout(self)  # Creating the layout
 
@@ -387,6 +394,9 @@ class Customize(QWidget, QObject):
     def run(self):
         self.show()
 
+    def changePalette(self):
+        pass  # Maybe...
+
     def themes(self, index):
 
         if index == 0:
@@ -408,7 +418,10 @@ class Customize(QWidget, QObject):
 
     def test(self):
         index = self.combo.currentIndex()
-        self.index = index
+        self.index = str(index)
+        with open("default.json", "w+") as write:
+            write.write(str(self.index))
+            write.close()
         if index == 0:
             editor = config0['editor']
             palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
@@ -582,6 +595,8 @@ class Main(QMainWindow):
 
             if currentFileName.endswith(".py"):
                 self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
+                print(self.custom.index)
+                print(currentFileName)
 
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
@@ -748,7 +763,7 @@ class Main(QMainWindow):
                 self.tabsOpen.append(self.files)
 
                 index = self.tab.tabs.addTab(tab,
-                                             tab.fileName)  # This is the index which we will use to set the current index
+                                             tab.fileName)  # This is the index which we will use to set the current
 
                 self.tab.directory.openDirectory(dirPath)
 
@@ -914,19 +929,21 @@ class Main(QMainWindow):
 
 
 class PyHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None, index=0, *args):
+    def __init__(self, parent=None, index=choiceIndex, *args):
         super(PyHighlighter, self).__init__(parent, *args)
 
-        if index == 0:
+        if index == "0":
             python = config0['files']['python']
+            print("first")
 
-        elif index == 1:
+        elif index == "1":
             python = config1['files']['python']
-
-        elif index == 2:
+            print("first")
+        elif index == "2":
             python = config2['files']['python']
         else:
             python = config0['files']['python']  # This is the default config
+            print(type(index))
 
         self.highlightingRules = []
         self.formats = {}
