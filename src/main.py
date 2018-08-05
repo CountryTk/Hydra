@@ -951,7 +951,7 @@ class PyHighlighter(QSyntaxHighlighter):
         self.regex = {
             "class": "\\bclass\\b",
             "function": "[A-Za-z0-9_]+(?=\\()",
-            "magic": "\\\\__[^']*\\\\__",
+            "magic": "\\__[^']*\\__",
             "decorator": "@[^\n]*",
             "singleLineComment": "#[^\n]*",
             "quotation": "\"[^\"]*\"",
@@ -1030,7 +1030,7 @@ class CHighlighter(QSyntaxHighlighter):
         self.regex = {
             "class": "\\bclass\\b",
             "function": "[A-Za-z0-9_]+(?=\\()",
-            "magic": "\\\\__[^']*\\\\__",
+            "magic": "\\__[^']*\\__",
             "decorator": "@[^\n]*",
             "quotation": "\"[^\"]*\"",
 
