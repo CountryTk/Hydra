@@ -513,9 +513,10 @@ class Tabs(QWidget, QThread):
 
         # Creating vertical splitter
         self.splitterV = QSplitter(Qt.Vertical)
+
         self.splitterV.addWidget(self.splitterH)
         self.layout.addWidget(self.splitterV)
-
+        self.splitterV.setSizes([300, 10])
         self.setLayout(self.layout)  # Sets layout of QWidget
 
         self.hideDirectory()
@@ -782,7 +783,6 @@ class Main(QMainWindow):
         except (IsADirectoryError, AttributeError, UnboundLocalError) as E:
             print(E)
 
-
     def newFile(self):
         text = ""
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
@@ -887,6 +887,7 @@ class Main(QMainWindow):
         if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
 
             self.tab.splitterV.addWidget(self.tab.IPyconsole)
+
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
         if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
