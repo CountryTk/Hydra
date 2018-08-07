@@ -977,6 +977,9 @@ class PyHighlighter(QSyntaxHighlighter):
             elif name == "function":
                 self.formats[name].setFontItalic(True)
 
+            elif name == "magic":
+                self.formats[name].setFontItalic(True)
+
             self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
 
             self.highlightingRules.append((QRegExp(values), self.formats[name]))
