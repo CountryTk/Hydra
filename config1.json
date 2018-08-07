@@ -60,6 +60,9 @@
         "quotation": {
           "color": "#63ff00"
         },
+        "quotation2": {
+          "color": "#63ff00"
+        },
         "multiLineComment": {
           "color": "#039135"
         },
