@@ -110,13 +110,17 @@ class Console(QWidget, QThread):
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.editor, 1)
         self.setLayout(self.layout)
+        self.output = None
+        self.error = None
         self.editor.setFont(self.font)
 
     def execute(self, command):
         """Executes a system command."""
 
         out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        return out + err
+        self.output = out
+        self.error = err
+        return self.output + self.error
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -188,6 +192,50 @@ class PlainTextEdit(QPlainTextEdit):
             super().keyPressEvent(e)
 
 
+class MessageBox(QWidget, QObject):
+    def __init__(self):
+        super().__init__()
+
+        self.layout = QHBoxLayout(self)
+        self.initUI()
+
+    def initUI(self):
+        self.label = QLabel("delet?")
+        self.layout.addWidget(self.label)
+
+        self.deleteButton = QPushButton("Yes")
+        self.button = QPushButton("No")
+
+        self.deleteButton.clicked.connect(self.delete)
+        self.button.clicked.connect(self.dont)
+
+        self.font = QFont()
+        self.font.setFamily("Iosevka")
+        self.font.setPointSize(12)
+
+        self.setFont(self.font)
+        self.setLayout(self.layout)
+
+    def run(self, str, fileName):
+        self.fileName = fileName
+        baseName = os.path.basename(self.fileName)
+        self.label.setText(str + baseName + " ?")
+        self.resize(self.width(), 125)
+        self.layout.addWidget(self.deleteButton)
+        self.layout.addWidget(self.button)
+        self.show()
+
+    def delete(self):
+        if os.path.isdir(self.fileName):  # If it is a directory
+            shutil.rmtree(self.fileName)
+        else:
+            os.remove(self.fileName)
+        self.hide()
+
+    def dont(self):
+        self.hide()
+
+
 class Directory(QTreeView):
     def __init__(self, callback):
         super().__init__()
@@ -210,10 +258,11 @@ class Directory(QTreeView):
         self.hideColumn(1)
         self.resize(200, 600)
         self.hideColumn(2)
+        self.confirmation = MessageBox()
         self.hideColumn(3)
         self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
-        self.show()
+
 
     def focusInEvent(self, event):
         # If we are focused then we change the selected item highlighting color
@@ -223,7 +272,7 @@ class Directory(QTreeView):
         app.setPalette(palette)
 
     def focusOutEvent(self, event):
-        # If we unfocus from the QTreeView then we make the highlighted item color white
+        # If we un focus from the QTreeView then we make the highlighted item color white
         palette.setColor(QPalette.Highlight, QColor(editor["UnfocusedHighlightColor"]).lighter())
         # self.clearSelection() Uncomment this if you want to remove all highlighting when unfocused
         app.setPalette(palette)
@@ -244,23 +293,15 @@ class Directory(QTreeView):
                 self.fileObject = self.selectedIndexes()[0]
                 fileName = self.model.filePath(self.fileObject)
 
-                confirmation = QMessageBox.question(self, "Are you sure?", "Do you really want to delete " +
-                                                    str(fileName), QMessageBox.Yes | QMessageBox.No)
-
-                if confirmation == 65536:  # If the user pressed No
-                    pass
-
-                elif confirmation == 16384:  # If the user pressed yes
-                    print("Deleted file: " + str(fileName))
-
-                    if os.path.isdir(fileName):  # If it is a directory
-                        shutil.rmtree(fileName)
-
-                    else:  # If it is a file
-                        os.remove(fileName)
+                confirmation = self.confirmation
+                self.confirmation.run("Are you sure you want to delete ", str(fileName))
 
             except IndexError:
                 print("No file selected")
+
+
+class Help:
+    pass
 
 
 class Content(QWidget):
@@ -393,9 +434,6 @@ class Customize(QWidget, QObject):
 
     def run(self):
         self.show()
-
-    def changePalette(self):
-        pass  # Maybe...
 
     def themes(self, index):
 
@@ -785,6 +823,7 @@ class Main(QMainWindow):
 
     def newFile(self):
         text = ""
+
         fileName = "New" + str(random.randint(1, 2000000)) + ".py"
         self.pyFileOpened = True
         # Creates a new blank file
@@ -907,6 +946,8 @@ class Main(QMainWindow):
 
             if self.ind == -1:
                 self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
+                print(self.tab.Console.execute("python3 " + active_tab.fileName).decode()[1])
+                print("lel")
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
@@ -923,7 +964,8 @@ class Main(QMainWindow):
                 active_tab = self.tab.tabs.currentWidget()
                 print(active_tab.fileName)
                 self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
-                print(self.tab.Console.editor.toPlainText())
+                self.error = self.tab.Console.error.decode()
+                print(type(self.error))
 
             except AttributeError:
                 print("Can't run a file that doesn't exist...")
@@ -1107,7 +1149,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     palette = QPalette()
-
     editor = config0['editor']
 
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
@@ -1124,4 +1165,5 @@ if __name__ == '__main__':
     app.setPalette(palette)
 
     ex = Main()
+    #trash = MessageBox()
     sys.exit(app.exec_())
