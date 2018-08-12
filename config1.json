@@ -24,7 +24,8 @@
     "UnfocusedHighlightColor": "#FFFFFF",
     "HighlightedTextColor": "#000000",
     "TabWidth": 38,
-    "NumberBarBox": false
+    "NumberBarBox": false,
+    "errorMessages": true
   },
   "files": {
     "python": {
