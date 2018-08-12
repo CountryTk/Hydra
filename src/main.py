@@ -98,15 +98,6 @@ class NumberBar(QWidget):
             painter.end()
 
 
-class Search(QWidget):
-    def __init__(self, keyword):
-        super().__init__()
-        self.url = "https://duckduckgo.com/?q=" + keyword
-
-    def openBrowser(self):
-
-        webbrowser.open(self.url)
-
 
 class Console(QWidget, QThread):
     def __init__(self):
@@ -201,10 +192,12 @@ class PlainTextEdit(QPlainTextEdit):
 
 
 class MessageBox(QWidget, QObject):
-    def __init__(self):
+    def __init__(self, error=None, helpword=None):
         super().__init__()
-
+        self.bool = None
+        self.helpword = helpword
         self.layout = QHBoxLayout(self)
+
         self.initUI()
 
     def initUI(self):
@@ -213,9 +206,11 @@ class MessageBox(QWidget, QObject):
 
         self.deleteButton = QPushButton("Yes")
         self.button = QPushButton("No")
+        self.getHelpButton = QPushButton("Yes")
 
         self.deleteButton.clicked.connect(self.delete)
         self.button.clicked.connect(self.dont)
+        self.getHelpButton.clicked.connect(self.gettingHelp)
 
         self.font = QFont()
         self.font.setFamily("Iosevka")
@@ -241,7 +236,27 @@ class MessageBox(QWidget, QObject):
         self.hide()
 
     def dont(self):
+        self.bool = False
         self.hide()
+
+    def gettingHelp(self):
+        self.bool = True
+        self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
+        webbrowser.open(self.url)
+        self.hide()
+
+    def getHelp(self):
+        try:
+            self.layout.removeWidget(self.deleteButton)
+            self.layout.removeWidget(self.button)
+
+        except AttributeError as E:
+            print(E)
+        self.label.setText("It seems like you made an error, would you like to get help?")
+        self.layout.addWidget(self.getHelpButton)
+        self.layout.addWidget(self.button)
+
+        self.show()
 
 
 class Directory(QTreeView):
@@ -270,7 +285,6 @@ class Directory(QTreeView):
         self.hideColumn(3)
         self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
-
 
     def focusInEvent(self, event):
         # If we are focused then we change the selected item highlighting color
@@ -599,7 +613,7 @@ class Main(QMainWindow):
         self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
-
+        self.dialog = MessageBox()
         self.tabsOpen = []
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -953,8 +967,8 @@ class Main(QMainWindow):
                     pass
                 else:
                     self.error = self.error.split(os.linesep)[-2]
-                    x = Search(str(self.error))
-                    x.openBrowser()
+                    self.dialog.helpword = str(self.error)
+                    self.dialog.getHelp()
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
@@ -968,8 +982,8 @@ class Main(QMainWindow):
                     pass
                 else:
                     self.error = self.error.split(os.linesep)[-2]
-                    x = Search(str(self.error))
-                    x.openBrowser()
+                    self.dialog.helpword = str(self.error)
+                    self.dialog.getHelp()
             except AttributeError as E:
                 print(E)
         else:
@@ -986,8 +1000,8 @@ class Main(QMainWindow):
                     pass
                 else:
                     self.error = self.error.split(os.linesep)[-2]
-                    x = Search(str(self.error))
-                    x.openBrowser()
+                    self.dialog.helpword = str(self.error)
+                    self.dialog.getHelp()
 
             except AttributeError as E:
                 print(E)
@@ -1186,5 +1200,4 @@ if __name__ == '__main__':
     app.setPalette(palette)
 
     ex = Main()
-    #trash = MessageBox()
     sys.exit(app.exec_())
