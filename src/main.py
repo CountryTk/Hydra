@@ -196,7 +196,7 @@ class MessageBox(QWidget, QObject):
         self.bool = None
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
-        self.index = index
+        self.index = str(index)
         self.initUI()
 
     def initUI(self):
