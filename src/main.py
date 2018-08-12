@@ -98,7 +98,6 @@ class NumberBar(QWidget):
             painter.end()
 
 
-
 class Console(QWidget, QThread):
     def __init__(self):
         super().__init__()
@@ -192,12 +191,12 @@ class PlainTextEdit(QPlainTextEdit):
 
 
 class MessageBox(QWidget, QObject):
-    def __init__(self, error=None, helpword=None):
+    def __init__(self, error=None, helpword=None, index=choiceIndex):
         super().__init__()
         self.bool = None
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
-
+        self.index = index
         self.initUI()
 
     def initUI(self):
@@ -240,12 +239,14 @@ class MessageBox(QWidget, QObject):
         self.hide()
 
     def gettingHelp(self):
+
         self.bool = True
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
         webbrowser.open(self.url)
         self.hide()
 
     def getHelp(self):
+
         try:
             self.layout.removeWidget(self.deleteButton)
             self.layout.removeWidget(self.button)
@@ -255,8 +256,24 @@ class MessageBox(QWidget, QObject):
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
         self.layout.addWidget(self.button)
+        if self.index == "0":
+            config = config0
 
-        self.show()
+        elif self.index == "1":
+
+            config = config1
+
+        elif self.index == "2":
+            config = config2
+
+        else:
+
+            config = config0
+
+        if config["editor"]["errorMessages"] is True:
+            self.show()
+        else:
+            self.hide()
 
 
 class Directory(QTreeView):
