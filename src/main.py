@@ -10,8 +10,11 @@ from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import util
+from bs4 import BeautifulSoup, SoupStrainer
+import urllib.request
 import config
-
+import webbrowser
+import requests
 
 import shutil
 import subprocess
@@ -19,8 +22,8 @@ config0 = config.read(0)
 config1 = config.read(1)
 config2 = config.read(2)
 with open("default.json") as choice:
-    choiceIndex  = int(choice.read())
-    print(choiceIndex)
+    choiceIndex = int(choice.read())
+    print(str(choiceIndex))
 lineBarColor = QColor(53, 53, 53)
 
 
@@ -36,7 +39,6 @@ class NumberBar(QWidget):
     def update_on_scroll(self, rect, scroll):
         if self.isVisible():
             if scroll:
-                print(scroll)
                 self.scroll(0, scroll)
             else:
                 self.update()
@@ -97,13 +99,20 @@ class NumberBar(QWidget):
 
 
 class Search(QWidget):
-    pass
+    def __init__(self, keyword):
+        super().__init__()
+        self.url = "https://duckduckgo.com/?q=" + keyword
+
+    def openBrowser(self):
+
+        webbrowser.open(self.url)
 
 
 class Console(QWidget, QThread):
     def __init__(self):
         super().__init__()
         self.editor = QPlainTextEdit(self)
+        self.editor.setReadOnly(True)
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
@@ -153,7 +162,6 @@ class PlainTextEdit(QPlainTextEdit):
         if key == 16777217 and self.replace_tabs:
             amount = 4 - self.textCursor().positionInBlock() % 4
             self.insertPlainText(' ' * amount)
-            print(self.toPlainText()[self.textCursor().position():].find('\n') + self.textCursor().positionInBlock())
 
         elif key == 16777219 and cursor.selectionStart() == cursor.selectionEnd() and self.replace_tabs and \
                 cursor.positionInBlock():
@@ -293,15 +301,10 @@ class Directory(QTreeView):
                 self.fileObject = self.selectedIndexes()[0]
                 fileName = self.model.filePath(self.fileObject)
 
-                confirmation = self.confirmation
                 self.confirmation.run("Are you sure you want to delete ", str(fileName))
 
             except IndexError:
                 print("No file selected")
-
-
-class Help:
-    pass
 
 
 class Content(QWidget):
@@ -533,7 +536,7 @@ class Tabs(QWidget, QThread):
 
         if editor['tabShape'] is True:  # If tab shape is true then they have this rounded look
             self.tabs.setTabShape(1)
-            print(editor)
+
         else:
             self.tabs.setTabShape(0)  # If false, it has this boxy look
 
@@ -634,8 +637,6 @@ class Main(QMainWindow):
 
             if currentFileName.endswith(".py"):
                 self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
-                print(self.custom.index)
-                print(currentFileName)
 
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
@@ -784,7 +785,7 @@ class Main(QMainWindow):
                     # (self.onStart(self.custom.index)
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
-                    print("oof")
+
                     self.tab.tabCounter.remove(tab.baseName)
             with open(filename, 'r+') as file_o:
                 try:
@@ -931,7 +932,6 @@ class Main(QMainWindow):
 
         if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
             self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
-            print(self.o)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
@@ -945,30 +945,52 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
             if self.ind == -1:
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
-                print(self.tab.Console.execute("python3 " + active_tab.fileName).decode()[1])
-                print("lel")
+                self.tab.Console.editor.setPlainText(
+                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
+                self.error = self.tab.Console.error.decode()
+
+                if self.error == "":
+                    pass
+                else:
+                    self.error = self.error.split(os.linesep)[-2]
+                    x = Search(str(self.error))
+                    x.openBrowser()
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
             try:
-                self.tab.Console.execute("python3 " + active_tab.fileName)
-            except AttributeError:
+                self.tab.Console.editor.setPlainText(
+                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
+                self.error = self.tab.Console.error.decode()
 
-                print("Can't run a file that doesn't exist...")
+                if self.error == "":
+                    pass
+                else:
+                    self.error = self.error.split(os.linesep)[-2]
+                    x = Search(str(self.error))
+                    x.openBrowser()
+            except AttributeError as E:
+                print(E)
         else:
             self.tab.splitterV.addWidget(self.tab.Console)
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
                 print(active_tab.fileName)
-                self.tab.Console.editor.setPlainText(self.tab.Console.execute("python3 " + active_tab.fileName).decode())
+                self.tab.Console.editor.setPlainText(
+                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
                 self.error = self.tab.Console.error.decode()
-                print(type(self.error))
 
-            except AttributeError:
-                print("Can't run a file that doesn't exist...")
+                if self.error == "":
+                    pass
+                else:
+                    self.error = self.error.split(os.linesep)[-2]
+                    x = Search(str(self.error))
+                    x.openBrowser()
+
+            except AttributeError as E:
+                print(E)
 
 
 class PyHighlighter(QSyntaxHighlighter):
@@ -977,16 +999,15 @@ class PyHighlighter(QSyntaxHighlighter):
 
         if index == "0":
             python = config0['files']['python']
-            print("first")
+
 
         elif index == "1":
             python = config1['files']['python']
-            print("first")
+
         elif index == "2":
             python = config2['files']['python']
         else:
             python = config0['files']['python']  # This is the default config
-            print(type(index))
 
         self.highlightingRules = []
         self.formats = {}
