@@ -1,7 +1,7 @@
 import sys
 import os
 import keyword
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSlot, pyqtSignal, QObject
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSlot, pyqtSignal, QObject, QProcess
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
@@ -98,12 +98,16 @@ class NumberBar(QWidget):
             painter.end()
 
 
-class Console(QWidget, QThread):
+class Console(QWidget):
+    errorSignal = pyqtSignal(str)
+    outputSignal = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.editor = QPlainTextEdit(self)
         self.editor.setReadOnly(True)
         self.font = QFont()
+        self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
         self.layout = QVBoxLayout()
@@ -113,13 +117,31 @@ class Console(QWidget, QThread):
         self.error = None
         self.editor.setFont(self.font)
 
-    def execute(self, command):
-        """Executes a system command."""
+        self.process = QProcess()
+        self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
+        self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
-        out, err = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        self.output = out
-        self.error = err
-        return self.output + self.error
+    def onReadyReadStandardError(self):
+        self.error = self.process.readAllStandardError().data().decode()
+        self.editor.appendPlainText(self.error)
+        self.errorSignal.emit(self.error)
+        if self.error == "":
+            pass
+        else:
+            self.error = self.error.split(os.linesep)[-2]
+            self.dialog.helpword = str(self.error)
+            self.dialog.getHelp()
+
+    def onReadyReadStandardOutput(self):
+        self.result = self.process.readAllStandardOutput().data().decode()
+        self.editor.appendPlainText(self.result)
+        self.outputSignal.emit(self.result)
+
+    def run(self, command):
+        """Executes a system command."""
+        # clear previous text
+        self.editor.clear()
+        self.process.start(command)
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -256,9 +278,9 @@ class MessageBox(QWidget, QObject):
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
         self.layout.addWidget(self.button)
+
         if self.index == "0":
             config = config0
-
         elif self.index == "1":
 
             config = config1
@@ -272,6 +294,7 @@ class MessageBox(QWidget, QObject):
 
         if config["editor"]["errorMessages"] is True:
             self.show()
+
         else:
             self.hide()
 
@@ -356,7 +379,7 @@ class Content(QWidget):
 
 class ConsoleWidget(RichJupyterWidget, QThread):
     def __init__(self, *args, **kwargs):
-        super(ConsoleWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.font_size = 12
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
@@ -809,7 +832,7 @@ class Main(QMainWindow):
                     try:
                         text = file_o.read()
                     except UnicodeDecodeError:
-                        text = self.tab.Console.execute("cat " + str(filename))
+                        text = self.tab.Console.run("cat " + str(filename))
                     basename = os.path.basename(filename)
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
@@ -822,7 +845,7 @@ class Main(QMainWindow):
                 try:
                     text = file_o.read()
                 except UnicodeDecodeError:
-                    text = self.tab.Console.execute("cat " + str(filename))
+                    text = self.tab.Console.run("cat " + str(filename))
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
@@ -976,31 +999,16 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
             if self.ind == -1:
-                self.tab.Console.editor.setPlainText(
-                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
-                self.error = self.tab.Console.error.decode()
 
-                if self.error == "":
-                    pass
-                else:
-                    self.error = self.error.split(os.linesep)[-2]
-                    self.dialog.helpword = str(self.error)
-                    self.dialog.getHelp()
+                self.tab.Console.run("python3 " + active_tab.fileName)
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
             try:
-                self.tab.Console.editor.setPlainText(
-                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
-                self.error = self.tab.Console.error.decode()
 
-                if self.error == "":
-                    pass
-                else:
-                    self.error = self.error.split(os.linesep)[-2]
-                    self.dialog.helpword = str(self.error)
-                    self.dialog.getHelp()
+                self.tab.Console.run("python3 " + active_tab.fileName)
+
             except AttributeError as E:
                 print(E)
         else:
@@ -1008,17 +1016,7 @@ class Main(QMainWindow):
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
-                print(active_tab.fileName)
-                self.tab.Console.editor.setPlainText(
-                    self.tab.Console.execute("python3 " + active_tab.fileName).decode())
-                self.error = self.tab.Console.error.decode()
-
-                if self.error == "":
-                    pass
-                else:
-                    self.error = self.error.split(os.linesep)[-2]
-                    self.dialog.helpword = str(self.error)
-                    self.dialog.getHelp()
+                self.tab.Console.run("python3 " + active_tab.fileName)
 
             except AttributeError as E:
                 print(E)
