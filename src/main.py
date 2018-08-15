@@ -1,23 +1,20 @@
 import sys
 import os
 import keyword
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSlot, pyqtSignal, QObject, QProcess
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
-    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, QMessageBox, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton, QTabBar
+    QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
+    QSplitter, QLabel, QComboBox, QPushButton
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
-import util
-from bs4 import BeautifulSoup, SoupStrainer
-import urllib.request
+
 import config
 import webbrowser
-import requests
 
 import shutil
-import subprocess
+
 config0 = config.read(0)
 config1 = config.read(1)
 config2 = config.read(2)
@@ -25,6 +22,8 @@ with open("default.json") as choice:
     choiceIndex = int(choice.read())
     print(str(choiceIndex))
 lineBarColor = QColor(53, 53, 53)
+
+os.environ["PYTHONUNBUFFERED"] = "1"
 
 
 class TerminalBar(QWidget):
@@ -200,6 +199,7 @@ class Console(QWidget):
 
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
+
         self.editor.appendPlainText(self.error)
         # self.state = self.process.state()
         self.errorSignal.emit(self.error)
@@ -214,7 +214,6 @@ class Console(QWidget):
 
         self.result = self.process.readAllStandardOutput().data().decode()
         self.editor.appendPlainText(self.result)
-        print(self.result)
         self.state = self.process.state()
 
         self.outputSignal.emit(self.result)
