@@ -110,20 +110,25 @@ class Console(QWidget):
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
-        self.layout = QVBoxLayout()
+        self.layout = QHBoxLayout()
         self.layout.addWidget(self.editor, 1)
+        self.numbers = NumberBar(self.editor, index=1)
+        self.layout.addWidget(self.numbers)
         self.setLayout(self.layout)
         self.output = None
         self.error = None
+        self.finished = False
         self.editor.setFont(self.font)
 
         self.process = QProcess()
+        self.state = None
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
         self.editor.appendPlainText(self.error)
+        # self.state = self.process.state()
         self.errorSignal.emit(self.error)
         if self.error == "":
             pass
@@ -133,15 +138,27 @@ class Console(QWidget):
             self.dialog.getHelp()
 
     def onReadyReadStandardOutput(self):
+
         self.result = self.process.readAllStandardOutput().data().decode()
         self.editor.appendPlainText(self.result)
+        self.state = self.process.state()
+
         self.outputSignal.emit(self.result)
+
+    def ifFinished(self, exitCode, exitStatus):
+        self.finished = True
 
     def run(self, command):
         """Executes a system command."""
         # clear previous text
         self.editor.clear()
-        self.process.start(command)
+        print(self.state)
+        if self.process.state() == 1 or self.process.state() == 2:
+            self.process.kill()
+            self.editor.setPlainText("Process already started, terminating")
+        else:
+            self.process.start(command)
+            print("started")
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -1016,6 +1033,7 @@ class Main(QMainWindow):
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
+
                 self.tab.Console.run("python3 " + active_tab.fileName)
 
             except AttributeError as E:
