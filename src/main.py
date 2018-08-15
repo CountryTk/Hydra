@@ -27,6 +27,77 @@ with open("default.json") as choice:
 lineBarColor = QColor(53, 53, 53)
 
 
+class TerminalBar(QWidget):
+    def __init__(self, parent=None, index=choiceIndex):
+        super().__init__(parent)
+        self.editor = parent
+        self.editor.blockCountChanged.connect(self.update_width)
+        self.editor.updateRequest.connect(self.update_on_scroll)
+        self.update_width('1')
+        self.index = index
+
+    def update_on_scroll(self, rect, scroll):
+        if self.isVisible():
+            if scroll:
+                self.scroll(0, scroll)
+            else:
+                self.update()
+
+    def update_width(self, string):
+        width = self.fontMetrics().width(str(string)) + 28
+        if self.width() != width:
+            self.setFixedWidth(width)
+
+    def paintEvent(self, event):
+        if self.index == "0":
+            config = config0
+
+        elif self.index == "1":
+
+            config = config1
+
+        elif self.index == "2":
+            config = config2
+
+        else:
+
+            config = config0
+        if self.isVisible():
+            block = self.editor.firstVisibleBlock()
+            height = self.fontMetrics().height()
+            number = ">>>"
+            painter = QPainter(self)
+            painter.fillRect(event.rect(), lineBarColor)
+            if config['editor']['NumberBarBox'] is True:
+                painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
+
+            font = painter.font()
+
+            current_block = self.editor.textCursor().block().blockNumber() + 1
+
+            while block.isValid():
+                block_geometry = self.editor.blockBoundingGeometry(block)
+                offset = self.editor.contentOffset()
+                block_top = block_geometry.translated(offset).top()
+
+                rect = QRect(0, block_top, self.width() - 5, height)
+
+                if number == current_block:
+                    font.setBold(True)
+                else:
+                    font.setBold(False)
+
+                painter.setFont(font)
+                painter.drawText(rect, Qt.AlignRight, number)
+
+                if block_top > event.rect().bottom():
+                    break
+
+                block = block.next()
+
+            painter.end()
+
+
 class NumberBar(QWidget):
     def __init__(self, parent=None, index=choiceIndex):
         super().__init__(parent)
@@ -106,14 +177,16 @@ class Console(QWidget):
         super().__init__()
         self.editor = QPlainTextEdit(self)
         self.editor.setReadOnly(True)
+        self.custom = Customize()
         self.font = QFont()
+        self.numbers = TerminalBar(self.editor, index=self.custom.index)
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
         self.layout = QHBoxLayout()
-        self.layout.addWidget(self.editor, 1)
-        self.numbers = NumberBar(self.editor, index=1)
         self.layout.addWidget(self.numbers)
+        self.layout.addWidget(self.editor, 1)
+
         self.setLayout(self.layout)
         self.output = None
         self.error = None
@@ -141,6 +214,7 @@ class Console(QWidget):
 
         self.result = self.process.readAllStandardOutput().data().decode()
         self.editor.appendPlainText(self.result)
+        print(self.result)
         self.state = self.process.state()
 
         self.outputSignal.emit(self.result)
