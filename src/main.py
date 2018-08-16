@@ -12,7 +12,7 @@ import random
 
 import config
 import webbrowser
-
+from TerminalBarWidget import TerminalBar
 import shutil
 
 config0 = config.read(0)
@@ -20,81 +20,10 @@ config1 = config.read(1)
 config2 = config.read(2)
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
-    print(str(choiceIndex))
+
 lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
-
-
-class TerminalBar(QWidget):
-    def __init__(self, parent=None, index=choiceIndex):
-        super().__init__(parent)
-        self.editor = parent
-        self.editor.blockCountChanged.connect(self.update_width)
-        self.editor.updateRequest.connect(self.update_on_scroll)
-        self.update_width('1')
-        self.index = index
-
-    def update_on_scroll(self, rect, scroll):
-        if self.isVisible():
-            if scroll:
-                self.scroll(0, scroll)
-            else:
-                self.update()
-
-    def update_width(self, string):
-        width = self.fontMetrics().width(str(string)) + 28
-        if self.width() != width:
-            self.setFixedWidth(width)
-
-    def paintEvent(self, event):
-        if self.index == "0":
-            config = config0
-
-        elif self.index == "1":
-
-            config = config1
-
-        elif self.index == "2":
-            config = config2
-
-        else:
-
-            config = config0
-        if self.isVisible():
-            block = self.editor.firstVisibleBlock()
-            height = self.fontMetrics().height()
-            number = ">>>"
-            painter = QPainter(self)
-            painter.fillRect(event.rect(), lineBarColor)
-            if config['editor']['NumberBarBox'] is True:
-                painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
-
-            font = painter.font()
-
-            current_block = self.editor.textCursor().block().blockNumber() + 1
-
-            while block.isValid():
-                block_geometry = self.editor.blockBoundingGeometry(block)
-                offset = self.editor.contentOffset()
-                block_top = block_geometry.translated(offset).top()
-
-                rect = QRect(0, block_top, self.width() - 5, height)
-
-                if number == current_block:
-                    font.setBold(True)
-                else:
-                    font.setBold(False)
-
-                painter.setFont(font)
-                painter.drawText(rect, Qt.AlignRight, number)
-
-                if block_top > event.rect().bottom():
-                    break
-
-                block = block.next()
-
-            painter.end()
 
 
 class NumberBar(QWidget):
@@ -225,13 +154,12 @@ class Console(QWidget):
         """Executes a system command."""
         # clear previous text
         self.editor.clear()
-        print(self.state)
+
         if self.process.state() == 1 or self.process.state() == 2:
             self.process.kill()
             self.editor.setPlainText("Process already started, terminating")
         else:
             self.process.start(command)
-            print("started")
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -305,7 +233,6 @@ class PlainTextEdit(QPlainTextEdit):
 class MessageBox(QWidget, QObject):
     def __init__(self, error=None, helpword=None, index=choiceIndex):
         super().__init__()
-        self.bool = None
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
         self.index = str(index)
@@ -347,12 +274,18 @@ class MessageBox(QWidget, QObject):
         self.hide()
 
     def dont(self):
-        self.bool = False
+
         self.hide()
+
+    def confirmation(self, index):
+
+        self.label.setText("Theme " + str(index) + " selected")
+        self.button.setText("Ok")
+        self.layout.addWidget(self.button)
+        self.show()
 
     def gettingHelp(self):
 
-        self.bool = True
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
         webbrowser.open(self.url)
         self.hide()
@@ -522,9 +455,9 @@ class Customize(QWidget, QObject):
             self.index = selectedIndex.read()
             if self.index == "":
                 self.index = 0
-                print("empty")
-            selectedIndex.close()
 
+            selectedIndex.close()
+        self.conf = MessageBox()
         self.opened = False
         self.vbox = QVBoxLayout(self)  # Creating the layout
 
@@ -604,6 +537,7 @@ class Customize(QWidget, QObject):
     def test(self):
         index = self.combo.currentIndex()
         self.index = str(index)
+        self.conf.confirmation(index+1)
         with open("default.json", "w+") as write:
             write.write(str(self.index))
             write.close()
@@ -926,7 +860,6 @@ class Main(QMainWindow):
                     basename = os.path.basename(filename)
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
-                    # (self.onStart(self.custom.index)
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
 
@@ -935,11 +868,11 @@ class Main(QMainWindow):
                 try:
                     text = file_o.read()
                 except UnicodeDecodeError:
-                    text = self.tab.Console.run("cat " + str(filename))
+                    self.tab.Console.run("cat " + str(filename))
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
-                # self.onStart(self.custom.index)
+
                 self.tab.tabCounter.append(tab.baseName)
                 dirPath = os.path.dirname(filename)
                 self.files = filename
@@ -973,7 +906,7 @@ class Main(QMainWindow):
         self.pyFileOpened = True
         # Creates a new blank file
         file = Content(text, fileName, fileName, self.custom.index)
-        # self.onStart(self.custom.index)
+
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
@@ -1034,7 +967,7 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
                     newTab = Content(str(text), fileName, baseName, self.custom.index)
-                    # self.onStart(self.custom.index)
+
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
 
