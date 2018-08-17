@@ -1,11 +1,12 @@
 import sys
 import os
 import keyword
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess
-from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption, QPixmap
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot
+from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
+    QPixmap, QKeySequence
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton
+    QSplitter, QLabel, QComboBox, QPushButton, QShortcut
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
@@ -595,7 +596,7 @@ class Tabs(QWidget, QThread):
         # Initialize tab screen
         self.tabs = QTabWidget()  # TODO: This is topright
         font = QFont(editor['tabFont'])
-        font.setPointSize(editor["tabFontSize"]) # This is the tab's font and font size
+        font.setPointSize(editor["tabFontSize"])  # This is the tab's font and font size
         self.tabs.setFont(font)
 
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
@@ -638,11 +639,19 @@ class Tabs(QWidget, QThread):
         self.splitterV.setSizes([300, 10])
         self.setLayout(self.layout)  # Sets layout of QWidget
 
+        self.closeShortcut = QShortcut(QKeySequence(editor["closeTabShortcut"]), self)
+        print(editor["closeTabShortcut"])
+        self.closeShortcut.activated.connect(self.closeTabShortcut)
+
         self.hideDirectory()
+
+    @pyqtSlot()
+    def closeTabShortcut(self):
+        self.index = self.tabs.currentIndex()
+        self.closeTab(self.index)
 
     def closeTab(self, index):
         tab = self.tabs.widget(index)
-        current = self.tabs.currentWidget()
 
         tab.deleteLater()
         self.tabCounter.pop(index)
@@ -673,7 +682,8 @@ class Tabs(QWidget, QThread):
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.onStart(0)
+        self.onStart(choiceIndex)
+
         self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
@@ -722,6 +732,7 @@ class Main(QMainWindow):
     def onStart(self, index):
         if index == 0:
             editor = config0['editor']
+
         elif index == 1:
             editor = config1['editor']
 
@@ -1223,7 +1234,17 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     palette = QPalette()
-    editor = config0['editor']
+    if choiceIndex == 0:
+
+        editor = config0['editor']
+    elif choiceIndex == 1:
+
+        editor = config1['editor']
+    elif choiceIndex == 2:
+
+        editor = config2['editor']
+    else:
+        editor = config0['editor']
 
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
