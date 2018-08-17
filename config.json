@@ -25,7 +25,8 @@
     "HighlightedTextColor": "#000000",
     "TabWidth": 38,
     "NumberBarBox": true,
-    "errorMessages": false
+    "errorMessages": false,
+    "closeTabShortcut": "Ctrl+W"
   },
   "files": {
     "python": {
