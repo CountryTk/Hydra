@@ -3,14 +3,14 @@ import os
 import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
-    QPixmap, QKeySequence
+    QPixmap, QKeySequence, QTextCursor
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton, QShortcut
+    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
-
+from predictionList import list
 import config
 import webbrowser
 from TerminalBarWidget import TerminalBar
@@ -237,6 +237,7 @@ class MessageBox(QWidget, QObject):
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
         self.index = str(index)
+        self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
         self.initUI()
 
     def initUI(self):
@@ -266,6 +267,7 @@ class MessageBox(QWidget, QObject):
         self.layout.addWidget(self.deleteButton)
         self.layout.addWidget(self.button)
         self.show()
+        self.deleteButton.setFocus()
 
     def delete(self):
         if os.path.isdir(self.fileName):  # If it is a directory
@@ -280,8 +282,9 @@ class MessageBox(QWidget, QObject):
 
     def confirmation(self, index):
 
-        self.label.setText("Theme " + str(index) + " selected")
+        self.label.setText("Theme " + str(index) + " selected\nNOTE: For some changes to work you need to restart PyPad")
         self.button.setText("Ok")
+        self.button.setFocus()
         self.layout.addWidget(self.button)
         self.show()
 
@@ -301,6 +304,7 @@ class MessageBox(QWidget, QObject):
             print(E)
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
+        self.getHelpButton.setFocus()
         self.layout.addWidget(self.button)
 
         if self.index == "0":
@@ -385,6 +389,20 @@ class Directory(QTreeView):
                 print("No file selected")
 
 
+class Completer(QCompleter):
+
+    insertText = pyqtSignal(str)
+
+    def __init__(self, myKeywords=None, parent=None):
+        QCompleter.__init__(self, list, parent)
+
+        self.activated.connect(self.changeCompletion)
+
+    def changeCompletion(self, completion):
+
+        self.insertText.emit(completion)
+
+
 class Content(QWidget):
     def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
@@ -395,10 +413,78 @@ class Content(QWidget):
         self.custom = Customize()
         self.editor.setPlainText(str(text))
         # Create a layout for the line numbers
+        self.completer = Completer()
         self.hbox = QHBoxLayout(self)
         self.numbers = NumberBar(self.editor, index=themeIndex)
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
+        self.setCompleter(self.completer)
+
+    def setCompleter(self, completer):
+        if self.completer:
+            print("completer is: " + str(completer))
+
+        if not completer:
+            print("completer is: " + str(completer))
+            return
+
+        self.completer.setWidget(self)
+        completer.setCompletionMode(QCompleter.PopupCompletion)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.completer = completer
+
+        self.completer.insertText.connect(self.insertCompletion)
+
+    def insertCompletion(self, completion):
+        textCursor = self.editor.textCursor()
+
+        extra = (len(completion) - len(self.completer.completionPrefix()))
+        textCursor.movePosition(QTextCursor.Left)
+        textCursor.movePosition(QTextCursor.EndOfWord)
+        textCursor.insertText(completion[-extra:])
+        if completion.endswith("()"):
+            cursorPos = textCursor.position()
+            textCursor.setPosition(cursorPos - 1)
+        self.editor.setTextCursor(textCursor)
+
+    def textUnderCursor(self):
+        textCursor = self.editor.textCursor()
+        textCursor.select(QTextCursor.WordUnderCursor)
+        return textCursor.selectedText()
+
+    def focusInEvent(self, event):
+        if self.completer:
+            self.completer.setWidget(self);
+            QPlainTextEdit.focusInEvent(self, event)
+
+    def keyPressEvent(self, event):
+        if self.completer and self.completer.popup() and self.completer.popup().isVisible():
+            if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
+                event.ignore()
+                return
+        isShortcut = (event.modifiers() == Qt.ControlModifier and
+                      event.key() == Qt.Key_Space)
+
+        if not self.completer or not isShortcut:
+
+            QPlainTextEdit.keyPressEvent(self.editor, event)
+
+        ctrlOrShift = event.modifiers() in (Qt.ControlModifier,
+                Qt.ShiftModifier)
+
+        completionPrefix = self.textUnderCursor()
+
+        if not isShortcut:
+            if self.completer.popup():
+                self.completer.popup().hide()
+            return
+        self.completer.setCompletionPrefix(completionPrefix)
+        popup = self.completer.popup()
+        popup.setCurrentIndex(
+            self.completer.completionModel().index(0, 0))
+        cr = self.editor.cursorRect()
+        cr.setWidth(self.completer.popup().sizeHintForColumn(0) + self.completer.popup().verticalScrollBar().sizeHint().width())
+        self.completer.complete(cr)
 
 
 class ConsoleWidget(RichJupyterWidget, QThread):
