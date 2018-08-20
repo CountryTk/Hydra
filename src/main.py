@@ -1,7 +1,7 @@
 import sys
 import os
 import keyword
-from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot, QPoint
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
     QPixmap, QKeySequence, QTextCursor
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
@@ -408,25 +408,49 @@ class Content(QWidget):
         super().__init__()
         self.editor = PlainTextEdit()
         self.text = text
+
         self.fileName = fileName
         self.baseName = baseName
+
+        self.font = QFont()
+        self.font.setFamily(editor["editorFont"])
+        self.font.setPointSize(editor["editorFontSize"])
+        self.tabSize = editor["TabWidth"]
+
         self.custom = Customize()
         self.editor.setPlainText(str(text))
-        # Create a layout for the line numbers
+
         self.completer = Completer()
         self.hbox = QHBoxLayout(self)
+        # Create a widget for the line numbers
         self.numbers = NumberBar(self.editor, index=themeIndex)
+
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
+
+        self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
+        self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
+
+        self.moveCursorRight.activated.connect(self.moveCursorRightFunc)
+        self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
+
         self.setCompleter(self.completer)
 
-    def setCompleter(self, completer):
-        if self.completer:
-            print("completer is: " + str(completer))
+    def moveCursorRightFunc(self):
+        textCursor = self.editor.textCursor()
+        textCursorPos = textCursor.position()
 
-        if not completer:
-            print("completer is: " + str(completer))
-            return
+        textCursor.setPosition(textCursorPos + 1)
+        self.editor.setTextCursor(textCursor)
+
+    def moveCursorLeftFunc(self):
+        textCursor = self.editor.textCursor()
+        textCursorPos = textCursor.position()
+
+        textCursor.setPosition(textCursorPos - 1)
+        self.editor.setTextCursor(textCursor)
+
+    def setCompleter(self, completer):
 
         self.completer.setWidget(self)
         completer.setCompletionMode(QCompleter.PopupCompletion)
@@ -439,17 +463,21 @@ class Content(QWidget):
         textCursor = self.editor.textCursor()
 
         extra = (len(completion) - len(self.completer.completionPrefix()))
+
         textCursor.movePosition(QTextCursor.Left)
         textCursor.movePosition(QTextCursor.EndOfWord)
         textCursor.insertText(completion[-extra:])
+
         if completion.endswith("()"):
             cursorPos = textCursor.position()
             textCursor.setPosition(cursorPos - 1)
+
         self.editor.setTextCursor(textCursor)
 
     def textUnderCursor(self):
         textCursor = self.editor.textCursor()
         textCursor.select(QTextCursor.WordUnderCursor)
+
         return textCursor.selectedText()
 
     def focusInEvent(self, event):
@@ -469,9 +497,6 @@ class Content(QWidget):
 
             QPlainTextEdit.keyPressEvent(self.editor, event)
 
-        ctrlOrShift = event.modifiers() in (Qt.ControlModifier,
-                Qt.ShiftModifier)
-
         completionPrefix = self.textUnderCursor()
 
         if not isShortcut:
@@ -479,10 +504,14 @@ class Content(QWidget):
                 self.completer.popup().hide()
             return
         self.completer.setCompletionPrefix(completionPrefix)
+
         popup = self.completer.popup()
+        popup.setFont(self.font)
         popup.setCurrentIndex(
             self.completer.completionModel().index(0, 0))
+
         cr = self.editor.cursorRect()
+        cr.translate(QPoint(10, 10))
         cr.setWidth(self.completer.popup().sizeHintForColumn(0) + self.completer.popup().verticalScrollBar().sizeHint().width())
         self.completer.complete(cr)
 
@@ -682,7 +711,7 @@ class Tabs(QWidget, QThread):
         # Initialize tab screen
         self.tabs = QTabWidget()  # TODO: This is topright
         font = QFont(editor['tabFont'])
-        font.setPointSize(editor["tabFontSize"])  # This is the tab's font and font size
+        font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
 
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
@@ -726,7 +755,6 @@ class Tabs(QWidget, QThread):
         self.setLayout(self.layout)  # Sets layout of QWidget
 
         self.closeShortcut = QShortcut(QKeySequence(editor["closeTabShortcut"]), self)
-        print(editor["closeTabShortcut"])
         self.closeShortcut.activated.connect(self.closeTabShortcut)
 
         self.hideDirectory()
