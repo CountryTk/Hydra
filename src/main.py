@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
-from predictionList import list
+from predictionList import wordList
 import config
 import webbrowser
 from TerminalBarWidget import TerminalBar
@@ -105,7 +105,7 @@ class Console(QWidget):
     def __init__(self):
         super().__init__()
         self.editor = QPlainTextEdit(self)
-        self.editor.setReadOnly(True)
+        self.editor.setReadOnly(False)
         self.custom = Customize()
         self.font = QFont()
         self.numbers = TerminalBar(self.editor, index=self.custom.index)
@@ -183,13 +183,29 @@ class PlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, e):
         key = e.key()
+
+        if key == Qt.Key_QuoteDbl:
+            self.insertPlainText('"')
+            textCursor = self.textCursor()
+            textCursorPos = textCursor.position()
+
+            textCursor.setPosition(textCursorPos - 1)
+            self.setTextCursor(textCursor)
+
+        if key == 39:
+            self.insertPlainText("'")
+            textCursor = self.textCursor()
+            textCursorPos = textCursor.position()
+
+            textCursor.setPosition(textCursorPos - 1)
+            self.setTextCursor(textCursor)
+
         if key not in [16777217, 16777219, 16777220]:
             super().keyPressEvent(e)
             return
 
         e.accept()
         cursor = self.textCursor()
-
         if key == 16777217 and self.replace_tabs:
             amount = 4 - self.textCursor().positionInBlock() % 4
             self.insertPlainText(' ' * amount)
@@ -304,7 +320,6 @@ class MessageBox(QWidget, QObject):
             print(E)
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
-        self.getHelpButton.setFocus()
         self.layout.addWidget(self.button)
 
         if self.index == "0":
@@ -394,7 +409,7 @@ class Completer(QCompleter):
     insertText = pyqtSignal(str)
 
     def __init__(self, myKeywords=None, parent=None):
-        QCompleter.__init__(self, list, parent)
+        QCompleter.__init__(self, wordList, parent)
 
         self.activated.connect(self.changeCompletion)
 
