@@ -1,16 +1,16 @@
 {
   "editor": {
     "windowStaysOnTop": false,
-    "editorFont": "Courier",
+    "editorFont": "Inconsolata",
     "menuFont": "Iosevka",
     "directoryFont": "Inconsolata",
     "editorFontSize": 12,
     "menuFontSize": 9,
     "tabFontSize": 10.5,
     "directoryFontSize": 10,
-    "tabShape": true,
+    "tabShape": false,
     "tabMovable": true,
-    "tabFont": "Courier",
+    "tabFont": "Inconsolata",
     "editorColor": "#303030",
     "windowColor": "#303030",
     "windowText": "#FFFFFF",
@@ -26,7 +26,9 @@
     "TabWidth": 38,
     "NumberBarBox": false,
     "errorMessages": true,
-    "closeTabShortcut": "Ctrl+M"
+    "closeTabShortcut": "Ctrl+W",
+    "moveCursorRight" : "Ctrl+L",
+    "moveCursorLeft": "Ctrl+J"
   },
   "files": {
     "python": {
