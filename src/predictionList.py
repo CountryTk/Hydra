@@ -1,4 +1,4 @@
-list = ["abs()", "all()", "any()", "ascii()", "bin()", "bool()", "breakpoint()", "bytearray()", "bytes()", "callable()", "chr()", "classmethod()",
+wordList = ["abs()", "all()", "any()", "ascii()", "bin()", "bool()", "breakpoint()", "bytearray()", "bytes()", "callable()", "chr()", "classmethod()",
 "compile()", "complex()",
 "delattr()", "dict()", "dir()", "divmod()", "enumerate()", "eval()", "exec()", "filter()", "float()", "format()", "frozenset()",
  "getattr()", "globals()", "hasattr()", "hash()",
@@ -10,4 +10,4 @@ list = ["abs()", "all()", "any()", "ascii()", "bin()", "bool()", "breakpoint()",
 'continue', 'def', 'del', 'elif','else', 'except',
 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda','nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
 'while', 'with', 'yield', 'endswith()']
-list = sorted(list)
+wordList = sorted(wordList)
