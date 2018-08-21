@@ -131,7 +131,9 @@ class Console(QWidget):
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
     def keyPressEvent(self, e):
-        self.numbers.commandSignal.emit(self.numbers.editor.textCursor().block().text())
+
+        if e.key() == 16777220:
+            self.numbers.commandSignal.emit(self.numbers.editor.textCursor().block().text())
 
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
@@ -167,7 +169,6 @@ class Console(QWidget):
             self.editor.setPlainText("Process already started, terminating")
         else:
             self.process.start(command)
-            print("process started")
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -200,9 +201,9 @@ class PlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, e):
         key = e.key()
-        #self.parent.keyPressEvent(e)
-        if key == 16777220:
-            print("FRICK")
+
+        if self.parent:
+            self.parent.keyPressEvent(e)
 
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
@@ -445,7 +446,7 @@ class Completer(QCompleter):
 class Content(QWidget):
     def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
-        self.editor = PlainTextEdit(self)
+        self.editor = PlainTextEdit()
         self.text = text
 
         self.fileName = fileName
