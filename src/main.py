@@ -104,11 +104,13 @@ class Console(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.editor = QPlainTextEdit(self)
+        self.editor = PlainTextEdit(self)
         self.editor.setReadOnly(False)
         self.custom = Customize()
         self.font = QFont()
         self.numbers = TerminalBar(self.editor, index=self.custom.index)
+        self.numbers.commandSignal.connect(self.run)
+
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
@@ -118,6 +120,7 @@ class Console(QWidget):
 
         self.setLayout(self.layout)
         self.output = None
+        self.setFocusPolicy(Qt.StrongFocus)
         self.error = None
         self.finished = False
         self.editor.setFont(self.font)
@@ -127,11 +130,14 @@ class Console(QWidget):
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
+    def keyPressEvent(self, e):
+        self.numbers.commandSignal.emit(self.numbers.editor.textCursor().block().text())
+
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
 
         self.editor.appendPlainText(self.error)
-        # self.state = self.process.state()
+
         self.errorSignal.emit(self.error)
         if self.error == "":
             pass
@@ -143,7 +149,7 @@ class Console(QWidget):
     def onReadyReadStandardOutput(self):
 
         self.result = self.process.readAllStandardOutput().data().decode()
-        self.editor.appendPlainText(self.result)
+        self.editor.appendPlainText(self.result.strip("\n"))
         self.state = self.process.state()
 
         self.outputSignal.emit(self.result)
@@ -161,16 +167,20 @@ class Console(QWidget):
             self.editor.setPlainText("Process already started, terminating")
         else:
             self.process.start(command)
+            print("process started")
 
 
 class PlainTextEdit(QPlainTextEdit):
-    def __init__(self):
-        super().__init__()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
+
         self.replace_tabs = 4
         self.setWordWrapMode(4)
         self.setFont(self.font)
@@ -181,24 +191,38 @@ class PlainTextEdit(QPlainTextEdit):
 
         self.setWordWrapMode(QTextOption.NoWrap)
 
+    def moveCursorPosBack(self):
+        textCursor = self.textCursor()
+        textCursorPos = textCursor.position()
+
+        textCursor.setPosition(textCursorPos - 1)
+        self.setTextCursor(textCursor)
+
     def keyPressEvent(self, e):
         key = e.key()
+        #self.parent.keyPressEvent(e)
+        if key == 16777220:
+            print("FRICK")
 
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
-            textCursor = self.textCursor()
-            textCursorPos = textCursor.position()
-
-            textCursor.setPosition(textCursorPos - 1)
-            self.setTextCursor(textCursor)
+            self.moveCursorPosBack()
 
         if key == 39:
             self.insertPlainText("'")
-            textCursor = self.textCursor()
-            textCursorPos = textCursor.position()
+            self.moveCursorPosBack()
 
-            textCursor.setPosition(textCursorPos - 1)
-            self.setTextCursor(textCursor)
+        if key == Qt.Key_BraceLeft:
+            self.insertPlainText("}")
+            self.moveCursorPosBack()
+
+        if key == Qt.Key_BracketLeft:
+            self.insertPlainText("]")
+            self.moveCursorPosBack()
+
+        if key == Qt.Key_ParenLeft:
+            self.insertPlainText(")")
+            self.moveCursorPosBack()
 
         if key not in [16777217, 16777219, 16777220]:
             super().keyPressEvent(e)
@@ -421,7 +445,7 @@ class Completer(QCompleter):
 class Content(QWidget):
     def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
-        self.editor = PlainTextEdit()
+        self.editor = PlainTextEdit(self)
         self.text = text
 
         self.fileName = fileName
@@ -1154,7 +1178,7 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
 
     def Terminal(self):
-        # self.tab.Console.start() <-- This seems to cause segmentation fault on some devices
+
         active_tab = self.tab.tabs.currentWidget()
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
@@ -1163,14 +1187,14 @@ class Main(QMainWindow):
 
             if self.ind == -1:
 
-                self.tab.Console.run("python3 " + active_tab.fileName)
+                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
             try:
 
-                self.tab.Console.run("python3 " + active_tab.fileName)
+                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
 
             except AttributeError as E:
                 print(E)
@@ -1180,7 +1204,7 @@ class Main(QMainWindow):
             try:
                 active_tab = self.tab.tabs.currentWidget()
 
-                self.tab.Console.run("python3 " + active_tab.fileName)
+                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
 
             except AttributeError as E:
                 print(E)
@@ -1192,7 +1216,6 @@ class PyHighlighter(QSyntaxHighlighter):
 
         if index == "0":
             python = config0['files']['python']
-
 
         elif index == "1":
             python = config1['files']['python']
