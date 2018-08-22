@@ -20,10 +20,5 @@ Required modules: PyQt5, IPython, qtconsole
 
 If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
 
-**If you use MacOs and can't install pyautogui follow this**
-
-https://stackoverflow.com/questions/35074294/pip3-install-pyautogui-fails-with-error-code-1-mac-os
-
-.
 
 ![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/2018-07-10-221615_800x665_scrot.png)
