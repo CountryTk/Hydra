@@ -997,7 +997,7 @@ class Main(QMainWindow):
         self.openPyAct.setShortcut('Ctrl+Y')
 
         self.openPyAct.setStatusTip('Open IPython console')
-        self.openPyAct.triggered.connect(self.pyConsole)
+        self.openPyAct.triggered.connect(self.Console)
 
     def openTerm(self):
         self.openTermAct = QAction('Run', self)
@@ -1179,24 +1179,24 @@ class Main(QMainWindow):
         except FileNotFoundError:
             print("File dialog closed")
 
-    def pyConsole(self):
+    def Console(self):
 
         self.pyConsoleOpened = True
-        self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+        self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
         self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
         if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
 
-            self.tab.splitterV.addWidget(self.tab.IPyconsole)
+            self.tab.splitterV.addWidget(self.tab.term)
 
-            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+            self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
-        if self.tab.splitterV.indexOf(self.tab.IPyconsole) == -1:  # If the IPyconsole widget doesnt exist yet
-            self.tab.splitterV.replaceWidget(self.o, self.tab.IPyconsole)
+        if self.tab.splitterV.indexOf(self.tab.term) == -1:  # If the IPyconsole widget doesnt exist yet
+            self.tab.splitterV.replaceWidget(self.o, self.tab.term)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
-            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+            self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
     def Terminal(self):
 
@@ -1204,7 +1204,7 @@ class Main(QMainWindow):
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
-            self.ind = self.tab.splitterV.indexOf(self.tab.IPyconsole)
+            self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
             if self.ind == -1:
 
@@ -1220,13 +1220,12 @@ class Main(QMainWindow):
             except AttributeError as E:
                 print(E)
         else:
-            self.tab.splitterV.addWidget(self.tab.term)
-            print(self.tab.splitterV.width())
+            self.tab.splitterV.addWidget(self.tab.Console)
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
 
-                #self.tab.Console.run("python3 " + active_tab.fileName + " -i")
+                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
 
             except AttributeError as E:
                 print(E)
