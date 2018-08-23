@@ -10,9 +10,13 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 import random
+import getpass
 from predictionList import wordList
+from checkVer import checkVersion
+import socket
 import config
 import webbrowser
+from terminal import terminal
 from TerminalBarWidget import TerminalBar
 import shutil
 
@@ -162,8 +166,12 @@ class Console(QWidget):
     def run(self, command):
         """Executes a system command."""
         # clear previous text
-        self.editor.clear()
-
+        self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
+                                 "   ~/" + str(os.path.basename(os.getcwd())) + " >$")
+        textCursor = self.editor.textCursor()
+        textCursorPos = textCursor.position()
+        textCursor.setPosition(textCursorPos + self.editor.nameSize)
+        self.editor.setTextCursor(textCursor)
         if self.process.state() == 1 or self.process.state() == 2:
             self.process.kill()
             self.editor.setPlainText("Process already started, terminating")
@@ -176,6 +184,10 @@ class PlainTextEdit(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
+        user = getpass.getuser()
+        hostname = socket.gethostname()
+        self.name = "[" + str(user) + "@" + str(hostname) + "]" + "   ~/" + str(os.path.basename(os.getcwd())) + " >$"
+        self.nameSize = len(self.name) + 1
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
@@ -200,10 +212,19 @@ class PlainTextEdit(QPlainTextEdit):
         self.setTextCursor(textCursor)
 
     def keyPressEvent(self, e):
+        textCursor = self.textCursor()
         key = e.key()
+        textCursorPos = textCursor.position()
 
         if self.parent:
             self.parent.keyPressEvent(e)
+
+            if textCursorPos < self.nameSize:
+                print("cursor pos is less than five")
+
+                if key == 16777219:
+                    print("no u can't delete")
+                    return
 
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
@@ -757,7 +778,7 @@ class Tabs(QWidget, QThread):
         self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
 
         self.Console = Console()  # This is the terminal widget and the SECOND thread
-
+        self.term = terminal()
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
         self.tabCounter = []
@@ -788,7 +809,6 @@ class Tabs(QWidget, QThread):
 
         # Creating vertical splitter
         self.splitterV = QSplitter(Qt.Vertical)
-
         self.splitterV.addWidget(self.splitterH)
         self.layout.addWidget(self.splitterV)
         self.splitterV.setSizes([300, 10])
@@ -1200,12 +1220,13 @@ class Main(QMainWindow):
             except AttributeError as E:
                 print(E)
         else:
-            self.tab.splitterV.addWidget(self.tab.Console)
+            self.tab.splitterV.addWidget(self.tab.term)
+            print(self.tab.splitterV.width())
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
 
-                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
+                #self.tab.Console.run("python3 " + active_tab.fileName + " -i")
 
             except AttributeError as E:
                 print(E)
@@ -1384,6 +1405,9 @@ class CHighlighter(QSyntaxHighlighter):
 
 
 if __name__ == '__main__':
+    if checkVersion("version.txt") == "1.0.0":
+        pass  # TODO: auto updater
+
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     palette = QPalette()
