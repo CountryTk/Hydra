@@ -6,15 +6,21 @@ This editor is very customizable, just edit the config.json file. All color code
 Required modules: PyQt5, urxvt terminal emulator. 
 # Urxvt terminal emulator installation
 
-```On ubuntu you just do *sudo apt-get install rxvt-unicode*```
+On ubuntu you just do **sudo apt-get install rxvt-unicode**
 
-```On arch linux you do *sudo pacman -S install rxvt-unicode*```
+On arch linux you do **sudo pacman -S install rxvt-unicode**
 
 If you have a different flavour of linux, use your package manager and look for rxvt-unicode package.
 
 # Using interactive mode
 
 Using interactive mode is very simple, just open a file, press Ctrl+Y and type **python3 -i <yourfilenamehere.py>**.
+
+# Auto completion
+
+Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend the best word and pressing enter will select the word.
+
+You can also navigate the word list with arrow keys.
 
 # Installation with install.sh
 ```sudo -i```
