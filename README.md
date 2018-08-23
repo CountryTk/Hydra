@@ -4,6 +4,14 @@ A simple cross-platform python editing notepad with auto completion and the abil
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
 Required modules: PyQt5, urxvt terminal emulator. 
+# urxvt terminal emulator installation
+
+```On ubuntu you just do *sudo apt-get install rxvt-unicode*```
+
+```On arch linux you do *sudo pacman -S install rxvt-unicode*```
+
+If you have a different flavour of linux, use your package manager and look for rxvt-unicode package.
+
 
 # Installation with install.sh
 ```sudo -i```
