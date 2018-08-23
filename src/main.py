@@ -7,8 +7,7 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
     QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter
-from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from qtconsole.inprocess import QtInProcessKernelManager
+
 import random
 import getpass
 from predictionList import wordList
@@ -577,52 +576,6 @@ class Content(QWidget):
         self.completer.complete(cr)
 
 
-class ConsoleWidget(RichJupyterWidget, QThread):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.font_size = 12
-        self.kernel_manager = kernel_manager = QtInProcessKernelManager()
-        kernel_manager.start_kernel(show_banner=False)
-        kernel_manager.kernel.gui = 'qt'
-        self.kernel_client = kernel_client = self._kernel_manager.client()
-        kernel_client.start_channels()
-
-        def stop():
-            kernel_client.stop_channels()
-            kernel_manager.shutdown_kernel()
-            sys.exit()
-
-        self.exit_requested.connect(stop)
-
-    def push_vars(self, variableDict):
-        """
-        Given a dictionary containing name / value pairs, push those variables
-        to the Jupyter console widget
-        """
-        self.kernel_manager.kernel.shell.push(variableDict)
-
-    def clear(self):
-        """
-        Clears the terminal
-        """
-        self._control.clear()
-
-        # self.kernel_manager
-
-    def print_text(self, text):
-        """
-        Prints some plain text to the console
-        """
-        self._append_plain_text(text)
-
-    def execute_command(self, command):
-        """
-        Execute a command in the frame of the console widget
-        """
-        self._execute(command, False)
-
-
 class Customize(QWidget, QObject):
     def __init__(self):
         super().__init__()
@@ -775,8 +728,6 @@ class Tabs(QWidget, QThread):
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
 
-        self.IPyconsole = ConsoleWidget()  # Create IPython widget TODO: This is bottom, this is thread1
-
         self.Console = Console()  # This is the terminal widget and the SECOND thread
         self.term = terminal()
         self.directory = Directory(callback)  # TODO: This is top left
@@ -799,7 +750,7 @@ class Tabs(QWidget, QThread):
 
         # Add Console
         self.console_layout = QHBoxLayout()  # Create console layout
-        self.console_layout.addWidget(self.IPyconsole)  # Add console to console layout
+        self.console_layout.addWidget(self.term)  # Add console to console layout
 
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
@@ -1192,7 +1143,7 @@ class Main(QMainWindow):
 
             self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
-        if self.tab.splitterV.indexOf(self.tab.term) == -1:  # If the IPyconsole widget doesnt exist yet
+        if self.tab.splitterV.indexOf(self.tab.term) == -1:  # If the terminal widget doesnt exist yet
             self.tab.splitterV.replaceWidget(self.o, self.tab.term)
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
 
