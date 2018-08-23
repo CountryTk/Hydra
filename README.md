@@ -22,7 +22,13 @@ If you get a ^M markdown error when running use ```dos2unix install.sh``` to con
 
 # How to use when installation fails
 ```git clone https://github.com/Fuchsiaff/PyPad```
+
 ```cd PyPad && cd src```
+
 ```python3 main.py```
 
-![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/2018-07-10-221615_800x665_scrot.png)
+# Pictures
+
+![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/pypadpic.gif)
+
+![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/pypadpic2.gif)
