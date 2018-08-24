@@ -3,7 +3,8 @@ A simple cross-platform python editing notepad with auto completion and the abil
 
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, urxvt terminal emulator (optional, no interactive mode without it, only available on gnu+linux platforms right now, I will find a fix in the near future to make this feature cross-platform), bs4. 
+Required modules: PyQt5, bs4 and urxvt terminal emulator **(optional, no interactive mode without it, only available on gnu+linux platforms right now, I will find a fix in the near future to make this feature cross-platform)**,. 
+
 # Urxvt terminal emulator installation
 
 On ubuntu you just do **sudo apt-get install rxvt-unicode**
