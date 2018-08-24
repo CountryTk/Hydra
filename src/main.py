@@ -1151,7 +1151,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Windows":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1165,7 +1165,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Windows":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1182,7 +1182,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Windows":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
