@@ -7,11 +7,13 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
     QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter
-
+import platform
 import random
 import getpass
 from predictionList import wordList
 from checkVer import checkVersion
+from checkVerOnline import checkVerOnlineFunc
+#from updatePyPad import updatePyPadFunc
 import socket
 import config
 import webbrowser
@@ -112,7 +114,7 @@ class Console(QWidget):
         self.custom = Customize()
         self.font = QFont()
         self.numbers = TerminalBar(self.editor, index=self.custom.index)
-        self.numbers.commandSignal.connect(self.run)
+
 
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
@@ -165,12 +167,9 @@ class Console(QWidget):
     def run(self, command):
         """Executes a system command."""
         # clear previous text
-        self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
-                                 "   ~/" + str(os.path.basename(os.getcwd())) + " >$")
-        textCursor = self.editor.textCursor()
-        textCursorPos = textCursor.position()
-        textCursor.setPosition(textCursorPos + self.editor.nameSize)
-        self.editor.setTextCursor(textCursor)
+        #self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
+                                 #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
+
         if self.process.state() == 1 or self.process.state() == 2:
             self.process.kill()
             self.editor.setPlainText("Process already started, terminating")
@@ -217,13 +216,6 @@ class PlainTextEdit(QPlainTextEdit):
 
         if self.parent:
             self.parent.keyPressEvent(e)
-
-            if textCursorPos < self.nameSize:
-                print("cursor pos is less than five")
-
-                if key == 16777219:
-                    print("no u can't delete")
-                    return
 
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
@@ -839,8 +831,6 @@ class Main(QMainWindow):
         self.cFileOpened = False
         self.initUI()  # Main UI
 
-        self.show()
-
     def fileNameChange(self):
         try:
             currentFileName = self.tab.tabs.currentWidget().baseName
@@ -1158,15 +1148,28 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
             if self.ind == -1:
+                if platform.system() == "Linux":
+                    self.tab.Console.run("python3 " + active_tab.fileName)
 
-                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
+                elif platform.system() == "win32":
+                    self.tab.Console.run("python " + active_tab.fileName)
+
+                else:
+                    self.tab.Console.run("python3 " + active_tab.fileName)
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
 
             try:
 
-                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
+                if platform.system() == "Linux":
+                    self.tab.Console.run("python3 " + active_tab.fileName)
+
+                elif platform.system() == "win32":
+                    self.tab.Console.run("python " + active_tab.fileName)
+
+                else:
+                    self.tab.Console.run("python3 " + active_tab.fileName)
 
             except AttributeError as E:
                 print(E)
@@ -1176,7 +1179,14 @@ class Main(QMainWindow):
             try:
                 active_tab = self.tab.tabs.currentWidget()
 
-                self.tab.Console.run("python3 " + active_tab.fileName + " -i")
+                if platform.system() == "Linux":
+                    self.tab.Console.run("python3 " + active_tab.fileName)
+
+                elif platform.system() == "win32":
+                    self.tab.Console.run("python " + active_tab.fileName)
+
+                else:
+                    self.tab.Console.run("python3 " + active_tab.fileName)
 
             except AttributeError as E:
                 print(E)
@@ -1355,8 +1365,10 @@ class CHighlighter(QSyntaxHighlighter):
 
 
 if __name__ == '__main__':
-    if checkVersion("version.txt") == "1.0.0":
-        pass  # TODO: auto updater
+    if checkVersion("version.txt") != checkVerOnlineFunc():
+        pass  # TODO: implement an updater
+    else:
+        print("Up to date")
 
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
@@ -1373,6 +1385,7 @@ if __name__ == '__main__':
     else:
         editor = config0['editor']
 
+    ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
     palette.setColor(QPalette.Base, QColor(editor["editorColor"]))
@@ -1385,6 +1398,5 @@ if __name__ == '__main__':
     palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
     palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
     app.setPalette(palette)
-
-    ex = Main()
+    ex.show()
     sys.exit(app.exec_())
