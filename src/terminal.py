@@ -17,7 +17,7 @@ class terminal(QWidget):
         # Works also with urxvt:
         self.layout = QGridLayout()
         self.process.start(
-                'urxvt',['-embed', str(int(self.terminal.winId()))])
+                'xterm', ['-into', str(int(self.terminal.winId()))])
         self.layout.setColumnStretch(1, 5)
         self.layout.addWidget(self.terminal, 1, 1)
         self.setLayout(self.layout)
