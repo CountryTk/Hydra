@@ -3,7 +3,7 @@ A simple cross-platform python editing notepad with auto completion and the abil
 
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, bs4 and xterm terminal emulator **(optional, no interactive mode without it, currently you can't install xterm on Windows but I will find a fix in the near future to make this feature cross-platform)**,. 
+Required modules: PyQt5, bs4 and xterm terminal emulator **(optional, no interactive mode without it, currently you can't install xterm on Windows but I will find a fix in the near future to make this feature cross-platform)**, lxml parser 
 
 # Urxvt terminal emulator installation
 
