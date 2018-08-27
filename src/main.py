@@ -908,7 +908,7 @@ class Main(QMainWindow):
 
         appearance.addAction(self.colorSchemeAct)
 
-        self.resize(800, 700)
+        self.showMaximized()
 
     def open(self):
         self.openAct = QAction('Open...', self)
