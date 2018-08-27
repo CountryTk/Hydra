@@ -1,4 +1,5 @@
 PyQt5
 bs4
+lxml
 sip~=4.19.8
 
