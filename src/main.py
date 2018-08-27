@@ -1,5 +1,6 @@
 import sys
 import os
+
 import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot, QPoint
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
@@ -1005,35 +1006,35 @@ class Main(QMainWindow):
                         text = file_o.read()
                     except FileNotFoundError as E:
                         text = str(E)
+                        
             except FileNotFoundError:
                 with open(filename, 'w+') as newFileCreated:
                     text = newFileCreated.read()
-                basename = os.path.basename(filename)
+            basename = os.path.basename(filename)
+            tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
 
-                tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+            self.tab.tabCounter.append(tab.baseName)
+            dirPath = os.path.dirname(filename)
+            self.files = filename
 
-                self.tab.tabCounter.append(tab.baseName)
-                dirPath = os.path.dirname(filename)
-                self.files = filename
+            self.tabsOpen.append(self.files)
 
-                self.tabsOpen.append(self.files)
+            index = self.tab.tabs.addTab(tab,
+                                         tab.fileName)  # This is the index which we will use to set the current
 
-                index = self.tab.tabs.addTab(tab,
-                                             tab.fileName)  # This is the index which we will use to set the current
+            self.tab.directory.openDirectory(dirPath)
 
-                self.tab.directory.openDirectory(dirPath)
+            self.tab.showDirectory()
 
-                self.tab.showDirectory()
+            self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
-                self.tab.setLayout(self.tab.layout)  # Finally we set the layout
+            self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
-                self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
+            self.currentTab = self.tab.tabs.currentWidget()
 
-                self.currentTab = self.tab.tabs.currentWidget()
-
-                self.currentTab.editor.setFont(self.font)  # Setting the font
-                self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-                self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
+            self.currentTab.editor.setFont(self.font)  # Setting the font
+            self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+            self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
         except (IsADirectoryError, AttributeError, UnboundLocalError) as E:
             print(E)
