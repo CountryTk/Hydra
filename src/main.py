@@ -168,7 +168,7 @@ class Console(QWidget):
         """Executes a system command."""
         # clear previous text
         self.editor.clear()
-        #self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
+        # self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
                                  #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
 
         if self.process.state() == 1 or self.process.state() == 2:
@@ -806,9 +806,11 @@ class Main(QMainWindow):
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
         self.tabsOpen = []
+
         if file is not None:
             self.openFile(file)
             self.fileNameChange()
+
         self.dialog = MessageBox()
 
         self.pyConsoleOpened = None
@@ -987,8 +989,9 @@ class Main(QMainWindow):
                 with open(filename, 'r+') as file_o:
                     try:
                         text = file_o.read()
-                    except UnicodeDecodeError:
-                        text = self.tab.Console.run("cat " + str(filename))
+                    except UnicodeDecodeError as E:
+                        text = str(E)
+
                     basename = os.path.basename(filename)
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
@@ -996,11 +999,15 @@ class Main(QMainWindow):
                     self.tab.tabs.removeTab(index)
 
                     self.tab.tabCounter.remove(tab.baseName)
-            with open(filename, 'r+') as file_o:
-                try:
-                    text = file_o.read()
-                except UnicodeDecodeError:
-                    self.tab.Console.run("cat " + str(filename))
+            try:
+                with open(filename, 'r+') as file_o:
+                    try:
+                        text = file_o.read()
+                    except FileNotFoundError as E:
+                        text = str(E)
+            except FileNotFoundError:
+                with open(filename, 'w+') as newFileCreated:
+                    text = newFileCreated.read()
                 basename = os.path.basename(filename)
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
