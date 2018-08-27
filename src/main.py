@@ -167,6 +167,7 @@ class Console(QWidget):
     def run(self, command):
         """Executes a system command."""
         # clear previous text
+        self.editor.clear()
         #self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
                                  #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
 
@@ -804,8 +805,12 @@ class Main(QMainWindow):
         self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
-        self.dialog = MessageBox()
         self.tabsOpen = []
+        if file is not None:
+            self.openFile(file)
+            self.fileNameChange()
+        self.dialog = MessageBox()
+
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
@@ -845,6 +850,7 @@ class Main(QMainWindow):
             self.setWindowTitle("PyPad ~ ")
 
     def onStart(self, index):
+
         if index == 0:
             editor = config0['editor']
 
@@ -1151,7 +1157,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "win32":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1165,7 +1171,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "win32":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1182,7 +1188,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "win32":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1371,6 +1377,11 @@ if __name__ == '__main__':
         print("Up to date")
 
     app = QApplication(sys.argv)
+    try:
+        file = sys.argv[1]
+    except IndexError:  # File not given
+        file = None
+    print(file)
     app.setStyle('Fusion')
     palette = QPalette()
     if choiceIndex == 0:
