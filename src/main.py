@@ -394,7 +394,7 @@ class Directory(QTreeView):
         self.model = QFileSystemModel()
         self.setModel(self.model)
         self.model.setRootPath(QDir.rootPath())
-
+        self.setMaximumWidth(300)
         self.setIndentation(10)
         self.setAnimated(True)
 
@@ -1006,7 +1006,7 @@ class Main(QMainWindow):
                         text = file_o.read()
                     except FileNotFoundError as E:
                         text = str(E)
-                        
+
             except FileNotFoundError:
                 with open(filename, 'w+') as newFileCreated:
                     text = newFileCreated.read()
