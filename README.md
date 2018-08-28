@@ -3,20 +3,7 @@ A simple cross-platform python editing notepad with auto completion and the abil
 
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, bs4 and xterm terminal emulator **(optional, no interactive mode without it, currently you can't install xterm on Windows but I will find a fix in the near future to make this feature cross-platform)**, lxml parser 
-
-# Urxvt terminal emulator installation
-
-On ubuntu you just do **sudo apt-get install xterm**
-
-On arch linux you do **sudo pacman -S install xterm**
-
-If you have a different flavour of linux, use your package manager and look for rxvt-unicode package.
-
-# Using interactive mode
-
-Using interactive mode is very simple, just open a file, press Ctrl+Y and type **python3 -i <yourfilenamehere.py>**.
-
+Required modules: PyQt5, bs4,lxml parser and qtconsole.
 # Auto completion
 
 Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend the best word and pressing enter will select the word.
