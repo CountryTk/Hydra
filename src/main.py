@@ -114,9 +114,6 @@ class Console(QWidget):
         self.editor.setReadOnly(False)
         self.custom = Customize()
         self.font = QFont()
-        self.numbers = TerminalBar(self.editor, index=self.custom.index)
-
-
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
