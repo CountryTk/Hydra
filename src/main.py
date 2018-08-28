@@ -118,7 +118,6 @@ class Console(QWidget):
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
         self.layout = QHBoxLayout()
-        self.layout.addWidget(self.numbers)
         self.layout.addWidget(self.editor, 1)
 
         self.setLayout(self.layout)
