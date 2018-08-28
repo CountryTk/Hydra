@@ -20,8 +20,6 @@ from checkVerOnline import checkVerOnlineFunc
 import socket
 import config
 import webbrowser
-from terminal import terminal
-from TerminalBarWidget import TerminalBar
 import shutil
 
 config0 = config.read(0)
