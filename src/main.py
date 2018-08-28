@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
     QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter
 import platform
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import getpass
 from predictionList import wordList
@@ -136,11 +138,6 @@ class Console(QWidget):
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
-    def keyPressEvent(self, e):
-
-        if e.key() == 16777220:
-            self.numbers.commandSignal.emit(self.numbers.editor.textCursor().block().text())
-
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
 
@@ -216,9 +213,6 @@ class PlainTextEdit(QPlainTextEdit):
         key = e.key()
         textCursorPos = textCursor.position()
 
-        if self.parent:
-            self.parent.keyPressEvent(e)
-
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
             self.moveCursorPosBack()
@@ -284,6 +278,52 @@ class PlainTextEdit(QPlainTextEdit):
             self.insertPlainText(chars * int(indentation))
         else:
             super().keyPressEvent(e)
+
+
+class ConsoleWidget(RichJupyterWidget, QThread):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.font_size = 12
+        self.kernel_manager = kernel_manager = QtInProcessKernelManager()
+        kernel_manager.start_kernel(show_banner=False)
+        kernel_manager.kernel.gui = 'qt'
+        self.kernel_client = kernel_client = self._kernel_manager.client()
+        kernel_client.start_channels()
+
+        def stop():
+            kernel_client.stop_channels()
+            kernel_manager.shutdown_kernel()
+            sys.exit()
+
+        self.exit_requested.connect(stop)
+
+    def push_vars(self, variableDict):
+        """
+        Given a dictionary containing name / value pairs, push those variables
+        to the Jupyter console widget
+        """
+        self.kernel_manager.kernel.shell.push(variableDict)
+
+    def clear(self):
+        """
+        Clears the terminal
+        """
+        self._control.clear()
+
+        # self.kernel_manager
+
+    def print_text(self, text):
+        """
+        Prints some plain text to the console
+        """
+        self._append_plain_text(text)
+
+    def execute_command(self, command):
+        """
+        Execute a command in the frame of the console widget
+        """
+        self._execute(command, False)
 
 
 class MessageBox(QWidget, QObject):
@@ -723,7 +763,7 @@ class Tabs(QWidget, QThread):
         self.tabs.setFont(font)
 
         self.Console = Console()  # This is the terminal widget and the SECOND thread
-        self.term = terminal()
+        self.term = ConsoleWidget()
         self.directory = Directory(callback)  # TODO: This is top left
         self.directory.clearSelection()
         self.tabCounter = []
