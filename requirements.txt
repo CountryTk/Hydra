@@ -1,5 +1,6 @@
 PyQt5
 bs4
 lxml
+qtconsole
 sip~=4.19.8
 
