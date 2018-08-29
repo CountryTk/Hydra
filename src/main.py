@@ -20,6 +20,8 @@ from checkVerOnline import checkVerOnlineFunc
 import socket
 import config
 import webbrowser
+from terminal import terminal
+from TerminalBarWidget import TerminalBar
 import shutil
 
 config0 = config.read(0)
@@ -114,10 +116,14 @@ class Console(QWidget):
         self.editor.setReadOnly(False)
         self.custom = Customize()
         self.font = QFont()
+        self.numbers = TerminalBar(self.editor, index=self.custom.index)
+
+
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(12)
         self.layout = QHBoxLayout()
+        self.layout.addWidget(self.numbers)
         self.layout.addWidget(self.editor, 1)
 
         self.setLayout(self.layout)
@@ -1199,7 +1205,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1213,7 +1219,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1230,7 +1236,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "win32":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
