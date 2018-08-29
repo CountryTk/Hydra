@@ -1070,7 +1070,7 @@ class Main(QMainWindow):
             self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
             self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-        except (IsADirectoryError, AttributeError, UnboundLocalError) as E:
+        except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E)
 
     def newFile(self):
