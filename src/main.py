@@ -19,6 +19,7 @@ from checkVerOnline import checkVerOnlineFunc
 #from updatePyPad import updatePyPadFunc
 import socket
 import config
+from TerminalBarWidget import TerminalBar
 import webbrowser
 import shutil
 
