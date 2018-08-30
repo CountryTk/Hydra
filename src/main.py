@@ -19,8 +19,8 @@ from checkVerOnline import checkVerOnlineFunc
 #from updatePyPad import updatePyPadFunc
 import socket
 import config
-from TerminalBarWidget import TerminalBar
 import webbrowser
+from TerminalBarWidget import TerminalBar
 import shutil
 
 config0 = config.read(0)
@@ -496,6 +496,17 @@ class Completer(QCompleter):
         self.insertText.emit(completion)
 
 
+class Image(QWidget):
+
+    def __init__(self, fileName, baseName):
+        super().__init__()
+        self.baseName = baseName
+        self.fileName = fileName
+        self.image = QPixmap(self.baseName)
+        self.imageLabel = QLabel(self)
+        self.imageLabel.setPixmap(self.image)
+
+
 class Content(QWidget):
     def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
@@ -867,6 +878,7 @@ class Main(QMainWindow):
         self.saveAs()
         self.customize()
         self.exit()
+        self.pic_opened = False
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -1021,9 +1033,14 @@ class Main(QMainWindow):
 
         if filenames:  # If file is selected, we can open it
             filename = filenames[0]
+            if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
+                self.pic_opened = True
+
             self.openFile(filename)
 
     def openFile(self, filename):
+        if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
+            self.pic_opened = True
         try:
             for index, tabName in enumerate(self.tab.tabCounter):
                 with open(filename, 'r+') as file_o:
@@ -1042,7 +1059,10 @@ class Main(QMainWindow):
             try:
                 with open(filename, 'r+') as file_o:
                     try:
-                        text = file_o.read()
+                        if self.pic_opened is not True:
+                            text = file_o.read()
+                        else:
+                            text = None
                     except FileNotFoundError as E:
                         text = str(E)
 
@@ -1050,7 +1070,11 @@ class Main(QMainWindow):
                 with open(filename, 'w+') as newFileCreated:
                     text = newFileCreated.read()
             basename = os.path.basename(filename)
-            tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+            if self.pic_opened is True:
+                tab = Image(filename, basename)
+            else:
+
+                tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
 
             self.tab.tabCounter.append(tab.baseName)
             dirPath = os.path.dirname(filename)
@@ -1070,11 +1094,12 @@ class Main(QMainWindow):
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
+            if self.pic_opened is not True:
+                self.currentTab.editor.setFont(self.font)  # Setting the font
+                self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
+                self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
-            self.currentTab.editor.setFont(self.font)  # Setting the font
-            self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
-            self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
-
+            self.pic_opened = False
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E)
 
@@ -1204,7 +1229,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1218,7 +1243,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
@@ -1235,7 +1260,7 @@ class Main(QMainWindow):
                 if platform.system() == "Linux":
                     self.tab.Console.run("python3 " + active_tab.fileName)
 
-                elif platform.system() == "Windows":
+                elif platform.system() == "Window":
                     self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
