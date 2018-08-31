@@ -117,13 +117,16 @@ class Console(QWidget):
         self.font = QFont()
         self.numbers = TerminalBar(self.editor, index=self.custom.index)
 
-
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
+        self.terminateButton = QPushButton()
+        self.terminateButton.setIcon(QIcon("resources/square.png"))
+        self.terminateButton.clicked.connect(self.terminate)
         self.font.setPointSize(12)
         self.layout = QHBoxLayout()
         self.layout.addWidget(self.numbers)
         self.layout.addWidget(self.editor, 1)
+        self.layout.addWidget(self.terminateButton)
 
         self.setLayout(self.layout)
         self.output = None
@@ -173,6 +176,11 @@ class Console(QWidget):
             self.editor.setPlainText("Process already started, terminating")
         else:
             self.process.start(command)
+
+    def terminate(self):
+
+        if self.process.state() == 1 or self.process.state() == 2:
+            self.process.kill()
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -502,7 +510,8 @@ class Image(QWidget):
         super().__init__()
         self.baseName = baseName
         self.fileName = fileName
-        self.image = QPixmap(self.baseName)
+
+        self.image = QPixmap(self.fileName)
         self.imageLabel = QLabel(self)
         self.imageLabel.setPixmap(self.image)
 
@@ -567,7 +576,7 @@ class Content(QWidget):
         textCursor = self.editor.textCursor()
 
         extra = (len(completion) - len(self.completer.completionPrefix()))
-
+        
         textCursor.movePosition(QTextCursor.Left)
         textCursor.movePosition(QTextCursor.EndOfWord)
         textCursor.insertText(completion[-extra:])
@@ -820,11 +829,15 @@ class Tabs(QWidget, QThread):
         self.closeTab(self.index)
 
     def closeTab(self, index):
-        tab = self.tabs.widget(index)
+        try:
+            tab = self.tabs.widget(index)
 
-        tab.deleteLater()
-        self.tabCounter.pop(index)
-        self.tabs.removeTab(index)
+            tab.deleteLater()
+            self.tabCounter.pop(index)
+            self.tabs.removeTab(index)
+
+        except AttributeError as E:
+            print(E)
 
     def showDirectory(self):
         self.directory.setVisible(True)
