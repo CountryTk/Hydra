@@ -26,11 +26,10 @@ You can also navigate the word list with arrow keys.
 If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
 
 # How to use when installation fails
-```git clone https://github.com/Fuchsiaff/PyPad```
 
-```cd PyPad && cd src```
+```sudo pip install -r requirements.txt```
 
-```python3 main.py```
+```git clone https://github.com/Fuchsiaff/PyPad cd PyPad && cd src && python main.py```
 
 # Pictures
 
