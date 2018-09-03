@@ -12,7 +12,7 @@ You can also navigate the word list with arrow keys.
 
 # Installation with install.sh
 
-```wget [REPLACE LINK AFTER PULL REQUEST ACCEPTD```
+```wget [REPLACE LINK AFTER PULL REQUEST ACCEPTED]```
 
 ```./install.sh```
 
