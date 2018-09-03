@@ -20,3 +20,4 @@ function clone_pypad() {
 }
 
 main
+s

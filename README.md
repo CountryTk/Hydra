@@ -1,14 +1,31 @@
 # PyPad
-A simple cross-platform python editing notepad written in python.
+A simple cross-platform python editing notepad with auto completion and the ability to run scripts in interactive mode, written in python.
 
-This editor is fully customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
+This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, pyautogui
+Required modules: PyQt5, bs4,lxml parser and qtconsole.
+# Auto completion
 
-**If you use MacOs and can't install pyautogui follow this**
+Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend the best word and pressing enter will select the word.
 
-https://stackoverflow.com/questions/35074294/pip3-install-pyautogui-fails-with-error-code-1-mac-os
+You can also navigate the word list with arrow keys.
 
-.
+# Installation with install.sh
 
-![alt text](https://raw.githubusercontent.com/Fuchsiaff/csgo_wallhack/master/2018-06-04-174804_1920x1025_scrot.png)
+```wget 
+
+```./install.sh (When it prompts for home directory, use "/root" no quotations)```
+
+If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
+
+# How to use when installation fails
+
+```sudo pip install -r requirements.txt```
+
+```git clone https://github.com/Fuchsiaff/PyPad cd PyPad && cd src && python main.py```
+
+# Pictures
+
+![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/pypadpic.gif)
+
+![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/pypadpic2.gif)
