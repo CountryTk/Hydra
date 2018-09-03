@@ -12,17 +12,8 @@ You can also navigate the word list with arrow keys.
 
 # Installation with install.sh
 
-```wget 
-
-```./install.sh (When it prompts for home directory, use "/root" no quotations)```
-
-If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
-
-# How to use when installation fails
-
-```sudo pip install -r requirements.txt```
-
-```git clone https://github.com/Fuchsiaff/PyPad cd PyPad && cd src && python main.py```
+```wget [REPLACE LINK AFTER PULL REQUEST ACCEPTD```
+```./install.sh```
 
 # Pictures
 
