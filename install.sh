@@ -1,25 +1,22 @@
 #!/bin/bash
 
 PYPAD_GIT="https://github.com/Fuchsiaff/PyPad"
+PYPAD_PATH="/opt/pypad"
 
 function main() {
         if [ ! -f /usr/bin/git ]; then
-                echo "Git not found in /usr/bin. Aborting"
+                echo "Git not found in /usr/bin/ - Aborting"
                 exit 1
-		elif [ ! -d /opt/pypad/ ]; then
-				mkdir /opt/pypad/ && touch /opt/pypad/.git
-				pull_pypad
-		elif [ -d /opt/pypad ] && [ -d /opt/pypad/.git ]; then
-				cd /opt/pypad | pull_pypad
-		else 
-				echo "Install failed"
-		fi
-        
+
+        elif [ ! -d $PYPAD_PATH ]; then
+                clone_pypad
+        else
+                echo "Install failed"
+        fi
 }
 
-function pull_pypad() {
-	git pull $PYPAD_GIT
+function clone_pypad() {
+        git clone $PYPAD_GIT $PYPAD_PATH
 }
 
 main
-
