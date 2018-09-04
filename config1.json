@@ -1,0 +1,118 @@
+{
+  "editor": {
+    "windowStaysOnTop": false,
+    "editorFont": "Inconsolata",
+    "menuFont": "Iosevka",
+    "directoryFont": "Inconsolata",
+    "editorFontSize": 12,
+    "menuFontSize": 9,
+    "tabFontSize": 10.5,
+    "directoryFontSize": 10,
+    "tabShape": false,
+    "tabMovable": true,
+    "tabFont": "Inconsolata",
+    "editorColor": "#303030",
+    "windowColor": "#303030",
+    "windowText": "#FFFFFF",
+    "alternateBase": "#FFFFFF",
+    "ToolTipBase": "#FFFFFF",
+    "ToolTipText": "#FFFFFF",
+    "editorText": "#e3e6fc",
+    "buttonColor": "#353535",
+    "buttonTextColor": "#FFFFFF",
+    "HighlightColor": "#4DD2FF",
+    "UnfocusedHighlightColor": "#FFFFFF",
+    "HighlightedTextColor": "#000000",
+    "TabWidth": 38,
+    "NumberBarBox": false,
+    "errorMessages": true,
+    "closeTabShortcut": "Ctrl+W",
+    "moveCursorRight" : "Ctrl+L",
+    "moveCursorLeft": "Ctrl+J"
+  },
+  "files": {
+    "python": {
+      "extensions": "py",
+      "indentation": 4,
+      "keywords": ["for", "class", "range", "False", "finally", "is", "return", "None", "continue", "for", "lambda",
+        "try", "True", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
+        "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
+      "highlighting": {
+        "keyword": {
+          "bold": true,
+          "color": "#F6DC74"
+        },
+        "class": {
+          "color": "#74F6C3",
+          "bold": false
+        },
+        "function": {
+          "color": "#FF6666",
+          "italic": true
+        },
+        "magic": {
+          "color": "#FF6666",
+          "italic": true
+        },
+        "decorator": {
+          "color": "#FF00E7"
+        },
+
+        "singleLineComment": {
+          "color": "#6B6E6C"
+        },
+        "quotation": {
+          "color": "#63ff00"
+        },
+        "quotation2": {
+          "color": "#63ff00"
+        },
+        "multiLineComment": {
+          "color": "#039135"
+        },
+        "int": {
+          "color": "#ADD4FF"
+        }
+      }
+    }, "c": {
+      "extensions": "c",
+      "indentation": 4,
+      "keywords":["auto", "break", "case", "char", "const", "const", "continue", "default", "do", "double", "else",
+        "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof",
+        "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"],
+      "highlighting": {
+        "keyword": {
+          "color": "#0099FF",
+          "bold": true
+        },
+        "class": {
+          "color": "#330000",
+          "bold": true
+        },
+        "function": {
+          "color": "#FF9500",
+          "italic": true
+        },
+        "magic": {
+          "color": "#FF6666"
+        },
+        "decorator": {
+
+          "color": "#FF00E7"
+        },
+        "quotation": {
+          "color": "#63ff00"
+        },
+        "singleLineComment": {
+          "color": "#6B6E6C"
+        },
+        "multiLineComment": {
+          "color": "#039135"
+        },
+        "int": {
+          "color": "#ADD4FF"
+        }
+      }
+    }
+  }
+}

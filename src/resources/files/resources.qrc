@@ -1,7 +1,0 @@
-<RCC>
-  <qresource prefix="fonts">
-    <file>fonts/iosevka-ss03-bold.ttf</file>
-    <file>fonts/iosevka-ss03-italic.ttf</file>
-    <file>fonts/iosevka-ss03-regular.ttf</file>
-  </qresource>
-</RCC>
