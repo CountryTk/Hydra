@@ -11,25 +11,7 @@ Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend
 You can also navigate the word list with arrow keys.
 
 # Installation with install.sh
-```sudo -i```
 
-```cd /root (if you're not in /root directory already```
-
-```mkdir pypad && cd pypad```
-
-```git init && git pull https://github.com/Fuchsiaff/PyPad```
-
-```chmod +x install.sh```
-
-```./install.sh (When it prompts for home directory, use "/root" no quotations)```
-
-If you get a ^M markdown error when running use ```dos2unix install.sh``` to convert.
-
-# How to use when installation fails
-
-```sudo pip install -r requirements.txt```
-
-```git clone https://github.com/Fuchsiaff/PyPad cd PyPad && cd src && python main.py```
 
 # Pictures
 
