@@ -10,7 +10,8 @@ Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend
 
 You can also navigate the word list with arrow keys.
 
-# Installation with install.sh
+# Installation
+```git clone https://github.com/Fuchsiaff/PyPad.git && cd PyPad && pip install -r requirements.txt && cd src && python main.py``` 
 
 
 # Pictures
