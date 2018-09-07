@@ -7,7 +7,7 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
     QPixmap, QKeySequence, QTextCursor
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter
+    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit
 import platform
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -26,6 +26,7 @@ import shutil
 config0 = config.read(0)
 config1 = config.read(1)
 config2 = config.read(2)
+
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
 
@@ -112,7 +113,7 @@ class Console(QWidget):
     def __init__(self):
         super().__init__()
         self.editor = PlainTextEdit(self)
-        self.editor.setReadOnly(False)
+        self.editor.setReadOnly(True) 
         self.custom = Customize()
         self.font = QFont()
         self.numbers = TerminalBar(self.editor, index=self.custom.index)
@@ -141,17 +142,20 @@ class Console(QWidget):
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
 
     def onReadyReadStandardError(self):
-        self.error = self.process.readAllStandardError().data().decode()
+        try:
+            self.error = self.process.readAllStandardError().data().decode()
 
-        self.editor.appendPlainText(self.error)
+            self.editor.appendPlainText(self.error)
 
-        self.errorSignal.emit(self.error)
-        if self.error == "":
-            pass
-        else:
-            self.error = self.error.split(os.linesep)[-2]
-            self.dialog.helpword = str(self.error)
-            self.dialog.getHelp()
+            self.errorSignal.emit(self.error)
+            if self.error == "":
+                pass
+            else:
+                self.error = self.error.split(os.linesep)[-2]
+                self.dialog.helpword = str(self.error)
+                self.dialog.getHelp()
+        except IndexError as E:
+            print(E)
 
     def onReadyReadStandardOutput(self):
 
@@ -191,6 +195,7 @@ class PlainTextEdit(QPlainTextEdit):
         user = getpass.getuser()
         hostname = socket.gethostname()
         self.name = "[" + str(user) + "@" + str(hostname) + "]" + "   ~/" + str(os.path.basename(os.getcwd())) + " >$"
+        print(self.name)
         self.nameSize = len(self.name) + 1
 
         self.font = QFont()
@@ -338,6 +343,7 @@ class MessageBox(QWidget, QObject):
         super().__init__()
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
+
         self.index = str(index)
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
         self.initUI()
@@ -348,9 +354,11 @@ class MessageBox(QWidget, QObject):
 
         self.deleteButton = QPushButton("Yes")
         self.button = QPushButton("No")
+        self.cancel = QPushButton("Cancel")
         self.getHelpButton = QPushButton("Yes")
 
         self.deleteButton.clicked.connect(self.delete)
+        self.cancel.clicked.connect(self.dont)
         self.button.clicked.connect(self.dont)
         self.getHelpButton.clicked.connect(self.gettingHelp)
 
@@ -359,7 +367,8 @@ class MessageBox(QWidget, QObject):
         self.font.setPointSize(12)
 
         self.setFont(self.font)
-        self.setLayout(self.layout)
+        
+       
 
     def run(self, str, fileName):
         self.fileName = fileName
@@ -389,13 +398,71 @@ class MessageBox(QWidget, QObject):
         self.button.setFocus()
         self.layout.addWidget(self.button)
         self.show()
-
+    
+    def success(self, directory):
+        
+        def _exit():
+            self.hide()
+            
+        self.successButton = QPushButton("Ok")
+        self.successButton.resize(10, 30)
+        self.successLabel = QLabel()
+        self.successLabel.setText("Successfully created a new project to: " + str(directory))
+        
+        self.successButton.clicked.connect(_exit)
+        self.layout.addWidget(self.successLabel)
+        self.layout.addWidget(self.successButton)
+        self.show() 
+    
     def gettingHelp(self):
 
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
         webbrowser.open(self.url)
         self.hide()
-
+        
+    def newProject(self):
+        
+        cwd = os.getcwd()
+        self.vertical = QVBoxLayout()
+        def _createFolder():
+            try:
+                folderName = self.textField.text()
+                directory = self.ProjectDirectory.text()
+                
+                if not os.path.exists(folderName):
+                    path = str(directory) + str(folderName)
+                    os.makedirs(path)
+                    self.hide()
+                    self.success(path)
+                    
+                else:
+                    print("File already exists")
+                    
+            except Exception as E:
+                print(E)
+                
+        self.setWindowTitle("New project")
+        self.projectLabel = QLabel()
+        self.directoryLabel = QLabel()
+        self.directoryLabel.setText("Where do you want to create it?")
+        self.projectLabel.setText("Enter a new project name: ")
+        self.ProjectDirectory = QLineEdit()
+        self.ProjectDirectory.setText(cwd)
+        self.textField = QLineEdit()
+        
+        self.textFieldButton = QPushButton("Create")
+        self.textFieldButton.clicked.connect(_createFolder)
+        self.vertical.addWidget(self.projectLabel)
+        self.vertical.addWidget(self.textField)
+        self.vertical.addWidget(self.directoryLabel)
+        self.vertical.addWidget(self.ProjectDirectory)
+        self.vertical.addWidget(self.textFieldButton)
+        self.vertical.addWidget(self.cancel)
+        self.layout.removeWidget(self.label)
+        self.layout.addLayout(self.vertical)
+        self.setLayout(self.layout)
+        self.show()
+        
     def getHelp(self):
 
         try:
@@ -409,7 +476,9 @@ class MessageBox(QWidget, QObject):
         self.layout.addWidget(self.button)
 
         if self.index == "0":
+            
             config = config0
+            
         elif self.index == "1":
 
             config = config1
@@ -543,7 +612,9 @@ class Content(QWidget):
 
         self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
         self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
-
+        self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+K"), self)
+        
+        self.selectAllBeforeCursor.activated.connect(self.selectBeforeCursor)
         self.moveCursorRight.activated.connect(self.moveCursorRightFunc)
         self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
 
@@ -562,7 +633,14 @@ class Content(QWidget):
 
         textCursor.setPosition(textCursorPos - 1)
         self.editor.setTextCursor(textCursor)
-
+        
+    def selectBeforeCursor(self):
+        textCursor = self.editor.textCursor()
+        textCursorPost = textCursor.position()
+        text = self.textUnderCursor()
+        textCursor.movePosition(textCursor.StartOfWord, textCursor.KeepAnchor, len(text))
+        self.editor.setTextCursor(textCursor)
+        
     def setCompleter(self, completer):
 
         self.completer.setWidget(self)
@@ -886,6 +964,8 @@ class Main(QMainWindow):
         self.openPy()
         self.openTerm()
         self.new()
+        self.newProject()
+        self.openProjectF()
         self.open()
         self.save()
         self.saveAs()
@@ -958,7 +1038,9 @@ class Main(QMainWindow):
         # Adding options to the file menu
 
         fileMenu.addAction(self.newAct)
+        fileMenu.addAction(self.newProjectAct)
         fileMenu.addAction(self.openAct)
+        fileMenu.addAction(self.openProjectAct)
         fileMenu.addAction(self.saveAct)
         fileMenu.addAction(self.saveAsAct)
         fileMenu.addSeparator()
@@ -987,6 +1069,21 @@ class Main(QMainWindow):
 
         self.newAct.setStatusTip('Create a new file')
         self.newAct.triggered.connect(self.newFile)
+        
+    def newProject(self):
+        self.newProjectAct = QAction('New project')
+        self.newProjectAct.setShortcut('Ctrl+Shift+N')
+        
+        self.newProjectAct.setStatusTip('Create a new project')
+        self.newProjectAct.triggered.connect(self.newProjectFolder)
+            
+    def openProjectF(self):
+        
+        self.openProjectAct = QAction('Open project')
+        self.openProjectAct.setShortcut('Ctrl+Shift+O')
+        
+        self.openProjectAct.setStatusTip('Open a project')
+        self.openProjectAct.triggered.connect(self.openProject)    
 
     def customize(self):
         self.colorSchemeAct = QAction('Customize', self)
@@ -1076,7 +1173,7 @@ class Main(QMainWindow):
                             text = file_o.read()
                         else:
                             text = None
-                    except FileNotFoundError as E:
+                    except (FileNotFoundError, UnicodeDecodeError) as E:
                         text = str(E)
 
             except FileNotFoundError:
@@ -1134,7 +1231,17 @@ class Main(QMainWindow):
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
-
+        
+    def newProjectFolder(self):
+        self.dialog = MessageBox()
+        self.dialog.newProject()
+        
+    def openProject(self):
+        
+        dir_ = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+        self.tab.directory.openDirectory(dir_)
+        self.tab.showDirectory()
+        
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
