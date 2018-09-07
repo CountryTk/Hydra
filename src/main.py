@@ -349,7 +349,7 @@ class MessageBox(QWidget, QObject):
         self.initUI()
 
     def initUI(self):
-        self.label = QLabel("delet?")
+        self.label = QLabel()
         self.layout.addWidget(self.label)
 
         self.deleteButton = QPushButton("Yes")
