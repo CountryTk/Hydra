@@ -50,9 +50,7 @@ class Search(QWidget):
         textCursor = currentEditor.textCursor()
         print(textCursor)
         textCursorPos = textCursor.position()
-        self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+P"), self)
-        
-        self.selectAllBeforeCursor.activated.connect(lambda: print("nigger"))
+ )
 
         if self.currentWidget is not None:
             text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
