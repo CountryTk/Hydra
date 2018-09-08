@@ -34,6 +34,7 @@ lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
 
+
 class NumberBar(QWidget):
     def __init__(self, parent=None, index=choiceIndex):
         super().__init__(parent)
@@ -235,12 +236,13 @@ class PlainTextEdit(QPlainTextEdit):
             textCursorPos = textCursor.position()
 
             if currentWidget is not None:
-                text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
-                self.searchtext = text
-            
-            with open(currentFile, 'r') as file:
-                contents = file.read()
-            self.indexes = list(find_all(contents, text))
+                text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
+                if okPressed:
+                    self.searchtext = text
+                
+                    with open(currentFile, 'r') as file:
+                        contents = file.read()
+                        self.indexes = list(find_all(contents, text))
         
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
@@ -1004,7 +1006,6 @@ class Main(QMainWindow):
         self.newProject()
         self.openProjectF()
         self.open()
-        self.searchWord()
         self.save()
         self.saveAs()
         self.customize()
@@ -1091,9 +1092,6 @@ class Main(QMainWindow):
         appearance = menu.addMenu('Appearance')
 
         appearance.addAction(self.colorSchemeAct)
-        
-        searchMenu = menu.addMenu('Search')
-        searchMenu.addAction(self.searchAct)
 
         self.showMaximized()
 
@@ -1143,12 +1141,6 @@ class Main(QMainWindow):
 
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.saveFile)
-        
-    def searchWord(self):
-        self.searchAct = QAction('Search')
-        #self.searchAct.setShortcut('Ctrl+F')
-        
-        self.searchAct.setStatusTip('Search for a word')
         
     def openPy(self):
         self.openPyAct = QAction('IPython console', self)
