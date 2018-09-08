@@ -1,13 +1,13 @@
 import sys
 import os
-
+from find_all import find_all
 import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot, QPoint
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
     QPixmap, QKeySequence, QTextCursor
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit
+    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit, QInputDialog
 import platform
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -33,6 +33,39 @@ with open("default.json") as choice:
 lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
+
+
+class Search(QWidget):
+
+    def __init__(self, w):
+        super().__init__()
+        self.currentWidget = w
+
+        print(self.currentWidget)
+
+    def search(self):
+        currentFile = self.currentWidget.fileName
+        currentEditor = self.currentWidget.editor
+        
+        textCursor = currentEditor.textCursor()
+        print(textCursor)
+        textCursorPos = textCursor.position()
+        self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+P"), self)
+        
+        self.selectAllBeforeCursor.activated.connect(lambda: print("nigger"))
+
+        if self.currentWidget is not None:
+            text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
+            
+        with open(currentFile, 'r') as file:
+            contents = file.read()
+            indexes = list(find_all(contents, text))
+            #for index in indexes:
+            index = indexes[0]
+            if "lol" == "lol":
+                textCursor.setPosition(index)
+                textCursor.movePosition(textCursor.Right, textCursor.KeepAnchor, len(text))
+                currentEditor.setTextCursor(textCursor)     
 
 
 class NumberBar(QWidget):
@@ -189,13 +222,12 @@ class Console(QWidget):
 
 class PlainTextEdit(QPlainTextEdit):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
         user = getpass.getuser()
         hostname = socket.gethostname()
         self.name = "[" + str(user) + "@" + str(hostname) + "]" + "   ~/" + str(os.path.basename(os.getcwd())) + " >$"
-        print(self.name)
         self.nameSize = len(self.name) + 1
 
         self.font = QFont()
@@ -206,8 +238,10 @@ class PlainTextEdit(QPlainTextEdit):
         self.replace_tabs = 4
         self.setWordWrapMode(4)
         self.setFont(self.font)
+        self.l = 0
         self.highlightingRules = []
-
+        self.indexes = None
+        
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
 
@@ -224,11 +258,47 @@ class PlainTextEdit(QPlainTextEdit):
         textCursor = self.textCursor()
         key = e.key()
         textCursorPos = textCursor.position()
+        isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
+        if isSearch:
+            currentWidget = self.parent
+            currentFile =  currentWidget.fileName
+            currentEditor = currentWidget.editor
+        
+            textCursor = currentEditor.textCursor()
+        
+            textCursorPos = textCursor.position()
+            self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+P"), self)
+        
+            self.selectAllBeforeCursor.activated.connect(lambda: print("nigger"))
 
+            if currentWidget is not None:
+                text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
+                self.searchtext = text
+            
+            with open(currentFile, 'r') as file:
+                contents = file.read()
+            self.indexes = list(find_all(contents, text))
+        
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
             self.moveCursorPosBack()
-
+            
+        if key == Qt.Key_F3:
+            try:
+                print("indexes list: " + str(self.indexes))
+                print("self.l: " + str(self.l))
+                
+                index = self.indexes[0 + self.l]
+                currentWidget = self.parent
+                currentFile =  currentWidget.fileName
+                currentEditor = currentWidget.editor
+                textCursor.setPosition(index)
+                textCursor.movePosition(textCursor.Right, textCursor.KeepAnchor, len(self.searchtext))
+                currentEditor.setTextCursor(textCursor)
+                self.l += 1
+            except IndexError:
+                self.l = 0
+                
         if key == 39:
             self.insertPlainText("'")
             self.moveCursorPosBack()
@@ -368,8 +438,6 @@ class MessageBox(QWidget, QObject):
 
         self.setFont(self.font)
         
-       
-
     def run(self, str, fileName):
         self.fileName = fileName
         baseName = os.path.basename(self.fileName)
@@ -588,7 +656,7 @@ class Image(QWidget):
 class Content(QWidget):
     def __init__(self, text, fileName, baseName, themeIndex):
         super().__init__()
-        self.editor = PlainTextEdit()
+        self.editor = PlainTextEdit(self)
         self.text = text
 
         self.fileName = fileName
@@ -604,9 +672,9 @@ class Content(QWidget):
 
         self.completer = Completer()
         self.hbox = QHBoxLayout(self)
+        self.vbox = QVBoxLayout()
         # Create a widget for the line numbers
         self.numbers = NumberBar(self.editor, index=themeIndex)
-
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
 
@@ -620,6 +688,9 @@ class Content(QWidget):
 
         self.setCompleter(self.completer)
 
+    def search(self):
+        pass 
+            
     def moveCursorRightFunc(self):
         textCursor = self.editor.textCursor()
         textCursorPos = textCursor.position()
@@ -677,6 +748,7 @@ class Content(QWidget):
             QPlainTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, event):
+        
         if self.completer and self.completer.popup() and self.completer.popup().isVisible():
             if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
                 event.ignore()
@@ -867,6 +939,7 @@ class Tabs(QWidget, QThread):
         # Add tabs
         self.tab_layout = QHBoxLayout()  # Create new layout for original tab layout
         self.tab_layout.addWidget(self.tabs)  # Add tab widget to tab layout
+        self.search_layout = QHBoxLayout()
 
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(editor['tabMovable'])  # Let's you make the tabs movable
@@ -885,6 +958,7 @@ class Tabs(QWidget, QThread):
 
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
+        self.layout.addLayout(self.search_layout)
 
         # Creating horizontal splitter
         self.splitterH = QSplitter(Qt.Horizontal)
@@ -967,6 +1041,7 @@ class Main(QMainWindow):
         self.newProject()
         self.openProjectF()
         self.open()
+        self.searchWord()
         self.save()
         self.saveAs()
         self.customize()
@@ -1053,6 +1128,9 @@ class Main(QMainWindow):
         appearance = menu.addMenu('Appearance')
 
         appearance.addAction(self.colorSchemeAct)
+        
+        searchMenu = menu.addMenu('Search')
+        searchMenu.addAction(self.searchAct)
 
         self.showMaximized()
 
@@ -1102,7 +1180,14 @@ class Main(QMainWindow):
 
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.saveFile)
-
+        
+    def searchWord(self):
+        self.searchAct = QAction('Search')
+        #self.searchAct.setShortcut('Ctrl+F')
+        
+        self.searchAct.setStatusTip('Search for a word')
+        self.searchAct.triggered.connect(lambda: print("nigger"))
+        
     def openPy(self):
         self.openPyAct = QAction('IPython console', self)
         self.openPyAct.setShortcut('Ctrl+Y')
@@ -1388,7 +1473,14 @@ class Main(QMainWindow):
 
             except AttributeError as E:
                 print(E)
-
+                
+    def search(self):
+        
+        currentWidget = self.tab.tabs.currentWidget()
+        
+        lol = Search(currentWidget, self)
+        lol.search()
+            
 
 class PyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, index=choiceIndex, *args):
