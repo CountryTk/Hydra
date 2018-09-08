@@ -265,9 +265,6 @@ class PlainTextEdit(QPlainTextEdit):
             textCursor = currentEditor.textCursor()
         
             textCursorPos = textCursor.position()
-            self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+P"), self)
-        
-            self.selectAllBeforeCursor.activated.connect(lambda: print("nigger"))
 
             if currentWidget is not None:
                 text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
@@ -1184,7 +1181,6 @@ class Main(QMainWindow):
         #self.searchAct.setShortcut('Ctrl+F')
         
         self.searchAct.setStatusTip('Search for a word')
-        self.searchAct.triggered.connect(lambda: print("nigger"))
         
     def openPy(self):
         self.openPyAct = QAction('IPython console', self)
