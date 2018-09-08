@@ -34,38 +34,6 @@ lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
 
-
-class Search(QWidget):
-
-    def __init__(self, w):
-        super().__init__()
-        self.currentWidget = w
-
-        print(self.currentWidget)
-
-    def search(self):
-        currentFile = self.currentWidget.fileName
-        currentEditor = self.currentWidget.editor
-        
-        textCursor = currentEditor.textCursor()
-        print(textCursor)
-        textCursorPos = textCursor.position()
- )
-
-        if self.currentWidget is not None:
-            text, ok = QInputDialog.getText(self, 'Find', 'Find what: ')
-            
-        with open(currentFile, 'r') as file:
-            contents = file.read()
-            indexes = list(find_all(contents, text))
-            #for index in indexes:
-            index = indexes[0]
-            if "lol" == "lol":
-                textCursor.setPosition(index)
-                textCursor.movePosition(textCursor.Right, textCursor.KeepAnchor, len(text))
-                currentEditor.setTextCursor(textCursor)     
-
-
 class NumberBar(QWidget):
     def __init__(self, parent=None, index=choiceIndex):
         super().__init__(parent)
