@@ -225,6 +225,9 @@ class PlainTextEdit(QPlainTextEdit):
     def keyPressEvent(self, e):
         textCursor = self.textCursor()
         key = e.key()
+        if key == Qt.Key_H:
+            print("n")
+            self.parent.completer.wordList.append("lol")
         textCursorPos = textCursor.position()
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
         
@@ -392,6 +395,7 @@ class MessageBox(QWidget, QObject):
         self.button = QPushButton("No")
         self.cancel = QPushButton("Cancel")
         self.getHelpButton = QPushButton("Yes")
+        self.closeAnywayButton = QPushButton()
         self.saveButton = QPushButton("Save")
 
         self.deleteButton.clicked.connect(self.delete)
@@ -453,13 +457,22 @@ class MessageBox(QWidget, QObject):
         
     def saveMaybe(self, file, tabCounter, tab, index):
         
+        def _closeAnyway():
+            file.deleteLater()
+            tabCounter.pop(index)
+            tab.removeTab(index)
+            self.hide()
+        
         def _hide():
                 self.hide()
                     
         self.label.setText("Warning, you have unsaved changes!")
         self.saveButton.setText("Ok")
+        self.closeAnywayButton.setText("Close anyway")
         self.saveButton.clicked.connect(_hide)
+        self.closeAnywayButton.clicked.connect(_closeAnyway)
         self.layout.addWidget(self.saveButton)
+        self.layout.addWidget(self.closeAnywayButton)
         self.show()
         
     def gettingHelp(self):
@@ -618,8 +631,9 @@ class Completer(QCompleter):
     insertText = pyqtSignal(str)
 
     def __init__(self, myKeywords=None, parent=None):
-        QCompleter.__init__(self, wordList, parent)
-
+        self.wordList = wordList
+        QCompleter.__init__(self, self.wordList, parent)
+        
         self.activated.connect(self.changeCompletion)
 
     def changeCompletion(self, completion):
