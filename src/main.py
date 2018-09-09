@@ -226,8 +226,9 @@ class PlainTextEdit(QPlainTextEdit):
         textCursor = self.textCursor()
         key = e.key()
         if key == Qt.Key_H:
-            print("n")
-            self.parent.completer.wordList.append("lol")
+            # self.parent.completer.wordList
+            # TODO: implement dynamic completion
+            pass
         textCursorPos = textCursor.position()
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
         
