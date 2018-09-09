@@ -658,6 +658,7 @@ class Content(QWidget):
         self.editor.setPlainText(str(text))
 
         self.completer = Completer()
+
         self.hbox = QHBoxLayout(self)
         self.vbox = QVBoxLayout()
         # Create a widget for the line numbers
@@ -1222,6 +1223,8 @@ class Main(QMainWindow):
     def openFile(self, filename):
         if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
             self.pic_opened = True
+        else:
+            self.pic_opened = False
         try:
             for index, tabName in enumerate(self.tab.tabCounter):
                 with open(filename, 'r+') as file_o:
@@ -1246,8 +1249,9 @@ class Main(QMainWindow):
                             text = file_o.read()
                         else:
                             text = None
-                    except (FileNotFoundError, UnicodeDecodeError) as E:
+                    except (FileNotFoundError, UnicodeDecodeError, AttributeError) as E:
                         text = str(E)
+                        print("L")
 
             except FileNotFoundError:
                 with open(filename, 'w+') as newFileCreated:
@@ -1285,6 +1289,7 @@ class Main(QMainWindow):
             self.pic_opened = False
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E)
+            print("F")
 
     def newFile(self):
         text = ""
