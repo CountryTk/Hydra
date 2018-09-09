@@ -198,6 +198,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.nameSize = len(self.name) + 1
 
         self.font = QFont()
+        self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
@@ -226,6 +227,7 @@ class PlainTextEdit(QPlainTextEdit):
         key = e.key()
         textCursorPos = textCursor.position()
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
+        
         if isSearch:
             currentWidget = self.parent
             currentFile =  currentWidget.fileName
@@ -243,16 +245,15 @@ class PlainTextEdit(QPlainTextEdit):
                     with open(currentFile, 'r') as file:
                         contents = file.read()
                         self.indexes = list(find_all(contents, text))
+                        if len(self.indexes) == 0:
+                            self.dialog.noMatch(text)
         
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
             self.moveCursorPosBack()
             
         if key == Qt.Key_F3:
-            try:
-                print("indexes list: " + str(self.indexes))
-                print("self.l: " + str(self.l))
-                
+            try:                
                 index = self.indexes[0 + self.l]
                 currentWidget = self.parent
                 currentFile =  currentWidget.fileName
@@ -391,12 +392,15 @@ class MessageBox(QWidget, QObject):
         self.button = QPushButton("No")
         self.cancel = QPushButton("Cancel")
         self.getHelpButton = QPushButton("Yes")
+        self.saveButton = QPushButton("Save")
 
         self.deleteButton.clicked.connect(self.delete)
         self.cancel.clicked.connect(self.dont)
         self.button.clicked.connect(self.dont)
         self.getHelpButton.clicked.connect(self.gettingHelp)
-
+        
+        self.saved = None
+        
         self.font = QFont()
         self.font.setFamily("Iosevka")
         self.font.setPointSize(12)
@@ -446,13 +450,30 @@ class MessageBox(QWidget, QObject):
         self.layout.addWidget(self.successLabel)
         self.layout.addWidget(self.successButton)
         self.show() 
-    
+        
+    def saveMaybe(self, file, tabCounter, tab, index):
+        
+        def _hide():
+                self.hide()
+                    
+        self.label.setText("Warning, you have unsaved changes!")
+        self.saveButton.setText("Ok")
+        self.saveButton.clicked.connect(_hide)
+        self.layout.addWidget(self.saveButton)
+        self.show()
+        
     def gettingHelp(self):
 
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
         webbrowser.open(self.url)
         self.hide()
         
+    def noMatch(self, word):
+        
+        self.label.setText("No matches found for word: " + str(word))
+        self.layout.addWidget(self.button)
+        self.show()
+    
     def newProject(self):
         
         cwd = os.getcwd()
@@ -626,13 +647,14 @@ class Content(QWidget):
 
         self.fileName = fileName
         self.baseName = baseName
-
+        self.temporary = 0
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.tabSize = editor["TabWidth"]
-
+        self.editor.textChanged.connect(self.changeSaved)
         self.custom = Customize()
+        self.saved = True
         self.editor.setPlainText(str(text))
 
         self.completer = Completer()
@@ -650,11 +672,12 @@ class Content(QWidget):
         self.selectAllBeforeCursor.activated.connect(self.selectBeforeCursor)
         self.moveCursorRight.activated.connect(self.moveCursorRightFunc)
         self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
-
+        self.editor.textChanged.connect(self.changeSaved)
         self.setCompleter(self.completer)
 
-    def search(self):
-        pass 
+    def changeSaved(self):
+    
+        self.modified = self.editor.document().isModified()
             
     def moveCursorRightFunc(self):
         textCursor = self.editor.textCursor()
@@ -884,7 +907,7 @@ class Customize(QWidget, QObject):
         app.setPalette(palette)
 
 
-class Tabs(QWidget, QThread):
+class Tabs(QWidget):
 
     def __init__(self, callback):
         super().__init__()
@@ -895,7 +918,11 @@ class Tabs(QWidget, QThread):
         font = QFont(editor['tabFont'])
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
-
+        
+        self.dialog = MessageBox()
+        
+        self.tabSaved = False
+        
         self.Console = Console()  # This is the terminal widget and the SECOND thread
         self.term = ConsoleWidget()
         self.directory = Directory(callback)  # TODO: This is top left
@@ -937,22 +964,27 @@ class Tabs(QWidget, QThread):
 
         self.closeShortcut = QShortcut(QKeySequence(editor["closeTabShortcut"]), self)
         self.closeShortcut.activated.connect(self.closeTabShortcut)
-
+        currentTab = self.tabs.currentWidget()
         self.hideDirectory()
 
     @pyqtSlot()
     def closeTabShortcut(self):
         self.index = self.tabs.currentIndex()
         self.closeTab(self.index)
-
+        
     def closeTab(self, index):
         try:
+           
             tab = self.tabs.widget(index)
-
-            tab.deleteLater()
-            self.tabCounter.pop(index)
-            self.tabs.removeTab(index)
-
+            
+            if tab.saved is True and tab.modified is False:
+                tab.deleteLater()
+                self.tabCounter.pop(index)
+                self.tabs.removeTab(index)
+                
+            elif tab.modified is True:
+                self.dialog.saveMaybe(tab, self.tabCounter, self.tabs, index)
+                
         except AttributeError as E:
             print(E)
 
@@ -1195,12 +1227,14 @@ class Main(QMainWindow):
                 with open(filename, 'r+') as file_o:
                     try:
                         text = file_o.read()
+                        
                     except UnicodeDecodeError as E:
                         text = str(E)
 
                     basename = os.path.basename(filename)
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+                    tab.saved = True
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
 
@@ -1224,7 +1258,7 @@ class Main(QMainWindow):
             else:
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
-
+                tab.saved = True
             self.tab.tabCounter.append(tab.baseName)
             dirPath = os.path.dirname(filename)
             self.files = filename
@@ -1287,10 +1321,9 @@ class Main(QMainWindow):
 
             if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
-                    self.saved = True
                     saveFile.write(active_tab.editor.toPlainText())
-
-
+                    active_tab.saved = True
+                    active_tab.modified = False
                     saveFile.close()
             else:
                 options = QFileDialog.Options()
@@ -1299,8 +1332,8 @@ class Main(QMainWindow):
                                                    options=options)
                 fileName = name[0]
                 with open(fileName, "w+") as saveFile:
-                    self.saved = True
-
+                    active_tab.saved = True
+                    active_tab.modified = False
                     self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
 
@@ -1320,7 +1353,8 @@ class Main(QMainWindow):
                                                    options=options)
                 fileName = name[0]
                 with open(fileName, "w+") as saveFile:
-                    self.saved = True
+                    active_tab.saved = True
+                    active_tab.modified = False
                     self.tabsOpen.append(fileName)
 
                     try:
