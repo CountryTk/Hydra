@@ -1,3 +1,4 @@
+
 import sys
 import os
 from find_all import find_all
@@ -245,12 +246,14 @@ class PlainTextEdit(QPlainTextEdit):
                 text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
                 if okPressed:
                     self.searchtext = text
-                
-                    with open(currentFile, 'r') as file:
-                        contents = file.read()
-                        self.indexes = list(find_all(contents, text))
-                        if len(self.indexes) == 0:
-                            self.dialog.noMatch(text)
+                    try:
+                        with open(currentFile, 'r') as file:
+                            contents = file.read()
+                            self.indexes = list(find_all(contents, text))
+                            if len(self.indexes) == 0:
+                                self.dialog.noMatch(text)
+                    except FileNotFoundError as E:
+                        print(E)
         
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
@@ -417,10 +420,10 @@ class MessageBox(QWidget, QObject):
         baseName = os.path.basename(self.fileName)
         self.label.setText(str + baseName + " ?")
         self.resize(self.width(), 125)
+        self.deleteButton.setAutoDefault(True)
         self.layout.addWidget(self.deleteButton)
         self.layout.addWidget(self.button)
         self.show()
-        self.deleteButton.setFocus()
 
     def delete(self):
         if os.path.isdir(self.fileName):  # If it is a directory
@@ -437,6 +440,7 @@ class MessageBox(QWidget, QObject):
 
         self.label.setText("Theme " + str(index) + " selected\nNOTE: For some changes to work you need to restart PyPad")
         self.button.setText("Ok")
+        self.button.setAutoDefault(True)
         self.button.setFocus()
         self.layout.addWidget(self.button)
         self.show()
@@ -450,25 +454,29 @@ class MessageBox(QWidget, QObject):
         self.successButton.resize(10, 30)
         self.successLabel = QLabel()
         self.successLabel.setText("Successfully created a new project to: " + str(directory))
-        
         self.successButton.clicked.connect(_exit)
         self.layout.addWidget(self.successLabel)
         self.layout.addWidget(self.successButton)
+        
         self.show() 
         
     def saveMaybe(self, file, tabCounter, tab, index):
         
         def _closeAnyway():
-            file.deleteLater()
-            tabCounter.pop(index)
-            tab.removeTab(index)
-            self.hide()
+            try:
+                file.deleteLater()
+                tabCounter.pop(index)
+                tab.removeTab(index)
+                self.hide()
+            except (IndexError, RuntimeError) as E:
+                print(E)
         
         def _hide():
                 self.hide()
                     
         self.label.setText("Warning, you have unsaved changes!")
         self.saveButton.setText("Ok")
+        self.saveButton.setAutoDefault(True)
         self.closeAnywayButton.setText("Close anyway")
         self.saveButton.clicked.connect(_hide)
         self.closeAnywayButton.clicked.connect(_closeAnyway)
@@ -485,6 +493,7 @@ class MessageBox(QWidget, QObject):
     def noMatch(self, word):
         
         self.label.setText("No matches found for word: " + str(word))
+        self.button.setAutoDefault(True)
         self.layout.addWidget(self.button)
         self.show()
     
@@ -684,35 +693,55 @@ class Content(QWidget):
         self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
         self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
         self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+K"), self)
+        self.moveUp = QShortcut(QKeySequence("Ctrl+I"), self)
+        self.moveDown = QShortcut(QKeySequence("Ctrl+M"), self)
         
+        self.moveDown.activated.connect(self.moveCursorDown)
+        self.moveUp.activated.connect(self.moveCursorUp)
         self.selectAllBeforeCursor.activated.connect(self.selectBeforeCursor)
         self.moveCursorRight.activated.connect(self.moveCursorRightFunc)
         self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
         self.editor.textChanged.connect(self.changeSaved)
         self.setCompleter(self.completer)
-
+        
+    def getTextCursor(self):
+        textCursor = self.editor.textCursor()
+        textCursorPos = textCursor.position()
+        
+        return textCursor, textCursorPos
+         
     def changeSaved(self):
     
         self.modified = self.editor.document().isModified()
             
     def moveCursorRightFunc(self):
-        textCursor = self.editor.textCursor()
-        textCursorPos = textCursor.position()
+        textCursor, textCursorPos = self.getTextCursor()
 
         textCursor.setPosition(textCursorPos + 1)
         self.editor.setTextCursor(textCursor)
-
+        
+    def moveCursorUp(self):
+        textCursor, textCursorPos = self.getTextCursor()
+        
+        textCursor.movePosition(textCursor.Up)
+        self.editor.setTextCursor(textCursor)    
+        
+    def moveCursorDown(self):
+        textCursor, textCursorPos = self.getTextCursor()
+        
+        textCursor.movePosition(textCursor.Down)
+        self.editor.setTextCursor(textCursor)    
+        
     def moveCursorLeftFunc(self):
-        textCursor = self.editor.textCursor()
-        textCursorPos = textCursor.position()
+        textCursor, textCursorPos = self.getTextCursor()
 
         textCursor.setPosition(textCursorPos - 1)
         self.editor.setTextCursor(textCursor)
         
     def selectBeforeCursor(self):
-        textCursor = self.editor.textCursor()
-        textCursorPost = textCursor.position()
+        textCursor, textCursorPos = self.getTextCursor()
         text = self.textUnderCursor()
+        
         textCursor.movePosition(textCursor.StartOfWord, textCursor.KeepAnchor, len(text))
         self.editor.setTextCursor(textCursor)
         
@@ -1281,7 +1310,7 @@ class Main(QMainWindow):
             self.tab.tabCounter.append(tab.baseName)
             dirPath = os.path.dirname(filename)
             self.files = filename
-
+            
             self.tabsOpen.append(self.files)
 
             index = self.tab.tabs.addTab(tab,
