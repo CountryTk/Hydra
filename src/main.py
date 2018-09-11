@@ -1,4 +1,3 @@
-
 import sys
 import os
 from find_all import find_all
@@ -245,6 +244,9 @@ class PlainTextEdit(QPlainTextEdit):
             if currentWidget is not None:
                 text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
                 if okPressed:
+                    if text == "":
+                        text = " "
+                        self.dialog.noMatch(text)
                     self.searchtext = text
                     try:
                         with open(currentFile, 'r') as file:
@@ -493,6 +495,7 @@ class MessageBox(QWidget, QObject):
     def noMatch(self, word):
         
         self.label.setText("No matches found for word: " + str(word))
+        self.button.setText("Ok")
         self.button.setAutoDefault(True)
         self.layout.addWidget(self.button)
         self.show()
@@ -1325,6 +1328,7 @@ class Main(QMainWindow):
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
+            
             if self.pic_opened is not True:
                 self.currentTab.editor.setFont(self.font)  # Setting the font
                 self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
@@ -1333,7 +1337,6 @@ class Main(QMainWindow):
             self.pic_opened = False
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E)
-            print("F")
 
     def newFile(self):
         text = ""
@@ -1510,14 +1513,7 @@ class Main(QMainWindow):
 
             except AttributeError as E:
                 print(E)
-                
-    def search(self):
-        
-        currentWidget = self.tab.tabs.currentWidget()
-        
-        lol = Search(currentWidget, self)
-        lol.search()
-            
+                           
 
 class PyHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, index=choiceIndex, *args):
