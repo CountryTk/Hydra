@@ -198,6 +198,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.nameSize = len(self.name) + 1
 
         self.font = QFont()
+        self.size = 12
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
@@ -260,6 +261,22 @@ class PlainTextEdit(QPlainTextEdit):
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
             self.moveCursorPosBack()
+            
+        if (e.modifiers() == Qt.ControlModifier and e.key() == 61):  # Press Ctrl+Equal key to make font bigger
+            
+            self.font.setPointSize(self.size + 1)
+            
+            self.font.setFamily(editor["editorFont"])
+            self.setFont(self.font)    
+            self.size += 1
+            
+        if (e.modifiers() == Qt.ControlModifier and e.key() == 45): # Press Ctrl+Minus key to make font smaller
+            
+            self.font.setPointSize(self.size - 1)
+            
+            self.font.setFamily(editor["editorFont"])
+            self.setFont(self.font)    
+            self.size -= 1   
             
         if key == Qt.Key_F3:
             try:                
@@ -714,9 +731,9 @@ class Content(QWidget):
         return textCursor, textCursorPos
          
     def changeSaved(self):
-    
+        
         self.modified = self.editor.document().isModified()
-
+        
         ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
             
     def moveCursorRightFunc(self):
@@ -1692,7 +1709,7 @@ class CHighlighter(QSyntaxHighlighter):
 
 
 if __name__ == '__main__':
-    if checkVersion("version.txt") != checkVerOnlineFunc():
+    if True: # checkVersion("version.txt") != checkVerOnlineFunc():
         pass  # TODO: implement an updater
     else:
         print("Up to date")
