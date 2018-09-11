@@ -716,6 +716,8 @@ class Content(QWidget):
     def changeSaved(self):
     
         self.modified = self.editor.document().isModified()
+
+        ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
             
     def moveCursorRightFunc(self):
         textCursor, textCursorPos = self.getTextCursor()
@@ -1390,6 +1392,7 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
 
                     saveFile.close()
+            ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
         except:
             print("File dialog closed or no file opened")
 
@@ -1436,6 +1439,7 @@ class Main(QMainWindow):
                         newActiveTab.editor.setTabStopWidth(self.tabSize)
 
                     saveFile.close()
+                ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
 
             else:
                 print("No file opened")
