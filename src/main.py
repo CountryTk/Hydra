@@ -1,3 +1,4 @@
+
 import sys
 import os
 from find_all import find_all
@@ -14,6 +15,7 @@ from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import getpass
 from predictionList import wordList
+from find_all_files import documentSearch
 from checkVer import checkVersion
 from checkVerOnline import checkVerOnlineFunc
 #from updatePyPad import updatePyPadFunc
@@ -158,8 +160,10 @@ class Console(QWidget):
             print(E)
 
     def onReadyReadStandardOutput(self):
-
-        self.result = self.process.readAllStandardOutput().data().decode()
+        try:
+            self.result = self.process.readAllStandardOutput().data().decode()
+        except UnicodeDecodeError as E:
+            print(E)
         self.editor.appendPlainText(self.result.strip("\n"))
         self.state = self.process.state()
 
@@ -226,6 +230,7 @@ class PlainTextEdit(QPlainTextEdit):
     def keyPressEvent(self, e):
         textCursor = self.textCursor()
         key = e.key()
+
         if key == Qt.Key_H:
             # self.parent.completer.wordList
             # TODO: implement dynamic completion
@@ -234,10 +239,13 @@ class PlainTextEdit(QPlainTextEdit):
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
         
         if isSearch:
-            currentWidget = self.parent
-            currentFile =  currentWidget.fileName
-            currentEditor = currentWidget.editor
-        
+            try:
+                currentWidget = self.parent
+                currentFile =  currentWidget.fileName
+                currentEditor = currentWidget.editor
+            except AttributeError as E:
+                print(E)
+                
             textCursor = currentEditor.textCursor()
         
             textCursorPos = textCursor.position()
@@ -255,6 +263,7 @@ class PlainTextEdit(QPlainTextEdit):
                             self.indexes = list(find_all(contents, text))
                             if len(self.indexes) == 0:
                                 self.dialog.noMatch(text)
+                                
                     except FileNotFoundError as E:
                         print(E)
         
@@ -265,7 +274,6 @@ class PlainTextEdit(QPlainTextEdit):
         if (e.modifiers() == Qt.ControlModifier and e.key() == 61):  # Press Ctrl+Equal key to make font bigger
             
             self.font.setPointSize(self.size + 1)
-            
             self.font.setFamily(editor["editorFont"])
             self.setFont(self.font)    
             self.size += 1
@@ -733,9 +741,15 @@ class Content(QWidget):
     def changeSaved(self):
         
         self.modified = self.editor.document().isModified()
-        
-        ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
-            
+        try:
+            if self.modified:
+                ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
+            else:
+                pass
+                    
+        except NameError as E:
+            print(E)
+                
     def moveCursorRightFunc(self):
         textCursor, textCursorPos = self.getTextCursor()
 
@@ -1053,8 +1067,13 @@ class Tabs(QWidget):
                 self.dialog.saveMaybe(tab, self.tabCounter, self.tabs, index)
                 
         except AttributeError as E:
-            print(E)
-
+            try:
+                tab.deleteLater()
+                self.tabCounter.pop(index)
+                self.tabs.removeTab(index)
+            except AttributeError as E:
+                print(E)
+                
     def showDirectory(self):
         self.directory.setVisible(True)
         self.tab_layout.removeWidget(self.tabs)
@@ -1103,6 +1122,7 @@ class Main(QMainWindow):
         self.openTerm()
         self.new()
         self.newProject()
+        self.findDocument()
         self.openProjectF()
         self.open()
         self.save()
@@ -1191,6 +1211,10 @@ class Main(QMainWindow):
         appearance = menu.addMenu('Appearance')
 
         appearance.addAction(self.colorSchemeAct)
+        
+        searchDoc = menu.addMenu('Find document')
+        
+        searchDoc.addAction(self.findDocumentAct)
 
         self.showMaximized()
 
@@ -1261,7 +1285,19 @@ class Main(QMainWindow):
 
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(self.saveFileAs)
-
+        
+    def findDocument(self):
+        self.findDocumentAct = QAction('Find document')
+        self.findDocumentAct.setShortcut('Ctrl+Shift+F')
+        
+        self.findDocumentAct.setStatusTip('Find a document')
+        self.findDocumentAct.triggered.connect(self.findDocumentFunc)
+    
+    def findDocumentFunc(self):
+        
+        search = documentSearch()
+        search.run()    
+        
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
