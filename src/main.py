@@ -1,4 +1,3 @@
-
 import sys
 import os
 from find_all import find_all
@@ -741,6 +740,7 @@ class Content(QWidget):
     def changeSaved(self):
         
         self.modified = self.editor.document().isModified()
+        print("Tab modified: " + str(self.modified))
         try:
             if self.modified:
                 ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
@@ -1099,8 +1099,8 @@ class Tabs(QWidget):
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        
         self.onStart(choiceIndex)
-
         self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
@@ -1117,6 +1117,7 @@ class Main(QMainWindow):
 
         self.setWindowTitle('PyPad')  # Setting the window title
         self.tab.tabs.currentChanged.connect(self.fileNameChange)
+        self.search = documentSearch()
         self.os = sys.platform
         self.openPy()
         self.openTerm()
@@ -1295,8 +1296,7 @@ class Main(QMainWindow):
     
     def findDocumentFunc(self):
         
-        search = documentSearch()
-        search.run()    
+        self.search.run()    
         
     def exit(self):
         self.exitAct = QAction('Quit', self)
