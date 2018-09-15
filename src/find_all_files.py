@@ -16,8 +16,8 @@ class documentSearch(QWidget):
         self.initUI()
         
     def initUI(self):
-        self.layout = QHBoxLayout(self)
-        self.vbox = QVBoxLayout()
+        self.layout = QVBoxLayout(self)
+        self.vbox = QHBoxLayout()
         self.label = QLabel("Enter a file name to search:")
         
         self.searchButton = QPushButton("Search")
@@ -34,12 +34,16 @@ class documentSearch(QWidget):
         
         self.label.setFont(self.font)
         self.infoLabel.setFont(self.font)
+        self.searchResults.setFont(self.font)
+        
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.searchDocumentField)
-        self.layout.addWidget(self.searchButton)
-        self.layout.addWidget(self.cancelButton)
-        self.vbox.addWidget(self.infoLabel)
-        self.vbox.addWidget(self.searchResults)
+        self.layout.addWidget(self.infoLabel)
+        self.layout.addWidget(self.searchResults)
+        
+        self.vbox.addWidget(self.searchButton)
+        self.vbox.addWidget(self.cancelButton)
+        
         self.layout.addLayout(self.vbox)
         self.setLayout(self.layout)
         
@@ -51,7 +55,7 @@ class documentSearch(QWidget):
         self.thread.fileSignal.connect(self.showPath)
     
     def showPath(self, path):
-        
+        self.searchResults.appendPlainText("\n")
         self.searchResults.appendPlainText(path)
         
     def run(self):
