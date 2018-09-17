@@ -14,6 +14,7 @@ from qtconsole.inprocess import QtInProcessKernelManager
 import random
 import getpass
 from predictionList import wordList
+from search_algorithm import tokenize
 from find_all_files import documentSearch
 from checkVer import checkVersion
 from checkVerOnline import checkVerOnlineFunc
@@ -60,14 +61,10 @@ class NumberBar(QWidget):
     def paintEvent(self, event):
         if self.index == "0":
             config = config0
-
         elif self.index == "1":
-
             config = config1
-
         elif self.index == "2":
             config = config2
-
         else:
 
             config = config0
@@ -242,13 +239,13 @@ class PlainTextEdit(QPlainTextEdit):
                 currentWidget = self.parent
                 currentFile =  currentWidget.fileName
                 currentEditor = currentWidget.editor
-            except AttributeError as E:
+                
+                textCursor = currentEditor.textCursor()
+                textCursorPos = textCursor.position()
+    
+            except (AttributeError, UnboundLocalError) as E:
                 print(E)
                 
-            textCursor = currentEditor.textCursor()
-        
-            textCursorPos = textCursor.position()
-
             if currentWidget is not None:
                 text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
                 if okPressed:
@@ -669,7 +666,7 @@ class Completer(QCompleter):
 
     def __init__(self, myKeywords=None, parent=None):
         self.wordList = wordList
-        QCompleter.__init__(self, self.wordList, parent)
+        QCompleter.__init__(self, myKeywords, parent)
         
         self.activated.connect(self.changeCompletion)
 
@@ -695,7 +692,7 @@ class Content(QWidget):
         super().__init__()
         self.editor = PlainTextEdit(self)
         self.text = text
-
+        self.wordlist = wordList
         self.fileName = fileName
         self.baseName = baseName
         self.temporary = 0
@@ -707,8 +704,13 @@ class Content(QWidget):
         self.custom = Customize()
         self.saved = True
         self.editor.setPlainText(str(text))
-
-        self.completer = Completer()
+        
+        for i in tokenize(self.fileName):
+            for j in i:
+                if j not in self.wordlist:
+                    self.wordlist.append(j)
+                    
+        self.completer = Completer(self.wordlist)
 
         self.hbox = QHBoxLayout(self)
         self.vbox = QVBoxLayout()
@@ -740,7 +742,7 @@ class Content(QWidget):
     def changeSaved(self):
         
         self.modified = self.editor.document().isModified()
-        print("Tab modified: " + str(self.modified))
+        
         try:
             if self.modified:
                 ex.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
@@ -906,7 +908,7 @@ class Customize(QWidget, QObject):
         self.vbox.addLayout(self.hbox)
 
         self.selector = QPushButton(self)
-        self.selector.setFixedSize(70, 30)
+        self.selector.setFixedSize(100, 30)
         self.selector.setLayoutDirection(Qt.RightToLeft)
         self.selector.setText("Select")
         self.selector.setFont(self.font)
@@ -1002,6 +1004,8 @@ class Tabs(QWidget):
         
         self.dialog = MessageBox()
         
+        self.filelist = []
+        
         self.tabSaved = False
         
         self.Console = Console()  # This is the terminal widget and the SECOND thread
@@ -1045,6 +1049,10 @@ class Tabs(QWidget):
 
         self.closeShortcut = QShortcut(QKeySequence(editor["closeTabShortcut"]), self)
         self.closeShortcut.activated.connect(self.closeTabShortcut)
+        
+        self.getAllOpenTabs = QShortcut(QKeySequence("Ctrl+Shift+W"), self)
+        self.getAllOpenTabs.activated.connect(self.getAllOpenTabsFunc)
+        
         currentTab = self.tabs.currentWidget()
         self.hideDirectory()
 
@@ -1052,6 +1060,17 @@ class Tabs(QWidget):
     def closeTabShortcut(self):
         self.index = self.tabs.currentIndex()
         self.closeTab(self.index)
+        
+    def getAllOpenTabsFunc(self):
+        word = 'import'
+        for tab in range(self.tabs.count()):
+            file = self.tabs.widget(tab).fileName
+            if file not in self.filelist:
+                self.filelist.append(file)
+                
+        for file in self.filelist:
+            openedFileContents = open(file, 'r').read()
+            print(list(find_all(openedFileContents, word)))
         
     def closeTab(self, index):
         try:
@@ -1061,17 +1080,19 @@ class Tabs(QWidget):
             if tab.saved is True and tab.modified is False:
                 tab.deleteLater()
                 self.tabCounter.pop(index)
+                self.filelist.pop(index)
                 self.tabs.removeTab(index)
                 
             elif tab.modified is True:
                 self.dialog.saveMaybe(tab, self.tabCounter, self.tabs, index)
                 
-        except AttributeError as E:
+        except (AttributeError, IndexError) as E:
             try:
                 tab.deleteLater()
                 self.tabCounter.pop(index)
+                self.filelist.pop(index)
                 self.tabs.removeTab(index)
-            except AttributeError as E:
+            except (AttributeError, IndexError) as E:
                 print(E)
                 
     def showDirectory(self):
@@ -1340,6 +1361,7 @@ class Main(QMainWindow):
 
                     tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
                     tab.saved = True
+                    tab.modified = False
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
 
@@ -1365,6 +1387,7 @@ class Main(QMainWindow):
 
                 tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
                 tab.saved = True
+                tab.modified = False
             self.tab.tabCounter.append(tab.baseName)
             dirPath = os.path.dirname(filename)
             self.files = filename
@@ -1446,9 +1469,9 @@ class Main(QMainWindow):
 
                     saveFile.close()
             ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
-        except:
-            print("File dialog closed or no file opened")
-
+        except Exception as E:
+            print(E)
+        
     def saveFileAs(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
