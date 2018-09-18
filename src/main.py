@@ -704,7 +704,7 @@ class Content(QWidget):
         self.custom = Customize()
         self.saved = True
         self.editor.setPlainText(str(text))
-        
+        print(self.fileName)
         for i in tokenize(self.fileName):
             for j in i:
                 if j not in self.wordlist:
@@ -1340,17 +1340,17 @@ class Main(QMainWindow):
             filename = filenames[0]
             if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
                 self.pic_opened = True
-
             self.openFile(filename)
 
     def openFile(self, filename):
-        if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
-            self.pic_opened = True
-        else:
-            self.pic_opened = False
+       
         try:
             for index, tabName in enumerate(self.tab.tabCounter):
                 with open(filename, 'r+') as file_o:
+                    if filename[-3:] in ['gif', 'png', 'jpg', 'bmp'] or filename[-4:] in ['jpeg']:
+                        self.pic_opened = True
+                    else:
+                        self.pic_opened = False
                     try:
                         text = file_o.read()
                         
@@ -1358,10 +1358,12 @@ class Main(QMainWindow):
                         text = str(E)
 
                     basename = os.path.basename(filename)
-
-                    tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
-                    tab.saved = True
-                    tab.modified = False
+                    if not self.pic_opened:
+                        tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+                        tab.saved = True
+                        tab.modified = False
+                    else:
+                        tab = Image(filename, basename)
                 if tabName == tab.baseName:
                     self.tab.tabs.removeTab(index)
 
@@ -1382,6 +1384,7 @@ class Main(QMainWindow):
                     text = newFileCreated.read()
             basename = os.path.basename(filename)
             if self.pic_opened is True:
+                print("TESt")
                 tab = Image(filename, basename)
             else:
 
