@@ -12,9 +12,12 @@ Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend
 You can also navigate the word list with arrow keys.
 
 # nltk installation
-After doing pip install -r requirements.txt you need to open up a cmd/terminal and follow these steps
+After doing pip install -r requirements.txt you need to open up a cmd/terminal and follow these steps:
+
 ```python```
+
 ```import nltk```
+
 ```nltk.download('punkt')```
 
 # Search function
