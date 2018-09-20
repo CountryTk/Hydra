@@ -3,4 +3,4 @@ bs4
 lxml
 qtconsole
 sip~=4.19.8
-
+nltk
