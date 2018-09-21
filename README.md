@@ -27,8 +27,3 @@ To cycle through any words that were found, you press F3
 
 # Installation
 ```git clone https://github.com/Fuchsiaff/PyPad.git && cd PyPad && pip install -r requirements.txt && cd src && python main.py``` 
-
-
-# Pictures
-
-![alt text](https://raw.githubusercontent.com/Fuchsiaff/as/master/demo.mp4)
