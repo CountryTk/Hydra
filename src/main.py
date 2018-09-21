@@ -721,7 +721,7 @@ class Content(QWidget):
 
         self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
         self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
-        self.selectAllBeforeCursor = QShortcut(QKeySequence(editor["selectAllWordsBeforeCursor"], self)
+        self.selectAllBeforeCursor = QShortcut(QKeySequence(editor["selectAllWordsBeforeCursor"]), self)
         self.moveUp = QShortcut(QKeySequence(editor["moveCursorUp"]), self)
         self.moveDown = QShortcut(QKeySequence(editor["moveCursorDown"]), self)
         
