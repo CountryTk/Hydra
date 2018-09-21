@@ -28,6 +28,9 @@
     "errorMessages": false,
     "closeTabShortcut": "Ctrl+W",
     "moveCursorRight" : "Ctrl+L",
+    "moveCursorUp": "Ctrl+I",
+    "moveCursorDown": "Ctrl+M",
+    "selectAllWordsBeforeCursor": "Ctrl+K",
     "moveCursorLeft": "Ctrl+J"
   },
   "files": {
