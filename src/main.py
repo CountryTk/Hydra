@@ -704,7 +704,7 @@ class Content(QWidget):
         self.custom = Customize()
         self.saved = True
         self.editor.setPlainText(str(text))
-        print(self.fileName)
+        
         for i in tokenize(self.fileName):
             for j in i:
                 if j not in self.wordlist:
@@ -721,9 +721,9 @@ class Content(QWidget):
 
         self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
         self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
-        self.selectAllBeforeCursor = QShortcut(QKeySequence("Ctrl+K"), self)
-        self.moveUp = QShortcut(QKeySequence("Ctrl+I"), self)
-        self.moveDown = QShortcut(QKeySequence("Ctrl+M"), self)
+        self.selectAllBeforeCursor = QShortcut(QKeySequence(editor["selectAllWordsBeforeCursor"], self)
+        self.moveUp = QShortcut(QKeySequence(editor["moveCursorUp"]), self)
+        self.moveDown = QShortcut(QKeySequence(editor["moveCursorDown"]), self)
         
         self.moveDown.activated.connect(self.moveCursorDown)
         self.moveUp.activated.connect(self.moveCursorUp)
