@@ -172,6 +172,7 @@ class Console(QWidget):
         """Executes a system command."""
         # clear previous text
         self.editor.clear()
+        print(self.process.state())
         # self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
                                  #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
 
@@ -183,7 +184,7 @@ class Console(QWidget):
 
     def terminate(self):
 
-        if self.process.state() == 1 or self.process.state() == 2:
+        if self.process.state() == 2:
             self.process.kill()
 
 
@@ -1152,6 +1153,7 @@ class Main(QMainWindow):
         self.customize()
         self.exit()
         self.pic_opened = False
+        self.dir_opened = False
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -1399,10 +1401,12 @@ class Main(QMainWindow):
 
             index = self.tab.tabs.addTab(tab,
                                          tab.fileName)  # This is the index which we will use to set the current
+            if not self.dir_opened:  # If a project isnt opened then we open a directory everytime we open a file
+                self.tab.directory.openDirectory(dirPath)
 
-            self.tab.directory.openDirectory(dirPath)
-
-            self.tab.showDirectory()
+                self.tab.showDirectory()
+            else:
+                pass
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
 
@@ -1446,6 +1450,7 @@ class Main(QMainWindow):
         
         dir_ = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
         self.tab.directory.openDirectory(dir_)
+        self.dir_opened = True
         self.tab.showDirectory()
         
     def saveFile(self):
