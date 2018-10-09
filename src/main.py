@@ -4,7 +4,7 @@ from find_all import find_all
 import keyword
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot, QPoint
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
-    QPixmap, QKeySequence, QTextCursor
+    QPixmap, QKeySequence, QTextCursor, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
     QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit, QInputDialog
@@ -199,6 +199,8 @@ class PlainTextEdit(QPlainTextEdit):
         self.nameSize = len(self.name) + 1
 
         self.font = QFont()
+        self.database = QFontDatabase()
+        print(self.database.families())
         self.size = 12
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
@@ -211,6 +213,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.l = 0
         self.highlightingRules = []
         self.indexes = None
+        self.ruut = False
         
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
@@ -305,13 +308,37 @@ class PlainTextEdit(QPlainTextEdit):
             self.moveCursorPosBack()
 
         if key == Qt.Key_BracketLeft:
+            self.ruut = True
+            #textCursor = self.textCursor()
+            #textCursor.select(QTextCursor.WordUnderCursor)
+            #print(textCursor.selectedText())
+           # if textCursor.selectedText() == "":
             self.insertPlainText("]")
             self.moveCursorPosBack()
-
+            
+        if key == Qt.Key_BracketRight:
+            textCursor = self.textCursor()
+            textCursor.select(QTextCursor.WordUnderCursor)
+            if textCursor.selectedText() == "[]" or "()" in textCursor.selectedText():
+                return
+            
         if key == Qt.Key_ParenLeft:
+            print()
             self.insertPlainText(")")
             self.moveCursorPosBack()
-
+            
+        if key == Qt.Key_ParenRight:
+            textCursor = self.textCursor()
+            textCursor.select(QTextCursor.WordUnderCursor)
+            if textCursor.selectedText() == "()" or "()" in textCursor.selectedText():
+                return    
+                
+        if key == Qt.Key_BraceRight:
+            textCursor = self.textCursor()
+            textCursor.select(QTextCursor.WordUnderCursor)
+            if textCursor.selectedText() == "{}" or "{}" in textCursor.selectedText():
+                return    
+                
         if key not in [16777217, 16777219, 16777220]:
             super().keyPressEvent(e)
             return
@@ -609,6 +636,7 @@ class Directory(QTreeView):
         self.open_callback = callback
         self.setFont(directoryFont)
         self.layout = QHBoxLayout()
+        print(type(self.open_callback))
         self.model = QFileSystemModel()
         self.setModel(self.model)
         self.model.setRootPath(QDir.rootPath())
@@ -623,7 +651,7 @@ class Directory(QTreeView):
         self.hideColumn(2)
         self.confirmation = MessageBox()
         self.hideColumn(3)
-        self.layout.addWidget(self)
+        # self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
 
     def focusInEvent(self, event):
@@ -644,6 +672,7 @@ class Directory(QTreeView):
 
     def openFile(self, signal):
         file_path = self.model.filePath(signal)
+        print(file_path)
         self.open_callback(file_path)
         return file_path
 
@@ -662,7 +691,6 @@ class Directory(QTreeView):
 
 
 class Completer(QCompleter):
-
     insertText = pyqtSignal(str)
 
     def __init__(self, myKeywords=None, parent=None):
@@ -698,6 +726,7 @@ class Content(QWidget):
         self.baseName = baseName
         self.temporary = 0
         self.font = QFont()
+        self.custom = Customize()
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.tabSize = editor["TabWidth"]
@@ -706,6 +735,11 @@ class Content(QWidget):
         self.saved = True
         self.editor.setPlainText(str(text))
         
+        if self.baseName.endswith(".py"):
+            self.highlighter = PyHighlighter(self.editor.document(), index=self.custom.index)
+        else:
+            print("nope")
+            
         for i in tokenize(self.fileName):
             for j in i:
                 if j not in self.wordlist:
@@ -733,7 +767,7 @@ class Content(QWidget):
         self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
         self.editor.textChanged.connect(self.changeSaved)
         self.setCompleter(self.completer)
-        
+            
     def getTextCursor(self):
         textCursor = self.editor.textCursor()
         textCursorPos = textCursor.position()
@@ -1004,7 +1038,7 @@ class Tabs(QWidget):
         self.tabs.setFont(font)
         
         self.dialog = MessageBox()
-        
+        self.tabs.usesScrollButtons()
         self.filelist = []
         
         self.tabSaved = False
@@ -1056,6 +1090,10 @@ class Tabs(QWidget):
         
         currentTab = self.tabs.currentWidget()
         self.hideDirectory()
+        """
+    def hideDirectory(self):
+        self.tab_layout.removeWidget(self.directory)
+        self.directory.setVisible(False)"""
 
     @pyqtSlot()
     def closeTabShortcut(self):
@@ -1127,7 +1165,7 @@ class Main(QMainWindow):
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile)
         self.tabsOpen = []
-
+        self.pic_opened = False
         if file is not None:
             self.openFile(file)
             self.fileNameChange()
@@ -1152,7 +1190,7 @@ class Main(QMainWindow):
         self.saveAs()
         self.customize()
         self.exit()
-        self.pic_opened = False
+        
         self.dir_opened = False
 
         # Without this, the whole layout is broken
@@ -1171,9 +1209,6 @@ class Main(QMainWindow):
             currentFileDocument = self.tab.tabs.currentWidget().editor.document()
 
             self.setWindowTitle("PyPad ~ " + str(currentFileName))
-
-            if currentFileName.endswith(".py"):
-                self.highlighter = PyHighlighter(currentFileDocument, index=self.custom.index)
 
         except AttributeError:
             self.setWindowTitle("PyPad ~ ")
@@ -1456,7 +1491,7 @@ class Main(QMainWindow):
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
-
+            print(active_tab)
             if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     saveFile.write(active_tab.editor.toPlainText())
@@ -1670,7 +1705,6 @@ class PyHighlighter(QSyntaxHighlighter):
     def multiLineHighlight(self, text):
 
         comment = QRegExp('"""')
-
         if self.previousBlockState() == 1:
             start_index = 0
             index_step = 0
@@ -1816,3 +1850,5 @@ if __name__ == '__main__':
     app.setPalette(palette)
     ex.show()
     sys.exit(app.exec_())
+
+
