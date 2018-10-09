@@ -308,14 +308,25 @@ class PlainTextEdit(QPlainTextEdit):
             self.moveCursorPosBack()
 
         if key == Qt.Key_BracketLeft:
-            self.ruut = True
-            #textCursor = self.textCursor()
-            #textCursor.select(QTextCursor.WordUnderCursor)
-            #print(textCursor.selectedText())
-           # if textCursor.selectedText() == "":
             self.insertPlainText("]")
             self.moveCursorPosBack()
             
+        if key == Qt.Key_Backspace:
+            textCursor = self.textCursor()
+            textCursor.select(QTextCursor.LineUnderCursor)
+            word = textCursor.selectedText()
+            lists = list(word)
+            if "()" in word or "[]" in word or "{}" in word or '""' in word or "''" in word:
+                textCursor.removeSelectedText()
+                for i in lists:
+                    if i in ["[", "(", "{", '"', "'"]:
+                        lists.remove(i)
+                    elif i == ["]", ")", "}", '"', "'"]:
+                        lists.remove(i)
+                new_word = "".join(lists)
+                print(new_word)
+                self.insertPlainText(new_word)
+                    
         if key == Qt.Key_BracketRight:
             textCursor = self.textCursor()
             textCursor.select(QTextCursor.WordUnderCursor)
