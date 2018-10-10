@@ -321,8 +321,10 @@ class PlainTextEdit(QPlainTextEdit):
                 for i in lists:
                     if i in ["[", "(", "{", '"', "'"]:
                         lists.remove(i)
-                    elif i == ["]", ")", "}", '"', "'"]:
+                        print("removed once")
+                    if i in ["]", ")", "}", '"', "'"]:
                         lists.remove(i)
+                        print("removed twice")
                 new_word = "".join(lists)
                 print(new_word)
                 self.insertPlainText(new_word)
