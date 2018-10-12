@@ -228,6 +228,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.setTextCursor(textCursor)
 
     def keyPressEvent(self, e):
+        print(type(e))
         textCursor = self.textCursor()
         key = e.key()
 
@@ -311,30 +312,6 @@ class PlainTextEdit(QPlainTextEdit):
             self.insertPlainText("]")
             self.moveCursorPosBack()
             
-        if key == Qt.Key_Backspace:
-            textCursor = self.textCursor()
-            textCursor.select(QTextCursor.LineUnderCursor)
-            word = textCursor.selectedText()
-            lists = list(word)
-            if "()" in word or "[]" in word or "{}" in word or '""' in word or "''" in word:
-                textCursor.removeSelectedText()
-                for i in lists:
-                    if i in ["[", "(", "{", '"', "'"]:
-                        lists.remove(i)
-                        print("removed once")
-                    if i in ["]", ")", "}", '"', "'"]:
-                        lists.remove(i)
-                        print("removed twice")
-                new_word = "".join(lists)
-                print(new_word)
-                self.insertPlainText(new_word)
-                    
-        if key == Qt.Key_BracketRight:
-            textCursor = self.textCursor()
-            textCursor.select(QTextCursor.WordUnderCursor)
-            if textCursor.selectedText() == "[]" or "()" in textCursor.selectedText():
-                return
-            
         if key == Qt.Key_ParenLeft:
             print()
             self.insertPlainText(")")
@@ -349,7 +326,7 @@ class PlainTextEdit(QPlainTextEdit):
         if key == Qt.Key_BraceRight:
             textCursor = self.textCursor()
             textCursor.select(QTextCursor.WordUnderCursor)
-            if textCursor.selectedText() == "{}" or "{}" in textCursor.selectedText():
+            if textCursor.selectedText == "":
                 return    
                 
         if key not in [16777217, 16777219, 16777220]:
@@ -1863,5 +1840,6 @@ if __name__ == '__main__':
     app.setPalette(palette)
     ex.show()
     sys.exit(app.exec_())
+
 
 
