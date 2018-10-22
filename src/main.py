@@ -38,55 +38,55 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 
 
 class NumberBar(QWidget):
-    def __init__(self, parent=None, index=choiceIndex):
+    def __init__(this, parent=None, index=choiceIndex):
         super().__init__(parent)
-        self.editor = parent
-        self.editor.blockCountChanged.connect(self.update_width)
-        self.editor.updateRequest.connect(self.update_on_scroll)
-        self.update_width('1')
-        self.index = index
+        this.editor = parent
+        this.editor.blockCountChanged.connect(this.update_width)
+        this.editor.updateRequest.connect(this.update_on_scroll)
+        this.update_width('1')
+        this.index = index
 
-    def update_on_scroll(self, rect, scroll):
-        if self.isVisible():
+    def update_on_scroll(this, rect, scroll):
+        if this.isVisible():
             if scroll:
-                self.scroll(0, scroll)
+                this.scroll(0, scroll)
             else:
-                self.update()
+                this.update()
 
-    def update_width(self, string):
-        width = self.fontMetrics().width(str(string)) + 28
-        if self.width() != width:
-            self.setFixedWidth(width)
+    def update_width(this, string):
+        width = this.fontMetrics().width(str(string)) + 28
+        if this.width() != width:
+            this.setFixedWidth(width)
 
-    def paintEvent(self, event):
-        if self.index == "0":
+    def paintEvent(this, event):
+        if this.index == "0":
             config = config0
-        elif self.index == "1":
+        elif this.index == "1":
             config = config1
-        elif self.index == "2":
+        elif this.index == "2":
             config = config2
         else:
 
             config = config0
-        if self.isVisible():
-            block = self.editor.firstVisibleBlock()
-            height = self.fontMetrics().height()
+        if this.isVisible():
+            block = this.editor.firstVisibleBlock()
+            height = this.fontMetrics().height()
             number = block.blockNumber()
-            painter = QPainter(self)
+            painter = QPainter(this)
             painter.fillRect(event.rect(), lineBarColor)
             if config['editor']['NumberBarBox'] is True:
                 painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
 
             font = painter.font()
 
-            current_block = self.editor.textCursor().block().blockNumber() + 1
+            current_block = this.editor.textCursor().block().blockNumber() + 1
 
             while block.isValid():
-                block_geometry = self.editor.blockBoundingGeometry(block)
-                offset = self.editor.contentOffset()
+                block_geometry = this.editor.blockBoundingGeometry(block)
+                offset = this.editor.contentOffset()
                 block_top = block_geometry.translated(offset).top()
                 number += 1
-                rect = QRect(0, block_top, self.width() - 5, height)
+                rect = QRect(0, block_top, this.width() - 5, height)
 
                 if number == current_block:
                     font.setBold(True)
@@ -172,7 +172,6 @@ class Console(QWidget):
         """Executes a system command."""
         # clear previous text
         self.editor.clear()
-        print(self.process.state())
         # self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
                                  #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
 
@@ -192,15 +191,9 @@ class PlainTextEdit(QPlainTextEdit):
 
     def __init__(self, parent):
         super().__init__(parent)
+        
         self.parent = parent
-        user = getpass.getuser()
-        hostname = socket.gethostname()
-        self.name = "[" + str(user) + "@" + str(hostname) + "]" + "   ~/" + str(os.path.basename(os.getcwd())) + " >$"
-        self.nameSize = len(self.name) + 1
-
         self.font = QFont()
-        self.database = QFontDatabase()
-        print(self.database.families())
         self.size = 12
         self.dialog = MessageBox()
         self.font.setFamily(editor["editorFont"])
@@ -228,7 +221,6 @@ class PlainTextEdit(QPlainTextEdit):
         self.setTextCursor(textCursor)
 
     def keyPressEvent(self, e):
-        print(type(e))
         textCursor = self.textCursor()
         key = e.key()
 
@@ -313,7 +305,7 @@ class PlainTextEdit(QPlainTextEdit):
             self.moveCursorPosBack()
             
         if key == Qt.Key_ParenLeft:
-            print()
+            
             self.insertPlainText(")")
             self.moveCursorPosBack()
             
@@ -330,12 +322,13 @@ class PlainTextEdit(QPlainTextEdit):
                 return    
                 
         if key not in [16777217, 16777219, 16777220]:
+            
             super().keyPressEvent(e)
             return
 
         e.accept()
         cursor = self.textCursor()
-        if key == 16777217 and self.replace_tabs:
+        if key == 16777217: # and self.replace_tabs:
             amount = 4 - self.textCursor().positionInBlock() % 4
             self.insertPlainText(' ' * amount)
 
@@ -349,18 +342,20 @@ class PlainTextEdit(QPlainTextEdit):
                 start -= 4
 
             string = self.toPlainText()[start:end]
-            if not len(string.strip()):
+            print(string)
+            if not len(string.strip()): # if length is 0 which is binary for false
                 for i in range(end - start):
                     cursor.deletePreviousChar()
             else:
                 super().keyPressEvent(e)
+            
 
         elif key == 16777220:
             end = cursor.position()
             start = end - cursor.positionInBlock()
             line = self.toPlainText()[start:end]
             indentation = len(line) - len(line.lstrip())
-
+            
             chars = '\t'
             if self.replace_tabs:
                 chars = '    '
@@ -372,6 +367,7 @@ class PlainTextEdit(QPlainTextEdit):
 
             super().keyPressEvent(e)
             self.insertPlainText(chars * int(indentation))
+            
         else:
             super().keyPressEvent(e)
 
@@ -429,6 +425,7 @@ class MessageBox(QWidget, QObject):
         self.layout = QHBoxLayout(self)
 
         self.index = str(index)
+        self.path = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
         self.initUI()
 
@@ -460,7 +457,6 @@ class MessageBox(QWidget, QObject):
         self.fileName = fileName
         baseName = os.path.basename(self.fileName)
         self.label.setText(str + baseName + " ?")
-        self.resize(self.width(), 125)
         self.deleteButton.setAutoDefault(True)
         self.layout.addWidget(self.deleteButton)
         self.layout.addWidget(self.button)
@@ -543,16 +539,17 @@ class MessageBox(QWidget, QObject):
         
         cwd = os.getcwd()
         self.vertical = QVBoxLayout()
-        def _createFolder():
+        
+        def createFolder():
             try:
                 folderName = self.textField.text()
                 directory = self.ProjectDirectory.text()
                 
                 if not os.path.exists(folderName):
-                    path = str(directory) + str(folderName)
-                    os.makedirs(path)
+                    self.path = str(directory) + str(folderName)
+                    os.makedirs(self.path)
                     self.hide()
-                    self.success(path)
+                    self.success(self.path)
                     
                 else:
                     print("File already exists")
@@ -570,7 +567,7 @@ class MessageBox(QWidget, QObject):
         self.textField = QLineEdit()
         
         self.textFieldButton = QPushButton("Create")
-        self.textFieldButton.clicked.connect(_createFolder)
+        self.textFieldButton.clicked.connect(createFolder)
         self.vertical.addWidget(self.projectLabel)
         self.vertical.addWidget(self.textField)
         self.vertical.addWidget(self.directoryLabel)
@@ -581,7 +578,7 @@ class MessageBox(QWidget, QObject):
         self.layout.addLayout(self.vertical)
         self.setLayout(self.layout)
         self.show()
-        
+                
     def getHelp(self):
 
         try:
@@ -626,7 +623,6 @@ class Directory(QTreeView):
         self.open_callback = callback
         self.setFont(directoryFont)
         self.layout = QHBoxLayout()
-        print(type(self.open_callback))
         self.model = QFileSystemModel()
         self.setModel(self.model)
         self.model.setRootPath(QDir.rootPath())
@@ -662,7 +658,6 @@ class Directory(QTreeView):
 
     def openFile(self, signal):
         file_path = self.model.filePath(signal)
-        print(file_path)
         self.open_callback(file_path)
         return file_path
 
@@ -673,7 +668,6 @@ class Directory(QTreeView):
             try:
                 self.fileObject = self.selectedIndexes()[0]
                 fileName = self.model.filePath(self.fileObject)
-
                 self.confirmation.run("Are you sure you want to delete ", str(fileName))
 
             except IndexError:
@@ -727,15 +721,9 @@ class Content(QWidget):
         
         if self.baseName.endswith(".py"):
             self.highlighter = PyHighlighter(self.editor.document(), index=self.custom.index)
+            self.tokenize_file()
         else:
-            print("nope")
-            
-        for i in tokenize(self.fileName):
-            for j in i:
-                if j not in self.wordlist:
-                    self.wordlist.append(j)
-                    
-        self.completer = Completer(self.wordlist)
+            pass
 
         self.hbox = QHBoxLayout(self)
         self.vbox = QVBoxLayout()
@@ -743,7 +731,7 @@ class Content(QWidget):
         self.numbers = NumberBar(self.editor, index=themeIndex)
         self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
-
+        self.completer = Completer(self.wordlist)
         self.moveCursorRight = QShortcut(QKeySequence(editor["moveCursorRight"]), self)
         self.moveCursorLeft = QShortcut(QKeySequence(editor["moveCursorLeft"]), self)
         self.selectAllBeforeCursor = QShortcut(QKeySequence(editor["selectAllWordsBeforeCursor"]), self)
@@ -757,7 +745,17 @@ class Content(QWidget):
         self.moveCursorLeft.activated.connect(self.moveCursorLeftFunc)
         self.editor.textChanged.connect(self.changeSaved)
         self.setCompleter(self.completer)
-            
+        
+    def tokenize_file(self):
+
+        for i in tokenize(self.fileName):
+            for j in i:
+                if j not in self.wordlist:
+                    print(j)
+                    self.wordlist.append(j)
+                    self.completer = Completer(self.wordlist)
+                    self.setCompleter(self.completer)
+                        
     def getTextCursor(self):
         textCursor = self.editor.textCursor()
         textCursorPos = textCursor.position()
@@ -1099,7 +1097,6 @@ class Tabs(QWidget):
                 
         for file in self.filelist:
             openedFileContents = open(file, 'r').read()
-            print(list(find_all(openedFileContents, word)))
         
     def closeTab(self, index):
         try:
@@ -1182,6 +1179,7 @@ class Main(QMainWindow):
         self.exit()
         
         self.dir_opened = False
+        self._dir = None
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
@@ -1411,7 +1409,6 @@ class Main(QMainWindow):
                     text = newFileCreated.read()
             basename = os.path.basename(filename)
             if self.pic_opened is True:
-                print("TESt")
                 tab = Image(filename, basename)
             else:
 
@@ -1450,8 +1447,13 @@ class Main(QMainWindow):
 
     def newFile(self):
         text = ""
-
-        fileName = "New" + str(random.randint(1, 2000000)) + ".py"
+        
+        if self._dir:
+            fileName = str(self._dir) + "/" + "Untitled_file_" + str(random.randint(1, 100)) + ".py"
+        else:
+            current = os.getcwd()
+            fileName = current + "/" + "Untitled_file_" + str(random.randint(1,100)) + ".py"
+            
         self.pyFileOpened = True
         # Creates a new blank file
         file = Content(text, fileName, fileName, self.custom.index)
@@ -1460,7 +1462,7 @@ class Main(QMainWindow):
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
         index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
-        self.tab.tabs.setCurrentIndex(index)  # Setting "focus" to the new tab that we created
+        self.tab.tabs.setCurrentIndex(index)  # Setting focus to the new tab that we created
         widget = self.tab.tabs.currentWidget()
 
         widget.editor.setFocus()
@@ -1473,21 +1475,23 @@ class Main(QMainWindow):
         
     def openProject(self):
         
-        dir_ = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
-        self.tab.directory.openDirectory(dir_)
+        self._dir = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+        
+        self.tab.directory.openDirectory(self._dir)
         self.dir_opened = True
         self.tab.showDirectory()
         
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
-            print(active_tab)
             if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
                     saveFile.write(active_tab.editor.toPlainText())
                     active_tab.saved = True
+                    
                     active_tab.modified = False
                     saveFile.close()
+                active_tab.tokenize_file()
             else:
                 options = QFileDialog.Options()
                 name = QFileDialog.getSaveFileName(self, 'Save File', '',
@@ -1499,9 +1503,9 @@ class Main(QMainWindow):
                     active_tab.modified = False
                     self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
-
                     saveFile.close()
             ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
+            active_tab.tokenize_file()
         except Exception as E:
             print(E)
         
@@ -1810,7 +1814,6 @@ if __name__ == '__main__':
         file = sys.argv[1]
     except IndexError:  # File not given
         file = None
-    print(file)
     app.setStyle('Fusion')
     palette = QPalette()
     if choiceIndex == 0:
@@ -1840,6 +1843,3 @@ if __name__ == '__main__':
     app.setPalette(palette)
     ex.show()
     sys.exit(app.exec_())
-
-
-
