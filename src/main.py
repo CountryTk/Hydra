@@ -342,7 +342,6 @@ class PlainTextEdit(QPlainTextEdit):
                 start -= 4
 
             string = self.toPlainText()[start:end]
-            print(string)
             if not len(string.strip()): # if length is 0 which is binary for false
                 for i in range(end - start):
                     cursor.deletePreviousChar()
@@ -751,7 +750,6 @@ class Content(QWidget):
         for i in tokenize(self.fileName):
             for j in i:
                 if j not in self.wordlist:
-                    print(j)
                     self.wordlist.append(j)
                     self.completer = Completer(self.wordlist)
                     self.setCompleter(self.completer)
@@ -1402,7 +1400,6 @@ class Main(QMainWindow):
                             text = None
                     except (FileNotFoundError, UnicodeDecodeError, AttributeError) as E:
                         text = str(E)
-                        print("L")
 
             except FileNotFoundError:
                 with open(filename, 'w+') as newFileCreated:
