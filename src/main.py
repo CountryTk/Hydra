@@ -7,7 +7,7 @@ from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, Q
     QPixmap, QKeySequence, QTextCursor, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, \
     QVBoxLayout, QTabWidget, QFileDialog, QPlainTextEdit, QHBoxLayout, qApp, QTreeView, QFileSystemModel,\
-    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit, QInputDialog
+    QSplitter, QLabel, QComboBox, QPushButton, QShortcut, QCompleter, QLineEdit, QInputDialog, QMenu
 import platform
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -196,6 +196,9 @@ class PlainTextEdit(QPlainTextEdit):
         self.font = QFont()
         self.size = 12
         self.dialog = MessageBox()
+        self.menu_font = QFont()
+        self.menu_font.setFamily("Iosevka")
+        self.menu_font.setPointSize(10)
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
@@ -212,7 +215,41 @@ class PlainTextEdit(QPlainTextEdit):
         self.createStandardContextMenu()
 
         self.setWordWrapMode(QTextOption.NoWrap)
-
+        
+       
+        
+    def newFile(self):
+        """This and most of the functions below will just be wrappers for the functions defined in Main"""
+        self.new_action = QAction("New")
+        self.new_action.triggered.connect(self.parent.parent.newFile)
+    
+    def openFile(self):
+        
+        self.open_action = QAction("Open")
+        self.open_action.triggered.connect(self.parent.parent.openFileFromMenu)
+    
+    def runFile(self):
+        
+        self.run_action = QAction("Run")
+        self.run_action.triggered.connect(self.parent.parent.Terminal)
+    
+    def contextMenuEvent(self, event):
+         
+        menu = QMenu()
+        """Initializing actions"""
+        self.newFile()
+        self.openFile()
+        self.runFile()
+        
+        menu.addAction(self.new_action)
+        menu.addAction(self.open_action)
+        menu.addAction(self.run_action)
+        
+        menu.setFont(self.menu_font)
+    
+        menu.exec(event.globalPos())
+        del menu
+    
     def moveCursorPosBack(self):
         textCursor = self.textCursor()
         textCursorPos = textCursor.position()
@@ -228,6 +265,7 @@ class PlainTextEdit(QPlainTextEdit):
             # self.parent.completer.wordList
             # TODO: implement dynamic completion
             pass
+            
         textCursorPos = textCursor.position()
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
         
@@ -236,7 +274,7 @@ class PlainTextEdit(QPlainTextEdit):
                 currentWidget = self.parent
                 currentFile =  currentWidget.fileName
                 currentEditor = currentWidget.editor
-                
+
                 textCursor = currentEditor.textCursor()
                 textCursorPos = textCursor.position()
     
@@ -700,10 +738,11 @@ class Image(QWidget):
 
 
 class Content(QWidget):
-    def __init__(self, text, fileName, baseName, themeIndex):
+    def __init__(self, text, fileName, baseName, themeIndex, parent):
         super().__init__()
         self.editor = PlainTextEdit(self)
         self.text = text
+        self.parent = parent
         self.wordlist = wordList
         self.fileName = fileName
         self.baseName = baseName
@@ -1285,7 +1324,6 @@ class Main(QMainWindow):
         self.newProjectAct.triggered.connect(self.newProjectFolder)
             
     def openProjectF(self):
-        
         self.openProjectAct = QAction('Open project')
         self.openProjectAct.setShortcut('Ctrl+Shift+O')
         
@@ -1382,7 +1420,7 @@ class Main(QMainWindow):
 
                     basename = os.path.basename(filename)
                     if not self.pic_opened:
-                        tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+                        tab = Content(text, filename, basename, self.custom.index, self)  # Creating a tab object *IMPORTANT*
                         tab.saved = True
                         tab.modified = False
                     else:
@@ -1409,7 +1447,7 @@ class Main(QMainWindow):
                 tab = Image(filename, basename)
             else:
 
-                tab = Content(text, filename, basename, self.custom.index)  # Creating a tab object *IMPORTANT*
+                tab = Content(text, filename, basename, self.custom.index, self)  # Creating a tab object *IMPORTANT*
                 tab.saved = True
                 tab.modified = False
             self.tab.tabCounter.append(tab.baseName)
@@ -1453,7 +1491,7 @@ class Main(QMainWindow):
             
         self.pyFileOpened = True
         # Creates a new blank file
-        file = Content(text, fileName, fileName, self.custom.index)
+        file = Content(text, fileName, fileName, self.custom.index, self)
 
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
@@ -1528,7 +1566,7 @@ class Main(QMainWindow):
                         print("All tabs closed")
                     saveFile.write(active_tab.editor.toPlainText())
                     text = active_tab.editor.toPlainText()
-                    newTab = Content(str(text), fileName, baseName, self.custom.index)
+                    newTab = Content(str(text), fileName, baseName, self.custom.index, self)
 
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
