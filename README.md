@@ -1,5 +1,5 @@
 # PyPad
-A simple cross-platform python editing notepad with auto completion and the ability to run scripts in interactive mode, written in python.
+A simple cross-platform python IDE with auto completion and the ability to run scripts in interactive mode, written in python.
 
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
