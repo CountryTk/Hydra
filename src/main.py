@@ -2,6 +2,7 @@ import sys
 import os
 from find_all import find_all
 import keyword
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QRect, QRegExp, QDir, QThread, pyqtSignal, QObject, QProcess, pyqtSlot, QPoint
 from PyQt5.QtGui import QColor, QPainter, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon, QTextOption,\
     QPixmap, QKeySequence, QTextCursor, QFontDatabase
@@ -209,7 +210,6 @@ class PlainTextEdit(QPlainTextEdit):
         self.l = 0
         self.highlightingRules = []
         self.indexes = None
-        self.ruut = False
         
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
@@ -462,6 +462,9 @@ class MessageBox(QWidget, QObject):
         self.layout = QHBoxLayout(self)
 
         self.index = str(index)
+        self.screen_geomtery = QtWidgets.QDesktopWidget().screenGeometry(-1)
+        self.width = self.screen_geomtery.width() 
+        self.height = self.screen_geomtery.height()
         self.path = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
         self.initUI()
@@ -1388,7 +1391,6 @@ class Main(QMainWindow):
         self.exitAct.triggered.connect(qApp.quit)
 
     def openFileFromMenu(self):
-        self.tab.hideDirectory()
         options = QFileDialog.Options()
 
         filenames, _ = QFileDialog.getOpenFileNames(
@@ -1445,8 +1447,8 @@ class Main(QMainWindow):
             basename = os.path.basename(filename)
             if self.pic_opened is True:
                 tab = Image(filename, basename)
+                
             else:
-
                 tab = Content(text, filename, basename, self.custom.index, self)  # Creating a tab object *IMPORTANT*
                 tab.saved = True
                 tab.modified = False
@@ -1692,8 +1694,8 @@ class PyHighlighter(QSyntaxHighlighter):
             "singleLineComment": "#[^\n]*",
             "quotation": "\"[^\"]*\"",
             "quotation2": "'[^\']*\'",
-            "multiLineComment": "[-+]?[0-9]+",
-            "int": "[-+]?[0-9]+",
+            "multiLineComment": "[-+]",
+            "int": "\\b[-+]?[0-9]+\\b",
         }
 
         pyKeywordPatterns = keyword.kwlist
