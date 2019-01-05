@@ -65,8 +65,6 @@ class Content(QWidget):
         self.status_bar_layout = QHBoxLayout()
         self.status_bar = QStatusBar(self)
         # Create a widget for the line numbers
-        # self.numbers = NumberBar(self.editor, index=themeIndex)
-        # self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
         self.status_bar_layout.addWidget(self.status_bar)
         self.status_bar_layout.addWidget(self.test)
@@ -89,9 +87,14 @@ class Content(QWidget):
 
     def change_col(self):
         cursor = self.editor.textCursor()
-        current_row = cursor.blockNumber()
+        current_row = cursor.blockNumber() + 1
         current_line = cursor.positionInBlock()
-        self.status_bar.showMessage("Line: " + str(current_row) + " Column: " + str(current_line))
+        self.status_bar.showMessage("Line: " + str(current_row) + " Column: " + str(current_line) + "           Total: "
+                                    + str(self.editor.get_linenumbers()) + " lines     " + "Size: "
+                                    + str(self.get_size(self.editor.toPlainText())) + " KiB")
+
+    def get_size(self, input):
+        return round(len(input.encode("utf-8"))/1000)
 
     def tokenize_file(self):
 
