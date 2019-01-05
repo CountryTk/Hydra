@@ -20,7 +20,6 @@ config2 = config_reader(2)
 
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
-
 lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
@@ -466,9 +465,9 @@ class Main(QMainWindow):
             self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
     def realterminal(self):
-        self.tab.splitterV.addWidget(self.tab.status)
-        self.tab.status.addWidget(self.tab.hide_button)
         self.tab.splitterV.addWidget(self.tab.terminal)
+        if self.tab.terminal.ispressed() is False:
+            self.tab.terminal.add()
 
     def terminal(self):
         active_tab = self.tab.tabs.currentWidget()
