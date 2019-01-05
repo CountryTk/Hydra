@@ -1,16 +1,12 @@
 import sys
-from builtins import print, property
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from builtins import print
 import os
 import getpass
 import socket
 from pathlib import Path
-from PyQt5.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QPushButton, QPlainTextEdit, qApp
 from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp
+from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess, QThread
 
 lineBarColor = QColor(53, 53, 53)
 
@@ -96,15 +92,13 @@ class Terminal(QWidget):
         )
         self.movable = movable
         self.layout = QVBoxLayout()
-        # self.button = QPushButton("Click me")
         self.pressed = False
         self.process = QProcess(self)
-        # self.editor = PlainTextEdit(self, self.movable)
+       # self.editor = PlainTextEdit(self, self.movable)
 
         self.name = None
 
        # self.layout.addWidget(self.editor)
-       # self.layout.addWidget(self.button)
 
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
@@ -309,9 +303,3 @@ class PythonThread(QThread):
         super().__init__()
 
         print("test")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    widget = Terminal(True)
-    sys.exit(app.exec_())
