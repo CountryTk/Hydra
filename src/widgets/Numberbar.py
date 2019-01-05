@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QPainter, QColor, QFont
 from utils.config import config_reader
 
 config0 = config_reader(0)
@@ -52,8 +52,9 @@ class NumberBar(QWidget):
             if config['editor']['NumberBarBox'] is True:
                 painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
 
-            font = painter.font()
-
+            font = QFont()
+            font.setFamily("Iosevka")
+            font.setPointSize(11)
             current_block = self.editor.textCursor().block().blockNumber() + 1
 
             while block.isValid():
