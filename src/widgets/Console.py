@@ -1,291 +1,92 @@
-import sys
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 import os
-import getpass
-import socket
-from pathlib import Path
-from PyQt5.QtWidgets import QWidget, QLineEdit
-from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp
-
-lineBarColor = QColor(53, 53, 53)
-
-
-class PlainTextEdit(QPlainTextEdit):
-    commandSignal = pyqtSignal(str)
-    commandZPressed = pyqtSignal(str)
-
-    def __init__(self, parent=None, movable=False):
-        super().__init__(parent)
-
-        self.name = "[" + str(getpass.getuser()) + "@" + str(socket.gethostname()) + "]" + "  ~" + str(
-            os.getcwd()) + " >$ "
-        self.appendPlainText(self.name)
-        self.movable = movable
-        self.parent = parent
-        self.setStyleSheet("QPlainTextEdit{background-color: black; color: white; padding: 0;}")
-        self.font = QFont()
-        self.font.setFamily("Iosevka")
-        self.font.setPointSize(12)
-        self.setFont(self.font)
-        self.document_file = self.document()
-        self.document_file.setDocumentMargin(-1)
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
-    def mousePressEvent(self, event):
-        if self.movable is True:
-            self.parent.mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if self.movable is True:
-            self.parent.mouseMoveEvent(event)
-
-    def keyPressEvent(self, e):
-        cursor = self.textCursor()
-
-        if self.parent:
-
-            if (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_A):
-                return
-
-            if (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_Z):
-                self.commandZPressed.emit("True")
-                return
-
-            if e.key() == 16777220:
-                text = self.textCursor().block().text()
-                self.commandSignal.emit(text)
-                self.appendPlainText(self.name)
-                print("Command sent: " + str(text))
-
-                return
-
-            if e.key() == 16777219:
-
-                if cursor.positionInBlock() <= len(self.name):
-                    return
-
-                else:
-                    cursor.deleteChar()
-                    # self.parent.keyPressEvent(e)
-
-            super().keyPressEvent(e)
-
-        e.accept()
+from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QHBoxLayout
+from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, QColor, QFont, QIcon
+from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess
+from widgets.Editor import Editor
+from widgets.Customize import Customize
+from widgets.Numberbar import NumberBar
+from widgets.Messagebox import MessageBox
 
 
-class Terminal(QWidget):
+class Console(QWidget):
     errorSignal = pyqtSignal(str)
     outputSignal = pyqtSignal(str)
 
-    def __init__(self, movable=False):
+    def __init__(self):
         super().__init__()
+        self.editor = Editor(self)
+        self.editor.setReadOnly(True)
+        self.custom = Customize()
+        self.font = QFont()
+        self.numbers = NumberBar(self.editor, index=self.custom.index)
 
-        self.setWindowFlags(
-            Qt.Widget |
-            Qt.WindowCloseButtonHint |
-            Qt.WindowStaysOnTopHint |
-            Qt.FramelessWindowHint
-        )
-        self.movable = movable
-        self.process = QProcess(self)
-        self.editor = PlainTextEdit(self, self.movable)
+        self.dialog = MessageBox()
+        # self.font.setFamily(editor["editorFont"])
+        self.font.setFamily("Iosevka")
+        self.terminateButton = QPushButton()
+        self.terminateButton.setIcon(QIcon("resources/square.png"))
+        self.terminateButton.clicked.connect(self.terminate)
+        self.font.setPointSize(12)
         self.layout = QHBoxLayout()
-        self.name = None
-        self.highlighter = name_highlighter(self.editor.document(), str(getpass.getuser()), str(socket.gethostname()),
-                                            str(os.getcwd()))
-        self.layout.addWidget(self.editor)
-        self.editor.commandSignal.connect(self.handle)
-        self.editor.commandZPressed.connect(self.handle)
+        self.layout.addWidget(self.numbers)
+        self.layout.addWidget(self.editor, 1)
+        self.layout.addWidget(self.terminateButton)
+
+        self.setLayout(self.layout)
+        self.output = None
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.error = None
+        self.finished = False
+        self.editor.setFont(self.font)
+
+        self.process = QProcess()
+        self.state = None
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
-        self.setLayout(self.layout)
-        #  self.setFixedWidth(660)
-        # self.setFixedHeight(350)
-        self.setStyleSheet("QWidget {background-color:invisible;}")
-
-    # self.show()
-    # self.showMaximized() # comment this if you want to embed this widget
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
-    def mousePressEvent(self, event):
-        self.oldPos = event.globalPos()
-
-    def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self.oldPos)
-
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
 
     def onReadyReadStandardError(self):
-        self.error = self.process.readAllStandardError().data().decode()
-        self.editor.appendPlainText(self.error.strip('\n'))
-        self.errorSignal.emit(self.error)
+        try:
+            self.error = self.process.readAllStandardError().data().decode()
+
+            self.editor.appendPlainText(self.error)
+
+            self.errorSignal.emit(self.error)
+            if self.error == "":
+                pass
+            else:
+                self.error = self.error.split(os.linesep)[-2]
+                self.dialog.helpword = str(self.error)
+                self.dialog.getHelp()
+        except IndexError as E:
+            print(E)
 
     def onReadyReadStandardOutput(self):
-        self.result = self.process.readAllStandardOutput().data().decode()
-        self.editor.appendPlainText(self.result.strip('\n'))
+        try:
+            self.result = self.process.readAllStandardOutput().data().decode()
+        except UnicodeDecodeError as E:
+            print(E)
+        self.editor.appendPlainText(self.result.strip("\n"))
         self.state = self.process.state()
+
         self.outputSignal.emit(self.result)
+
+    def ifFinished(self, exitCode, exitStatus):
+        self.finished = True
 
     def run(self, command):
         """Executes a system command."""
-        if self.process.state() != 2:
+        # clear previous text
+        self.editor.clear()
+        # self.editor.setPlainText("[" + str(getpass.getuser()) + "@" + str( socket.gethostname()) + "]" +
+                                 #"   ~/" + str(os.path.basename(os.getcwd())) + " >$")
+
+        if self.process.state() == 1 or self.process.state() == 2:
+            self.process.kill()
+            self.editor.setPlainText("Process already started, terminating")
+        else:
             self.process.start(command)
-            print("Command executed, process state is now: " + str(self.process.state()))
 
-    def handle(self, command):
+    def terminate(self):
 
-        """Split a command into list so command echo hi would appear as ['echo', 'hi']"""
-        real_command = command.replace(self.editor.name, "")
-
-        if command == "True":
-            if self.process.state() == 2:
-                self.process.kill()
-                self.editor.appendPlainText("Program execution killed, press enter")
-        if real_command.startswith("python"):
-            # TODO: start a python thread....
-            pass
-
-        if real_command != "":
-            command_list = real_command.split()
-        else:
-            command_list = None
-        """Now we start implementing some commands"""
-        if real_command == "clear":
-            self.editor.clear()
-
-        elif "&&" in command_list:
-            pass
-            # print(command_list)
-            # print(command_list.index("&&"))
-            # print(command_list[command_list.index("&&")+1:])
-
-        elif command_list is not None and command_list[0] == "echo":
-            self.editor.appendPlainText(" ".join(command_list[1:]))
-
-        elif real_command == "exit":
-            qApp.exit()
-
-        elif command_list is not None and command_list[0] == "cd" and len(command_list) > 1:
-            try:
-                os.chdir(" ".join(command_list[1:]))
-                self.editor.name = "[" + str(getpass.getuser()) + "@" + str(socket.gethostname()) + "]" + "  ~" + str(
-                    os.getcwd()) + " >$ "
-                if self.highlighter:
-                    del self.highlighter
-                self.highlighter = name_highlighter(self.editor.document(), str(getpass.getuser()),
-                                                    str(socket.gethostname()), str(os.getcwd()))
-
-            except FileNotFoundError as E:
-                self.editor.appendPlainText(str(E))
-
-        elif len(command_list) == 1 and command_list[0] == "cd":
-            os.chdir(str(Path.home()))
-            self.editor.name = "[" + str(getpass.getuser()) + "@" + str(socket.gethostname()) + "]" + "  ~" + str(
-                os.getcwd()) + " >$ "
-
-        elif self.process.state() == 2:
-            self.process.write(real_command.encode())
-            self.process.closeWriteChannel()
-
-        elif command == self.editor.name + real_command:
-            self.run(real_command)
-
-        else:
-            pass  # When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
-
-
-class name_highlighter(QSyntaxHighlighter):
-
-    def __init__(self, parent=None, user_name=None, host_name=None, cwd=None):
-        super().__init__(parent)
-        self.highlightingRules = []
-        self.name = user_name
-        self.name2 = host_name
-        self.cwd = cwd
-        # print(self.cwd)
-        first_list = []
-        most_used = ["cd", "clear", "history", "ls", "man", "pwd", "what", "type",
-                     "strace", "ltrace", "gdb", "cat", "chmod", "cp", "chown", "find", "grep", "locate", "mkdir",
-                     "rmdir", "rm", "mv", "vim", "nano", "rename",
-                     "touch", "wget", "zip", "tar", "gzip", "apt", "bg", "fg", "df", "free", "ip", "jobs", "kill",
-                     "killall", "mount", "umount", "ps", "sudo", "echo",
-                     "top", "uname", "whereis", "uptime", "whereis", "whoami", "exit"
-                     ]  # most used linux commands, so we will highlight them!
-        self.regex = {
-            "class": "\\bclass\\b",
-            "function": "[A-Za-z0-9_]+(?=\\()",
-            "magic": "\\__[^']*\\__",
-            "decorator": "@[^\n]*",
-            "singleLineComment": "#[^\n]*",
-            "quotation": "\"[^\"]*\"",
-            "quotation2": "'[^\']*\'",
-            "multiLineComment": "[-+]?[0-9]+",
-            "int": "[-+]?[0-9]+",
-        }
-        """compgen -c returns all commands that you can run"""
-
-        for f in most_used:
-            nameFormat = QTextCharFormat()
-            nameFormat.setForeground(QColor("#00ff00"))
-            nameFormat.setFontItalic(True)
-            self.highlightingRules.append((QRegExp("\\b" + f + "\\b"), nameFormat))
-
-        hostnameFormat = QTextCharFormat()
-        hostnameFormat.setForeground(QColor("#12c2e9"))
-        self.highlightingRules.append((QRegExp(self.name), hostnameFormat))
-        self.highlightingRules.append((QRegExp(self.name2), hostnameFormat))
-
-        otherFormat = QTextCharFormat()
-        otherFormat.setForeground(QColor("#f7797d"))
-        self.highlightingRules.append((QRegExp("~\/[^\s]*"), otherFormat))
-
-        quotation1Format = QTextCharFormat()
-        quotation1Format.setForeground(QColor("#96c93d"))
-        self.highlightingRules.append((QRegExp("\"[^\"]*\""), quotation1Format))
-
-        quotation2Format = QTextCharFormat()
-        quotation2Format.setForeground(QColor("#96c93d"))
-        self.highlightingRules.append((QRegExp("'[^\']*\'"), quotation2Format))
-
-        integerFormat = QTextCharFormat()
-        integerFormat.setForeground(QColor("#cc5333"))
-        integerFormat.setFontItalic(True)
-        self.highlightingRules.append((QRegExp("\\b[-+]?[0-9]+\\b"), integerFormat))
-
-    def highlightBlock(self, text):
-
-        for pattern, format in self.highlightingRules:
-            expression = QRegExp(pattern)
-            index = expression.indexIn(text)
-            while index >= 0:
-                length = expression.matchedLength()
-                self.setFormat(index, length, format)
-                index = expression.indexIn(text, index + length)
-
-
-class PythonThread(QThread):
-
-    def __init__(self):
-        super().__init__()
-
-        print("test")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    widget = Terminal(True)
-    sys.exit(app.exec_())
+        if self.process.state() == 2:
+            self.process.kill()
