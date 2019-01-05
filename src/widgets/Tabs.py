@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTabWidget, QSplitter, QShortcut, QStatusBar, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QTabWidget, QSplitter, QShortcut, QStatusBar, QVBoxLayout
 from PyQt5.QtGui import QFont, QKeySequence
 from PyQt5.QtCore import Qt, pyqtSlot
 from widgets.Messagebox import MessageBox
-from widgets.Console import Terminal
+from widgets.Console import Console
+from widgets.Terminal import Terminal
 from widgets.IPythonWidget import IPythonWidget
 from widgets.Directory import Directory
 from utils.config import config_reader
@@ -31,19 +32,22 @@ class Tabs(QWidget):
         self.app = app
         self.palette = palette
         self.layout = QHBoxLayout(self)
+        self.hide_button = QPushButton("Hide")
+        self.hide_button.clicked.connect(self.hide_terminal)
         # Initialize tab screen
         self.tabs = QTabWidget()
         font = QFont(editor['tabFont'])
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
-
+        self.status = QStatusBar(self)
         self.dialog = MessageBox()
         self.tabs.usesScrollButtons()
         self.filelist = []
 
         self.tabSaved = False
 
-        self.Console = Terminal()  # This is the terminal widget and the SECOND thread
+        self.Console = Console()  # This is the terminal widget and the SECOND thread
+        self.terminal = Terminal()
         self.term = IPythonWidget()
         self.directory = Directory(callback, self.app, self.palette)  # TODO: This is top left
         self.directory.clearSelection()
@@ -109,6 +113,9 @@ class Tabs(QWidget):
 
         for file in self.filelist:
             openedFileContents = open(file, 'r').read()
+
+    def hide_terminal(self):
+        self.terminal.setParent(None)
 
     def closeTab(self, index):
         try:
