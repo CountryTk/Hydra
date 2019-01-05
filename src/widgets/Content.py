@@ -8,6 +8,7 @@ from widgets.Editor import Editor
 from widgets.Customize import Customize
 from widgets.Completer import Completer
 from widgets.Numberbar import NumberBar
+import platform
 from widgets.Pythonhighlighter import PyHighlighter
 config0 = config_reader(0)
 config1 = config_reader(1)
@@ -36,6 +37,7 @@ class Content(QWidget):
         self.status_bar = QStatusBar(self)
         self.wordlist = wordList
         self.fileName = fileName
+        print(self.fileName)
         self.baseName = baseName
         self.temporary = 0
         self.font = QFont()
@@ -47,23 +49,24 @@ class Content(QWidget):
         self.custom = Customize()
         self.saved = True
         self.editor.setPlainText(str(text))
+        self.test = QLabel(self)
         self.editor.cursorPositionChanged.connect(self.change_col)
+        self.test.setText(str(platform.system()))
 
         if self.baseName.endswith(".py"):
             self.highlighter = PyHighlighter(self.editor.document(), index=self.custom.index)
             self.tokenize_file()
+            self.test.setText(str(platform.system()) + "   " + "Python 3")
         else:
             pass
 
         self.main_layout = QVBoxLayout(self)
-        self.test = QLabel(self)
-        self.test.setText(" ")
         self.hbox = QHBoxLayout()
         self.status_bar_layout = QHBoxLayout()
         self.status_bar = QStatusBar(self)
         # Create a widget for the line numbers
-        self.numbers = NumberBar(self.editor, index=themeIndex)
-        self.hbox.addWidget(self.numbers)
+        # self.numbers = NumberBar(self.editor, index=themeIndex)
+        # self.hbox.addWidget(self.numbers)
         self.hbox.addWidget(self.editor)
         self.status_bar_layout.addWidget(self.status_bar)
         self.status_bar_layout.addWidget(self.test)
