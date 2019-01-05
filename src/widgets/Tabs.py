@@ -32,8 +32,6 @@ class Tabs(QWidget):
         self.app = app
         self.palette = palette
         self.layout = QHBoxLayout(self)
-        self.hide_button = QPushButton("Hide")
-        self.hide_button.clicked.connect(self.hide_terminal)
         # Initialize tab screen
         self.tabs = QTabWidget()
         font = QFont(editor['tabFont'])
@@ -113,9 +111,6 @@ class Tabs(QWidget):
 
         for file in self.filelist:
             openedFileContents = open(file, 'r').read()
-
-    def hide_terminal(self):
-        self.terminal.setParent(None)
 
     def closeTab(self, index):
         try:
