@@ -1,6 +1,6 @@
-from builtins import print
+from builtins import print, property
 from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextEdit, QWidget
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QObject, pyqtSignal
 from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QColor
 from utils.find_all import find_all
 from widgets.Messagebox import MessageBox
@@ -19,7 +19,7 @@ class QLineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.codeEditor.lineNumberAreaPaintEvent(event)
-        
+
 
 class Editor(QPlainTextEdit):
 
@@ -28,6 +28,7 @@ class Editor(QPlainTextEdit):
         self.lineNumberArea = QLineNumberArea(self)
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
+        self.textChanged.connect(self.check)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
         self.parent = parent
@@ -52,11 +53,20 @@ class Editor(QPlainTextEdit):
         self.createStandardContextMenu()
         self.setWordWrapMode(QTextOption.NoWrap)
 
+    def get_linenumbers(self):
+        return self.blockCount()
+
+    def check(self):
+        cursor = self.textCursor()
+        b = cursor.block()
+        if len(b.text()) >= 79:
+            print("pep 8 violation on line: " + str(b.blockNumber() + 1))
+
     def newFile(self):
         """This and most of the functions below will just be wrappers for the functions defined in Main"""
         self.new_action = QAction("New")
         self.new_action.triggered.connect(self.parent.parent.newFile)
-        
+
     def lineNumberAreaWidth(self):
         digits = 1
         max_value = max(1, self.blockCount())
@@ -100,13 +110,13 @@ class Editor(QPlainTextEdit):
         painter.fillRect(event.rect(), QColor("#303030"))
 
         block = self.firstVisibleBlock()
-        blockNumber = block.blockNumber() - 1
+        blockNumber = block.blockNumber()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         bottom = top + self.blockBoundingRect(block).height()
 
         # Just to make sure I use the right font
         height = self.fontMetrics().height()
-        
+
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1)
@@ -117,7 +127,7 @@ class Editor(QPlainTextEdit):
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
-            
+
     def openFile(self):
 
         self.open_action = QAction("Open")
@@ -135,7 +145,7 @@ class Editor(QPlainTextEdit):
         self.newFile()
         self.openFile()
         self.runFile()
-
+        print("aa")
         menu.addAction(self.new_action)
         menu.addAction(self.open_action)
         menu.addAction(self.run_action)
@@ -167,7 +177,7 @@ class Editor(QPlainTextEdit):
         if isSearch:
             try:
                 currentWidget = self.parent
-                currentFile =  currentWidget.fileName
+                currentFile = currentWidget.fileName
                 currentEditor = currentWidget.editor
 
                 textCursor = currentEditor.textCursor()
@@ -218,7 +228,7 @@ class Editor(QPlainTextEdit):
             try:
                 index = self.indexes[0 + self.l]
                 currentWidget = self.parent
-                currentFile =  currentWidget.fileName
+                currentFile = currentWidget.fileName
                 currentEditor = currentWidget.editor
                 textCursor.setPosition(index)
                 textCursor.movePosition(textCursor.Right, textCursor.KeepAnchor, len(self.searchtext))
@@ -240,7 +250,6 @@ class Editor(QPlainTextEdit):
             self.moveCursorPosBack()
 
         if key == Qt.Key_ParenLeft:
-
             self.insertPlainText(")")
             self.moveCursorPosBack()
 
@@ -257,7 +266,6 @@ class Editor(QPlainTextEdit):
                 return
 
         if key not in [16777217, 16777219, 16777220]:
-
             super().keyPressEvent(e)
             return
 
@@ -277,7 +285,7 @@ class Editor(QPlainTextEdit):
                 start -= 4
 
             string = self.toPlainText()[start:end]
-            if not len(string.strip()): # if length is 0 which is binary for false
+            if not len(string.strip()):  # if length is 0 which is binary for false
                 for i in range(end - start):
                     cursor.deletePreviousChar()
             else:
