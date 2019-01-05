@@ -1,7 +1,7 @@
 from builtins import print
-from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QTextOption, QTextCursor
+from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextEdit, QWidget
+from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QColor
 from utils.find_all import find_all
 from widgets.Messagebox import MessageBox
 from utils.config import config_choice
@@ -9,11 +9,27 @@ from utils.config import config_choice
 editor = config_choice("default.json")['editor']
 
 
+class QLineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.codeEditor = editor
+
+    def sizeHint(self):
+        return QSize(self.editor.lineNumberAreaWidth(), 0)
+
+    def paintEvent(self, event):
+        self.codeEditor.lineNumberAreaPaintEvent(event)
+        
+
 class Editor(QPlainTextEdit):
 
     def __init__(self, parent):
         super().__init__(parent)
-
+        self.lineNumberArea = QLineNumberArea(self)
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        self.cursorPositionChanged.connect(self.highlightCurrentLine)
+        self.updateLineNumberAreaWidth(0)
         self.parent = parent
         self.font = QFont()
         self.size = 12
@@ -40,7 +56,68 @@ class Editor(QPlainTextEdit):
         """This and most of the functions below will just be wrappers for the functions defined in Main"""
         self.new_action = QAction("New")
         self.new_action.triggered.connect(self.parent.parent.newFile)
+        
+    def lineNumberAreaWidth(self):
+        digits = 1
+        max_value = max(1, self.blockCount())
+        while max_value >= 10:
+            max_value /= 10
+            digits += 1
+        space = 10 + self.fontMetrics().width('9') * digits
+        return space
 
+    def updateLineNumberAreaWidth(self, _):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+
+    def updateLineNumberArea(self, rect, dy):
+        if dy:
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.updateLineNumberAreaWidth(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
+
+    def highlightCurrentLine(self):
+        extraSelections = []
+        if not self.isReadOnly():
+            selection = QTextEdit.ExtraSelection()
+            lineColor = QColor("#434343")
+            selection.format.setBackground(lineColor)
+            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+            selection.cursor = self.textCursor()
+            selection.cursor.clearSelection()
+            extraSelections.append(selection)
+        self.setExtraSelections(extraSelections)
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QPainter(self.lineNumberArea)
+
+        painter.fillRect(event.rect(), QColor("#303030"))
+
+        block = self.firstVisibleBlock()
+        blockNumber = block.blockNumber() - 1
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        # Just to make sure I use the right font
+        height = self.fontMetrics().height()
+        
+        while block.isValid() and (top <= event.rect().bottom()):
+            if block.isVisible() and (bottom >= event.rect().top()):
+                number = str(blockNumber + 1)
+                painter.setPen(Qt.white)
+                painter.drawText(0, top, self.lineNumberArea.width(), height, Qt.AlignCenter, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            blockNumber += 1
+            
     def openFile(self):
 
         self.open_action = QAction("Open")
@@ -49,7 +126,7 @@ class Editor(QPlainTextEdit):
     def runFile(self):
 
         self.run_action = QAction("Run")
-        self.run_action.triggered.connect(self.parent.parent.Terminal)
+        self.run_action.triggered.connect(self.parent.parent.terminal)
 
     def contextMenuEvent(self, event):
 
@@ -120,14 +197,16 @@ class Editor(QPlainTextEdit):
             self.insertPlainText('"')
             self.moveCursorPosBack()
 
-        if (e.modifiers() == Qt.ControlModifier and e.key() == 61):  # Press Ctrl+Equal key to make font bigger
+        if e.modifiers() == Qt.ControlModifier and e.key() == 61:  # Press Ctrl+Equal key to make font bigger
 
             self.font.setPointSize(self.size + 1)
             self.font.setFamily(editor["editorFont"])
             self.setFont(self.font)
             self.size += 1
+        if e.modifiers() == Qt.ControlModifier and e.key() == 16777217:
+            return
 
-        if (e.modifiers() == Qt.ControlModifier and e.key() == 45): # Press Ctrl+Minus key to make font smaller
+        if e.modifiers() == Qt.ControlModifier and e.key() == 45:  # Press Ctrl+Minus key to make font smaller
 
             self.font.setPointSize(self.size - 1)
 
@@ -184,7 +263,7 @@ class Editor(QPlainTextEdit):
 
         e.accept()
         cursor = self.textCursor()
-        if key == 16777217: # and self.replace_tabs:
+        if key == 16777217:  # and self.replace_tabs:
             amount = 4 - self.textCursor().positionInBlock() % 4
             self.insertPlainText(' ' * amount)
 
