@@ -51,8 +51,9 @@ class Main(QMainWindow):
         self.tab.tabs.currentChanged.connect(self.fileNameChange)
         self.search = DocumentSearch()
         self.os = sys.platform
-        self.openPy()
-        self.openTerm()
+        self.openpy()
+        self.openterm()
+        self.openterminal()
         self.new()
         self.newProject()
         self.findDocument()
@@ -138,6 +139,7 @@ class Main(QMainWindow):
         toolMenu = menu.addMenu('Tools')
         toolMenu.addAction(self.openPyAct)
         toolMenu.addAction(self.openTermAct)
+        toolMenu.addAction(self.openTerminalAct)
 
         appearance = menu.addMenu('Appearance')
 
@@ -195,19 +197,26 @@ class Main(QMainWindow):
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.saveFile)
         
-    def openPy(self):
+    def openpy(self):
         self.openPyAct = QAction('IPython console', self)
         self.openPyAct.setShortcut('Ctrl+Y')
 
         self.openPyAct.setStatusTip('Open IPython console')
-        self.openPyAct.triggered.connect(self.Console)
+        self.openPyAct.triggered.connect(self.console)
 
-    def openTerm(self):
+    def openterm(self):
         self.openTermAct = QAction('Run', self)
         self.openTermAct.setShortcut('Shift+F10')
 
         self.openTermAct.setStatusTip('Run your code')
-        self.openTermAct.triggered.connect(self.Terminal)
+        self.openTermAct.triggered.connect(self.terminal)
+
+    def openterminal(self):
+        self.openTerminalAct = QAction("Terminal", self)
+        self.openTerminalAct.setShortcut("Ctrl+T")
+
+        self.openTerminalAct.setStatusTip("Open a terminal")
+        self.openTerminalAct.triggered.connect(self.realterminal)
 
     def saveAs(self):
         self.saveAsAct = QAction('Save As...')
@@ -437,7 +446,7 @@ class Main(QMainWindow):
         except FileNotFoundError:
             print("File dialog closed")
 
-    def Console(self):
+    def console(self):
 
         self.pyConsoleOpened = True
         self.ind = self.tab.splitterV.indexOf(self.tab.term)
@@ -456,12 +465,16 @@ class Main(QMainWindow):
 
             self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
-    def Terminal(self):
+    def realterminal(self):
+        self.tab.splitterV.addWidget(self.tab.status)
+        self.tab.status.addWidget(self.tab.hide_button)
+        self.tab.splitterV.addWidget(self.tab.terminal)
 
+    def terminal(self):
         active_tab = self.tab.tabs.currentWidget()
+
         if self.pyConsoleOpened:
             self.o = self.tab.splitterV.indexOf(self.tab.Console)
-
             self.ind = self.tab.splitterV.indexOf(self.tab.term)
 
             if self.ind == -1:
@@ -490,6 +503,7 @@ class Main(QMainWindow):
 
             except AttributeError as E:
                 print(E)
+
         else:
             self.tab.splitterV.addWidget(self.tab.Console)
 
