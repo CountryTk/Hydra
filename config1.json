@@ -15,7 +15,7 @@
     "windowColor": "#303030",
     "windowText": "#FFFFFF",
     "alternateBase": "#FFFFFF",
-    "ToolTipBase": "#FFFFFF",
+    "ToolTipBase": "#303030",
     "ToolTipText": "#FFFFFF",
     "editorText": "#e3e6fc",
     "buttonColor": "#353535",
@@ -75,6 +75,9 @@
         },
         "int": {
           "color": "#ADD4FF"
+        },
+        "Qclass": {
+          "color": "#f5af19"
         }
       }
     }, "c": {
