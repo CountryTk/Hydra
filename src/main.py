@@ -311,7 +311,8 @@ class Main(QMainWindow):
             self.tabsOpen.append(self.files)
 
             index = self.tab.tabs.addTab(tab,
-                                         tab.fileName)  # This is the index which we will use to set the current
+                                         tab.baseName)  # This is the index which we will use to set the current
+            self.tab.tabs.setTabToolTip(index, str(tab.fileName))
             if not self.dir_opened:  # If a project isnt opened then we open a directory everytime we open a file
                 self.tab.directory.openDirectory(dirPath)
 
@@ -338,19 +339,22 @@ class Main(QMainWindow):
         text = ""
         
         if self._dir:
-            fileName = str(self._dir) + "/" + "Untitled_file_" + str(random.randint(1, 100)) + ".py"
+            base_file_name = "Untitled_file_" + str(random.randint(1, 100)) + ".py"
+            fileName = str(self._dir) + "/" + base_file_name
         else:
+            base_file_name = "Untitled_file_" + str(random.randint(1, 100)) + ".py"
             current = os.getcwd()
-            fileName = current + "/" + "Untitled_file_" + str(random.randint(1,100)) + ".py"
+            fileName = current + "/" + base_file_name
             
         self.pyFileOpened = True
         # Creates a new blank file
-        file = Content(text, fileName, fileName, self.custom.index, self, ex)
+        file = Content(text, fileName, base_file_name, self.custom.index, self, ex)
 
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-        index = self.tab.tabs.addTab(file, file.fileName)  # addTab method returns an index for the tab that was added
+        index = self.tab.tabs.addTab(file, file.baseName)  # addTab method returns an index for the tab that was added
+        self.tab.tabs.setTabToolTip(index, str(file.fileName))
         self.tab.tabs.setCurrentIndex(index)  # Setting focus to the new tab that we created
         widget = self.tab.tabs.currentWidget()
 
@@ -423,7 +427,8 @@ class Main(QMainWindow):
                     newTab = Content(str(text), fileName, baseName, self.custom.index, self, ex)
 
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
-                    index = self.tab.tabs.addTab(newTab, newTab.fileName)  # And add the new one!
+                    index = self.tab.tabs.addTab(newTab, newTab.baseName)  # And add the new one!
+                    self.tab.tabs.setTabToolTip(index, str(newTab.fileName))
 
                     self.tab.tabs.setCurrentIndex(index)
                     newActiveTab = self.tab.tabs.currentWidget()
