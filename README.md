@@ -31,4 +31,5 @@ To cycle through any words that were found, you press F3
 # Pictures
 ![alt_text](https://raw.githubusercontent.com/Fuchsiaff/as/master/PyPad_picture1.png)
 ![Auto completion demo](https://raw.githubusercontent.com/Fuchsiaff/as/master/vid1.mp4)
+
 ![Another video demo](https://raw.githubusercontent.com/Fuchsiaff/as/master/vid2.mp4)
