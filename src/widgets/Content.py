@@ -37,7 +37,6 @@ class Content(QWidget):
         self.status_bar = QStatusBar(self)
         self.wordlist = wordList
         self.fileName = fileName
-        print(self.fileName)
         self.baseName = baseName
         self.temporary = 0
         self.font = QFont()
