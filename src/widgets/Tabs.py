@@ -34,6 +34,45 @@ class Tabs(QWidget):
         self.layout = QHBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
+        self.tabs.setStyleSheet("""
+           QTabWidget::pane { /* The tab widget frame */
+                border-top: 0.5px solid #303030;
+            }
+            
+            QTabWidget::tab-bar {
+                
+            }
+            
+            /* Style the tab using the tab sub-control. Note that
+                it reads QTabBar _not_ QTabWidget */
+            QTabBar::tab {
+                background: #434343;
+                border-bottom: 2px solid #303030;
+                border-bottom-color: #434343;
+                min-width: 8ex;
+                margin-left: 10px;
+                padding-left: 25px;
+                padding-right: 20px;
+                padding-top: 3px;
+                padding-bottom: 3px;
+            }
+            
+            QTabBar::tab:selected, QTabBar::tab:hover {
+                background: #434343;
+            }
+            QToolTip {
+                padding: 3px;
+                font-family: \"Iosevka\";
+                font-size: 14px; 
+                color: #FFFFFF;
+                background: #303030;
+                
+            }
+            QTabBar::tab:selected {
+                border-bottom-color: #FFFFFF; /* same as pane color */
+            }
+            
+            """)
         font = QFont(editor['tabFont'])
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
