@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QHBoxLayout, QTreeView, QFileSystemModel
+from builtins import property
+
+from PyQt5.QtWidgets import QHBoxLayout, QTreeView, QFileSystemModel, QMenu, QAction
 from PyQt5.QtCore import Qt, pyqtSignal, QProcess, QDir
 from PyQt5.QtGui import QFont, QColor, QPalette
 from utils.config import config_reader
@@ -21,7 +23,7 @@ else:
 
 
 class Directory(QTreeView):
-    def __init__(self, callback, app=None, palette=None):  # TODO: App and palette will be passed from the Tabs class
+    def __init__(self, callback, app=None, palette=None):
         super().__init__()
         directoryFont = QFont()
         self.app = app
@@ -29,6 +31,8 @@ class Directory(QTreeView):
         directoryFont.setFamily(editor["directoryFont"])
         directoryFont.setPointSize(editor["directoryFontSize"])
         self.open_callback = callback
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.openMenu)
         self.setFont(directoryFont)
         self.layout = QHBoxLayout()
         self.model = QFileSystemModel()
@@ -37,7 +41,7 @@ class Directory(QTreeView):
         self.setMaximumWidth(300)
         self.setIndentation(10)
         self.setAnimated(True)
-
+        self.newFile()
         self.setSortingEnabled(True)
         self.setWindowTitle("Dir View")
         self.hideColumn(1)
@@ -47,6 +51,25 @@ class Directory(QTreeView):
         self.hideColumn(3)
         # self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
+
+    def newFile(self):
+        self.newAct = QAction('New')
+        self.newAct.setStatusTip('Create a new file')
+        self.newAct.triggered.connect(lambda: print("new file created lol"))
+
+    def openMenu(self, position):
+
+        indexes = self.selectedIndexes()
+        if len(indexes) > 0:
+            level = 0
+            index = indexes[0]
+            while index.parent().isValid():
+                index = index.parent()
+                level += 1
+
+        menu = QMenu()
+        menu.addAction(self.newAct)  # TODO: Add more context menu stuff and make them functional
+        menu.exec_(self.viewport().mapToGlobal(position))
 
     def focusInEvent(self, event):
         # If we are focused then we change the selected item highlighting color
