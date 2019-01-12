@@ -76,6 +76,9 @@
         },
         "int": {
           "color": "#ADD4FF"
+        },
+        "Qclass": {
+          "color": "#f5af19"
         }
       }
     }, "c": {
