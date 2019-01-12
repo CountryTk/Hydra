@@ -53,12 +53,18 @@ class MessageBox(QWidget):
         self.getHelpButton.clicked.connect(self.gettingHelp)
 
         self.saved = None
-
+        self.center()
         self.font = QFont()
         self.font.setFamily("Iosevka")
         self.font.setPointSize(12)
 
         self.setFont(self.font)
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def run(self, str, fileName):
         self.fileName = fileName
@@ -86,6 +92,7 @@ class MessageBox(QWidget):
             ("Theme " + str(index) + " selected\nNOTE: For some changes to work you need to restart PyPad")
         self.button.setText("Ok")
         self.button.setAutoDefault(True)
+
         self.button.setFocus()
         self.layout.addWidget(self.button)
         self.show()
@@ -98,6 +105,7 @@ class MessageBox(QWidget):
         self.successButton = QPushButton("Ok")
         self.successButton.resize(10, 30)
         self.successLabel = QLabel()
+
         self.successLabel.setText("Successfully created a new project to: " + str(directory))
         self.successButton.clicked.connect(_exit)
         self.layout.addWidget(self.successLabel)
@@ -119,9 +127,10 @@ class MessageBox(QWidget):
         def _hide():
             self.hide()
 
-        self.label.setText("Warning, you have unsaved changes!")
+        self.label.setText("<b>Warning</b>, you have unsaved changes!")
         self.saveButton.setText("Ok")
         self.saveButton.setAutoDefault(True)
+
         self.closeAnywayButton.setText("Close anyway")
         self.saveButton.clicked.connect(_hide)
         self.closeAnywayButton.clicked.connect(_closeAnyway)
@@ -140,6 +149,7 @@ class MessageBox(QWidget):
         self.label.setText("No matches found for word: " + str(word))
         self.button.setText("Ok")
         self.button.setAutoDefault(True)
+
         self.layout.addWidget(self.button)
         self.show()
 
@@ -168,6 +178,7 @@ class MessageBox(QWidget):
         self.setWindowTitle("New project")
         self.projectLabel = QLabel()
         self.directoryLabel = QLabel()
+
         self.directoryLabel.setText("Where do you want to create it?")
         self.projectLabel.setText("Enter a new project name: ")
         self.ProjectDirectory = QLineEdit()
@@ -198,7 +209,6 @@ class MessageBox(QWidget):
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
         self.layout.addWidget(self.button)
-
         if self.index == "0":
 
             config = config0
