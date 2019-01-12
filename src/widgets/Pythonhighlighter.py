@@ -46,6 +46,7 @@ class PyHighlighter(QSyntaxHighlighter):
             "quotation2": "'[^\']*\'",
             "multiLineComment": "[-+]",
             "int": "\\b[-+]?[0-9]+\\b",
+            "Qclass": "\\b[Q|q][A-Za-z]+\\b"
         }
 
         pyKeywordPatterns = keyword.kwlist
