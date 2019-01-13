@@ -94,11 +94,8 @@ class Terminal(QWidget):
         self.layout = QVBoxLayout()
         self.pressed = False
         self.process = QProcess(self)
-       # self.editor = PlainTextEdit(self, self.movable)
 
         self.name = None
-
-       # self.layout.addWidget(self.editor)
 
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
@@ -121,6 +118,7 @@ class Terminal(QWidget):
         self.button = QPushButton("Hide terminal")
         self.button.setStyleSheet("""
         height: 20;
+        font-size: 14;
         """)
         self.button.setFixedWidth(100)
         self.editor = PlainTextEdit(self, self.movable)
@@ -301,5 +299,3 @@ class PythonThread(QThread):
 
     def __init__(self):
         super().__init__()
-
-        print("test")
