@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QDesktopWidget, Q
     QVBoxLayout, QLineEdit
 from PyQt5.QtGui import QFont, QIcon
 import shutil
-import webbrowser
 import os
 config0 = config_reader(0)
 config1 = config_reader(1)
@@ -23,16 +22,17 @@ else:
 
 
 class MessageBox(QWidget):
-    def __init__(self, error=None, helpword=None, index=choiceIndex):
+    def __init__(self, parent, error=None, helpword=None, index=choiceIndex):
         super().__init__()
         self.helpword = helpword
         self.layout = QHBoxLayout(self)
-
+        self.parent = parent
         self.index = str(index)
         self.screen_geomtery = QDesktopWidget().screenGeometry(-1)
         self.width = self.screen_geomtery.width()
         self.height = self.screen_geomtery.height()
         self.path = None
+        self.add_browser = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
         self.initUI()
 
@@ -122,7 +122,7 @@ class MessageBox(QWidget):
                 tab.removeTab(index)
                 self.hide()
             except (IndexError, RuntimeError) as E:
-                print(E)
+                print(E, " on line 125 in the file Messagebox.py")
 
         def _hide():
             self.hide()
@@ -141,7 +141,7 @@ class MessageBox(QWidget):
     def gettingHelp(self):
 
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
-        webbrowser.open(self.url)
+        self.add_browser.showBrowser(self.url, self.helpword)  # self.add_browser should have the value <__main__.Main
         self.hide()
 
     def noMatch(self, word):
@@ -173,7 +173,7 @@ class MessageBox(QWidget):
                     print("File already exists")
 
             except Exception as E:
-                print(E)
+                print(E, " on line 176 in the file Messagebox.py")
 
         self.setWindowTitle("New project")
         self.projectLabel = QLabel()
@@ -198,14 +198,14 @@ class MessageBox(QWidget):
         self.setLayout(self.layout)
         self.show()
 
-    def getHelp(self):
-
+    def getHelp(self, paren):
+        self.add_browser = paren
         try:
             self.layout.removeWidget(self.deleteButton)
             self.layout.removeWidget(self.button)
 
         except AttributeError as E:
-            print(E)
+            print(E, " on line 208 in the file Messagebox.py")
         self.label.setText("It seems like you made an error, would you like to get help?")
         self.layout.addWidget(self.getHelpButton)
         self.layout.addWidget(self.button)
