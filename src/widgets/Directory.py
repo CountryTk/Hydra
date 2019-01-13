@@ -47,7 +47,7 @@ class Directory(QTreeView):
         self.hideColumn(1)
         self.resize(200, 600)
         self.hideColumn(2)
-        self.confirmation = MessageBox()
+        self.confirmation = MessageBox(self)
         self.hideColumn(3)
         # self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
