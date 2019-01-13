@@ -13,6 +13,7 @@ from widgets.Tabs import Tabs
 from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
+from widgets.Browser import Browser
 
 config0 = config_reader(0)
 config1 = config_reader(1)
@@ -33,7 +34,7 @@ class Main(QMainWindow):
         self.status = QStatusBar(self)
         self.custom = Customize()
         # Initializing the main widget where text is displayed
-        self.tab = Tabs(self.openFile, app, palette)
+        self.tab = Tabs(self.openFile, app, palette, self)
         self.tabsOpen = []
         self.pic_opened = False
 
@@ -41,7 +42,7 @@ class Main(QMainWindow):
             self.openFile(file)
             self.fileNameChange()
 
-        self.dialog = MessageBox()
+        self.dialog = MessageBox(self)
 
         self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -257,6 +258,11 @@ class Main(QMainWindow):
                 self.pic_opened = True
             self.openFile(filename)
 
+    def showBrowser(self, url, word):
+        widget = Browser(url)
+        index = self.tab.tabs.addTab(widget, "Info about: " + str(word))
+        self.tab.tabs.setCurrentIndex(index)
+
     def openFile(self, filename):
        
         try:
@@ -333,7 +339,7 @@ class Main(QMainWindow):
 
             self.pic_opened = False
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
-            print(E)
+            print(E, " on line 336 in the file main.py")
 
     def newFile(self):
         text = ""
@@ -361,7 +367,7 @@ class Main(QMainWindow):
         widget.editor.setFocus()
         widget.editor.setFont(self.font)
         widget.editor.setTabStopWidth(self.tabSize)
-        
+
     def newProjectFolder(self):
         self.dialog = MessageBox()
         self.dialog.newProject()
@@ -400,7 +406,7 @@ class Main(QMainWindow):
             ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
             active_tab.tokenize_file()
         except Exception as E:
-            print(E)
+            print(E, " on line 403 in the file main.py")
         
     def saveFileAs(self):
         try:
@@ -483,13 +489,24 @@ class Main(QMainWindow):
 
             if self.ind == -1:
                 if platform.system() == "Linux":
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python3 " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python3 " + active_tab.fileName)
 
                 elif platform.system() == "Windows":
-                    self.tab.Console.run("python " + active_tab.fileName)
-
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
                 else:
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
 
             else:
                 self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
@@ -497,123 +514,56 @@ class Main(QMainWindow):
             try:
 
                 if platform.system() == "Linux":
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python3 " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python3 " + active_tab.fileName)
 
                 elif platform.system() == "Windows":
-                    self.tab.Console.run("python " + active_tab.fileName)
-
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
                 else:
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
 
             except AttributeError as E:
-                print(E)
+                print(E, " on line 531 in the file main.py")
 
         else:
             self.tab.splitterV.addWidget(self.tab.Console)
 
             try:
                 active_tab = self.tab.tabs.currentWidget()
-
                 if platform.system() == "Linux":
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python3 " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python3 " + active_tab.fileName)
 
                 elif platform.system() == "Windows":
-                    self.tab.Console.run("python " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
 
                 else:
-                    self.tab.Console.run("python3 " + active_tab.fileName)
+                    self.tab.splitterV.addWidget(self.tab.Console)
+                    if self.tab.Console.ispressed() is False:
+                        self.tab.Console.add("python " + active_tab.fileName)
+                    else:
+                        self.tab.Console.run("python " + active_tab.fileName)
 
             except AttributeError as E:
-                print(E)
-                           
-
-class PyHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None, index=choiceIndex, *args):
-        super(PyHighlighter, self).__init__(parent, *args)
-
-        if index == "0":
-            python = config0['files']['python']
-
-        elif index == "1":
-            python = config1['files']['python']
-
-        elif index == "2":
-            python = config2['files']['python']
-        else:
-            python = config0['files']['python']  # This is the default config
-
-        self.highlightingRules = []
-        self.formats = {}
-        self.regex = {
-            "class": "\\bclass\\b",
-            "function": "[A-Za-z0-9_]+(?=\\()",
-            "magic": "\\__[^']*\\__",
-            "decorator": "@[^\n]*",
-            "singleLineComment": "#[^\n]*",
-            "quotation": "\"[^\"]*\"",
-            "quotation2": "'[^\']*\'",
-            "multiLineComment": "[-+]",
-            "int": "\\b[-+]?[0-9]+\\b",
-        }
-
-        pyKeywordPatterns = keyword.kwlist
-
-        keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(QColor(python['highlighting']['keyword']['color']))
-        keywordFormat.setFontWeight(QFont.Bold)
-
-        self.highlightingRules = [(QRegExp('\\b' + pattern + '\\b'), keywordFormat) for pattern in pyKeywordPatterns]
-
-        for name, values in self.regex.items():
-            self.formats[name] = QTextCharFormat()
-
-            if name == "class":
-                self.formats[name].setFontWeight(QFont.Bold)
-
-            elif name == "function":
-                self.formats[name].setFontItalic(True)
-
-            elif name == "magic":
-                self.formats[name].setFontItalic(True)
-
-            self.formats[name].setForeground(QColor(python['highlighting'][name]['color']))
-
-            self.highlightingRules.append((QRegExp(values), self.formats[name]))
-
-    def highlightBlock(self, text):
-        for pattern, format in self.highlightingRules:
-            expression = QRegExp(pattern)
-            index = expression.indexIn(text)
-            while index >= 0:
-                length = expression.matchedLength()
-                self.setFormat(index, length, format)
-                index = expression.indexIn(text, index + length)
-        self.setCurrentBlockState(0)
-        self.multiLineHighlight(text)
-
-    def multiLineHighlight(self, text):
-
-        comment = QRegExp('"""')
-        if self.previousBlockState() == 1:
-            start_index = 0
-            index_step = 0
-        else:
-            start_index = comment.indexIn(text)
-            while start_index >= 0 and self.format(start_index+2) in self.formats.values():
-                start_index = comment.indexIn(text, start_index + 3)
-            index_step = comment.matchedLength()
-
-        while start_index >= 0:
-            end = comment.indexIn(text, start_index + index_step)
-            if end != -1:
-                self.setCurrentBlockState(0)
-                length = end - start_index + comment.matchedLength()
-            else:
-                self.setCurrentBlockState(1)
-                length = len(text) - start_index
-
-            self.setFormat(start_index, length, self.formats['multiLineComment'])
-            start_index = comment.indexIn(text, start_index + length)
+                print(E, " on line 534 in the file main.py")
 
 
 if __name__ == '__main__':
