@@ -121,7 +121,7 @@ class Content(QWidget):
                 pass
 
         except NameError as E:
-            print(E)
+            print(E, " on line 124 in the file Content.py")
 
     def moveCursorRightFunc(self):
         textCursor, textCursorPos = self.getTextCursor()
