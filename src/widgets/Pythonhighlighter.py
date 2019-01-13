@@ -41,12 +41,16 @@ class PyHighlighter(QSyntaxHighlighter):
             "function": "[A-Za-z0-9_]+(?=\\()",
             "magic": "\\__[^']*\\__",
             "decorator": "@[^\n]*",
+            "multiLineComment": "[-+]",
+            "int": "\\b[-+]?[0-9]+\\b",
+            "Qclass": "\\b[Q|q][A-Za-z]+\\b",
+            "self": "\\bself\\b",
+            "T_bool": "\\bTrue\\b",
+            "F_bool": "\\bFalse\\b",
+            "N_bool": "\\bNone\\b",
             "singleLineComment": "#[^\n]*",
             "quotation": "\"[^\"]*\"",
             "quotation2": "'[^\']*\'",
-            "multiLineComment": "[-+]",
-            "int": "\\b[-+]?[0-9]+\\b",
-            "Qclass": "\\b[Q|q][A-Za-z]+\\b"
         }
 
         pyKeywordPatterns = keyword.kwlist
