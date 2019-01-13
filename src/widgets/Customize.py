@@ -27,13 +27,17 @@ class Customize(QWidget):
         self.app = app
         self.palette = palette
         self.setFixedSize(800, 600)
-        with open("default.json", "r") as selectedIndex:
-            self.index = selectedIndex.read()
-            if self.index == "":
-                self.index = 0
+        try:
+            with open("default.json", "r") as selectedIndex:
+                self.index = selectedIndex.read()
+                if self.index == "":
+                    self.index = 0
+                selectedIndex.close()
+        except FileNotFoundError as E:
+            self.index = 0
+            print(E, " on line 36 in the file Customize.py")
 
-            selectedIndex.close()
-        self.conf = MessageBox()
+        self.conf = MessageBox(self)
         self.opened = False
         self.vbox = QVBoxLayout(self)  # Creating the layout
 
