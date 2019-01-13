@@ -62,15 +62,6 @@
           "color": "#FF00E7"
         },
 
-        "singleLineComment": {
-          "color": "#6B6E6C"
-        },
-        "quotation": {
-          "color": "#63ff00"
-        },
-        "quotation2": {
-          "color": "#63ff00"
-        },
         "multiLineComment": {
           "color": "#039135"
         },
@@ -79,6 +70,27 @@
         },
         "Qclass": {
           "color": "#f5af19"
+        },
+        "self": {
+          "color": "#ef3b36"
+        },
+        "T_bool": {
+          "color": "#0f9b0f"
+        },
+        "F_bool": {
+          "color": "#ef473a"
+        },
+        "N_bool": {
+          "color": "#fceabb"
+        },
+        "singleLineComment": {
+          "color": "#6B6E6C"
+        },
+        "quotation": {
+          "color": "#63ff00"
+        },
+        "quotation2": {
+          "color": "#63ff00"
         }
       }
     }, "c": {
