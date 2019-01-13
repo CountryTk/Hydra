@@ -27,9 +27,10 @@ else:
 
 class Tabs(QWidget):
 
-    def __init__(self, callback, app, palette):
+    def __init__(self, callback, app, palette, parent=None):
         super().__init__()
         self.app = app
+        self.parent = parent
         self.palette = palette
         self.layout = QHBoxLayout(self)
         # Initialize tab screen
@@ -77,13 +78,13 @@ class Tabs(QWidget):
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
         self.tabs.setFont(font)
         self.status = QStatusBar(self)
-        self.dialog = MessageBox()
+        self.dialog = MessageBox(self)
         self.tabs.usesScrollButtons()
         self.filelist = []
 
         self.tabSaved = False
 
-        self.Console = Console()  # This is the terminal widget and the SECOND thread
+        self.Console = Console(self)  # This is the terminal widget and the SECOND thread
         self.terminal = Terminal()
         self.term = IPythonWidget()
         self.directory = Directory(callback, self.app, self.palette)  # TODO: This is top left
@@ -172,7 +173,7 @@ class Tabs(QWidget):
                 self.filelist.pop(index)
                 self.tabs.removeTab(index)
             except (AttributeError, IndexError) as E:
-                print(E)
+                print(E, " on line 175 in the file Tabs.py")
 
     def showDirectory(self):
         self.directory.setVisible(True)
