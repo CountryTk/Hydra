@@ -61,6 +61,27 @@
         "decorator": {
           "color": "#FF00E7"
         },
+        "multiLineComment": {
+          "color": "#039135"
+        },
+        "int": {
+          "color": "#ADD4FF"
+        },
+        "Qclass": {
+          "color": "#f5af19"
+        },
+        "self": {
+          "color": "#ef3b36"
+        },
+        "T_bool": {
+          "color": "#0f9b0f"
+        },
+        "F_bool": {
+          "color": "#ef473a"
+        },
+        "N_bool": {
+          "color": "#fceabb"
+        },
 
         "singleLineComment": {
           "color": "#6B6E6C"
@@ -70,15 +91,6 @@
         },
         "quotation2": {
           "color": "#63ff00"
-        },
-        "multiLineComment": {
-          "color": "#039135"
-        },
-        "int": {
-          "color": "#ADD4FF"
-        },
-        "Qclass": {
-          "color": "#f5af19"
         }
       }
     }, "c": {
