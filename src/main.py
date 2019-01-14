@@ -3,7 +3,7 @@ import os
 import keyword
 from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QColor, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QStatusBar
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QStatusBar,  QTextBrowser
 import platform
 import random
 from widgets.Customize import Customize
@@ -178,6 +178,12 @@ class Main(QMainWindow):
         
         self.openProjectAct.setStatusTip('Open a project')
         self.openProjectAct.triggered.connect(self.openProject)    
+
+    def switchTabs(self):
+        if self.tab.tabs.count() - 1 == self.tab.tabs.currentIndex():
+            self.tab.tabs.setCurrentIndex(0)
+        else:
+            self.tab.tabs.setCurrentIndex(self.tab.tabs.currentIndex() + 1)
 
     def customize(self):
         self.colorSchemeAct = QAction('Customize', self)
