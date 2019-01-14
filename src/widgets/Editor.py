@@ -1,7 +1,8 @@
 from builtins import print
 from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextEdit, QWidget, QToolTip, QApplication
 from PyQt5.QtCore import Qt, QRect, QSize, QObject, pyqtSignal, QPoint
-from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QColor, QCursor, QTextCharFormat
+from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QBitmap, \
+    QColor, QCursor, QPixmap, QTextCharFormat
 from utils.find_all import find_all
 from widgets.Messagebox import MessageBox
 from utils.config import config_choice
@@ -242,13 +243,14 @@ class Editor(QPlainTextEdit):
     def keyPressEvent(self, e):
         textCursor = self.textCursor()
         key = e.key()
-
         if key == Qt.Key_H:
             # self.parent.completer.wordList
             # TODO: implement dynamic completion
             pass
 
-        textCursorPos = textCursor.position()
+        if e.modifiers() == Qt.ControlModifier and key == 16777217:  # that key code stands for tab
+            self.parent.parent.switchTabs()
+
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
 
         if isSearch:
@@ -284,7 +286,7 @@ class Editor(QPlainTextEdit):
             self.insertPlainText('"')
             self.moveCursorPosBack()
 
-        if key == 16777249:
+        if key == 16777249:  # This code stands for CTRL
             if self.check_func(self.textUnderCursor()):
                 extraSelections = []
                 selection = QTextEdit.ExtraSelection()
