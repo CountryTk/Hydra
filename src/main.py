@@ -1,12 +1,10 @@
 import sys
 import os
-import keyword
-from PyQt5.QtCore import Qt, QRegExp
-from PyQt5.QtGui import QColor, QPalette, QSyntaxHighlighter, QFont, QTextCharFormat, QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QStatusBar,  QTextBrowser
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QPalette, QFont,  QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QStatusBar
 import platform
 import random
-from widgets.Customize import Customize
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader
 from widgets.Tabs import Tabs
@@ -14,14 +12,13 @@ from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
 from widgets.Browser import Browser
+from resources.materialblue import material_blue
 
 config0 = config_reader(0)
 config1 = config_reader(1)
 config2 = config_reader(2)
-
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
-lineBarColor = QColor(53, 53, 53)
 
 os.environ["PYTHONUNBUFFERED"] = "1"
 
@@ -32,7 +29,6 @@ class Main(QMainWindow):
         
         self.onStart(choiceIndex)
         self.status = QStatusBar(self)
-        self.custom = Customize()
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.openFile, app, palette, self)
         self.tabsOpen = []
@@ -44,14 +40,14 @@ class Main(QMainWindow):
 
         self.dialog = MessageBox(self)
 
-        self.pyConsoleOpened = None
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
         self.setWindowTitle('PyPad')  # Setting the window title
+        
+        self.os = platform.system()
+        
         self.tab.tabs.currentChanged.connect(self.fileNameChange)
         self.search = DocumentSearch()
-        self.os = sys.platform
-        self.openpy()
         self.openterm()
         self.openterminal()
         self.new()
@@ -61,7 +57,6 @@ class Main(QMainWindow):
         self.open()
         self.save()
         self.saveAs()
-        self.customize()
         self.exit()
         
         self.dir_opened = False
@@ -69,7 +64,6 @@ class Main(QMainWindow):
 
         # Without this, the whole layout is broken
         self.setCentralWidget(self.tab)
-        self.newFileCount = 0  # Tracking how many new files are opened
 
         self.files = None  # Tracking the current file that is open
         self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
@@ -137,13 +131,8 @@ class Main(QMainWindow):
         fileMenu.addAction(self.exitAct)
 
         toolMenu = menu.addMenu('Tools')
-        toolMenu.addAction(self.openPyAct)
         toolMenu.addAction(self.openTermAct)
         toolMenu.addAction(self.openTerminalAct)
-
-        appearance = menu.addMenu('Appearance')
-
-        appearance.addAction(self.colorSchemeAct)
         
         searchDoc = menu.addMenu('Find document')
         
@@ -185,37 +174,19 @@ class Main(QMainWindow):
         else:
             self.tab.tabs.setCurrentIndex(self.tab.tabs.currentIndex() + 1)
 
-    def customize(self):
-        self.colorSchemeAct = QAction('Customize', self)
-        self.colorSchemeAct.setShortcut('Alt+C')
-
-        self.colorSchemeAct.setStatusTip('Select a color scheme')
-        self.colorSchemeAct.triggered.connect(self.theme)
-
-    def theme(self):
-        self.custom.run()
-        self.custom.selector.clicked.connect(self.custom.test)
-
     def save(self):
         self.saveAct = QAction('Save')
         self.saveAct.setShortcut('Ctrl+S')
 
         self.saveAct.setStatusTip('Save a file')
         self.saveAct.triggered.connect(self.saveFile)
-        
-    def openpy(self):
-        self.openPyAct = QAction('IPython console', self)
-        self.openPyAct.setShortcut('Ctrl+Y')
-
-        self.openPyAct.setStatusTip('Open IPython console')
-        self.openPyAct.triggered.connect(self.console)
 
     def openterm(self):
         self.openTermAct = QAction('Run', self)
         self.openTermAct.setShortcut('Shift+F10')
 
         self.openTermAct.setStatusTip('Run your code')
-        self.openTermAct.triggered.connect(self.terminal)
+        self.openTermAct.triggered.connect(self.execute_file)
 
     def openterminal(self):
         self.openTerminalAct = QAction("Terminal", self)
@@ -264,7 +235,7 @@ class Main(QMainWindow):
                 self.pic_opened = True
             self.openFile(filename)
 
-    def showBrowser(self, url, word):
+    def openBrowser(self, url, word):
         widget = Browser(url)
         index = self.tab.tabs.addTab(widget, "Info about: " + str(word))
         self.tab.tabs.setCurrentIndex(index)
@@ -286,7 +257,7 @@ class Main(QMainWindow):
 
                     basename = os.path.basename(filename)
                     if not self.pic_opened:
-                        tab = Content(text, filename, basename, self.custom.index, self, ex)
+                        tab = Content(text, filename, basename, self, ex)
                         tab.saved = True
                         tab.modified = False
                     else:
@@ -313,7 +284,7 @@ class Main(QMainWindow):
                 tab = Image(filename, basename)
                 
             else:
-                tab = Content(text, filename, basename, self.custom.index, self, ex)  # Creating a tab object *IMPORTANT*
+                tab = Content(text, filename, basename, self, ex)  # Creating a tab object *IMPORTANT*
                 tab.saved = True
                 tab.modified = False
             self.tab.tabCounter.append(tab.baseName)
@@ -340,16 +311,14 @@ class Main(QMainWindow):
             
             if self.pic_opened is not True:
                 self.currentTab.editor.setFont(self.font)  # Setting the font
-                self.currentTab.editor.setTabStopWidth(self.tabSize)  # Setting tab size
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
             self.pic_opened = False
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
-            print(E, " on line 336 in the file main.py")
+            print(E, " on line 346 in the file main.py")
 
     def newFile(self):
         text = ""
-        
         if self._dir:
             base_file_name = "Untitled_file_" + str(random.randint(1, 100)) + ".py"
             fileName = str(self._dir) + "/" + base_file_name
@@ -360,8 +329,7 @@ class Main(QMainWindow):
             
         self.pyFileOpened = True
         # Creates a new blank file
-        file = Content(text, fileName, base_file_name, self.custom.index, self, ex)
-
+        file = Content(text, fileName, base_file_name, self, ex)
         self.tab.splitterH.addWidget(self.tab.tabs)  # Adding tabs, now the directory tree will be on the left
         self.tab.tabCounter.append(file.fileName)
         self.tab.setLayout(self.tab.layout)  # Finally we set the layout
@@ -369,10 +337,6 @@ class Main(QMainWindow):
         self.tab.tabs.setTabToolTip(index, str(file.fileName))
         self.tab.tabs.setCurrentIndex(index)  # Setting focus to the new tab that we created
         widget = self.tab.tabs.currentWidget()
-
-        widget.editor.setFocus()
-        widget.editor.setFont(self.font)
-        widget.editor.setTabStopWidth(self.tabSize)
 
     def newProjectFolder(self):
         self.dialog = MessageBox()
@@ -391,29 +355,44 @@ class Main(QMainWindow):
             active_tab = self.tab.tabs.currentWidget()
             if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
-                    saveFile.write(active_tab.editor.toPlainText())
+                    saveFile.write(active_tab.editor.text())
                     active_tab.saved = True
-                    
+                    self.tab.events.look_for_dead_code(active_tab.editor.text())
                     active_tab.modified = False
                     saveFile.close()
-                active_tab.tokenize_file()
+                if active_tab.fileName.endswith(".py"):
+                    active_tab.editor.updateAutoComplete(active_tab.fileName)
             else:
                 options = QFileDialog.Options()
                 name = QFileDialog.getSaveFileName(self, 'Save File', '',
                                                    'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
                                                    options=options)
                 fileName = name[0]
+
                 with open(fileName, "w+") as saveFile:
                     active_tab.saved = True
                     active_tab.modified = False
                     self.tabsOpen.append(fileName)
-                    saveFile.write(active_tab.editor.toPlainText())
+                    saveFile.write(active_tab.editor.text())
+                    self.tab.events.look_for_dead_code(active_tab.editor.text())
                     saveFile.close()
+                    if fileName.endswith(".py"):
+                        active_tab.editor.updateAutoComplete(active_tab.fileName)
             ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
             active_tab.tokenize_file()
         except Exception as E:
             print(E, " on line 403 in the file main.py")
+    
+    def choose_python(self):
+        if self.os == "Windows":
+            return "python"
+            
+        elif self.os == "Linux":
+            return "python3"
         
+        elif self.os == "Darwin":
+            return "python3"
+         
     def saveFileAs(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
@@ -434,9 +413,9 @@ class Main(QMainWindow):
                         baseName = os.path.basename(fileName)
                     except AttributeError:
                         print("All tabs closed")
-                    saveFile.write(active_tab.editor.toPlainText())
-                    text = active_tab.editor.toPlainText()
-                    newTab = Content(str(text), fileName, baseName, self.custom.index, self, ex)
+                    saveFile.write(active_tab.editor.text())
+                    text = active_tab.editor.text()
+                    newTab = Content(str(text), fileName, baseName, self, ex)
 
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.baseName)  # And add the new one!
@@ -448,11 +427,6 @@ class Main(QMainWindow):
                     newActiveTab.editor.setFont(self.font)
                     newActiveTab.editor.setFocus()
 
-                    if fileName.endswith(".py"):  # If we are dealing with a python file we use highlighting on it
-                        self.pyhighlighter = PyHighlighter(newActiveTab.editor.document(), index=self.custom.index)
-
-                        newActiveTab.editor.setTabStopWidth(self.tabSize)
-
                     saveFile.close()
                 ex.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
 
@@ -462,119 +436,52 @@ class Main(QMainWindow):
         except FileNotFoundError:
             print("File dialog closed")
 
-    def console(self):
-
-        self.pyConsoleOpened = True
-        self.ind = self.tab.splitterV.indexOf(self.tab.term)
-
-        self.o = self.tab.splitterV.indexOf(self.tab.Console)
-
-        if self.tab.splitterV.indexOf(self.tab.Console) == -1:  # If the Console widget DOESNT EXIST YET!
-
-            self.tab.splitterV.addWidget(self.tab.term)
-
-            self.ind = self.tab.splitterV.indexOf(self.tab.term)
-
-        if self.tab.splitterV.indexOf(self.tab.term) == -1:  # If the terminal widget doesnt exist yet
-            self.tab.splitterV.replaceWidget(self.o, self.tab.term)
-            self.o = self.tab.splitterV.indexOf(self.tab.Console)
-
-            self.ind = self.tab.splitterV.indexOf(self.tab.term)
-
     def realterminal(self):
-        self.tab.splitterV.addWidget(self.tab.terminal)
-        if self.tab.terminal.ispressed() is False:
+        if self.tab.terminal.ispressed() is False and self.tab.tool_layout.indexOf(self.tab.Console) == -1:
             self.tab.terminal.add()
+            self.tab.showConsole()
 
-    def terminal(self):
+        elif self.tab.terminal.ispressed() is False and self.tab.tool_layout.indexOf(self.tab.Console) == 0:
+            try:
+                self.tab.Console.remove()
+            except RuntimeError:  # This means that the console widget has been removed with its remove button
+                pass
+            self.tab.tool_layout.removeWidget(self.tab.Console)
+            self.tab.terminal.add()
+            self.tab.showConsole()
+
+    def execute_file(self):
         active_tab = self.tab.tabs.currentWidget()
+        python_command = self.choose_python()
+        if self.tab.tool_layout.indexOf(self.tab.terminal) == -1 and self.tab.Console.ispressed() is not True:  # If the terminal widget isn't in the layout
+            self.tab.tool_layout.addWidget(self.tab.Console)
+            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
 
-        if self.pyConsoleOpened:
-            self.o = self.tab.splitterV.indexOf(self.tab.Console)
-            self.ind = self.tab.splitterV.indexOf(self.tab.term)
+        elif self.tab.tool_layout.indexOf(self.tab.terminal) == 0:
+            self.tab.terminal.remove()
+            self.tab.tool_layout.removeWidget(self.tab.terminal)
+            self.tab.tool_layout.addWidget(self.tab.Console)
+            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
 
-            if self.ind == -1:
-                if platform.system() == "Linux":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python3 " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python3 " + active_tab.fileName)
-
-                elif platform.system() == "Windows":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-                else:
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-
-            else:
-                self.tab.splitterV.replaceWidget(self.ind, self.tab.Console)
-
+        elif self.tab.tool_layout.indexOf(self.tab.terminal) == -1 and self.tab.Console.ispressed() is True:  # If the terminal widget isn't in the layout
             try:
+                self.tab.Console.remove()
+            except RuntimeError:  # This means that the console widget has been removed with its remove button
+                pass
+            self.tab.tool_layout.removeWidget(self.tab.Console)
+            self.tab.tool_layout.addWidget(self.tab.Console)
+            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
 
-                if platform.system() == "Linux":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python3 " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python3 " + active_tab.fileName)
-
-                elif platform.system() == "Windows":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-                else:
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-
-            except AttributeError as E:
-                print(E, " on line 531 in the file main.py")
-
-        else:
-            self.tab.splitterV.addWidget(self.tab.Console)
-
-            try:
-                active_tab = self.tab.tabs.currentWidget()
-                if platform.system() == "Linux":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python3 " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python3 " + active_tab.fileName)
-
-                elif platform.system() == "Windows":
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-
-                else:
-                    self.tab.splitterV.addWidget(self.tab.Console)
-                    if self.tab.Console.ispressed() is False:
-                        self.tab.Console.add("python " + active_tab.fileName)
-                    else:
-                        self.tab.Console.run("python " + active_tab.fileName)
-
-            except AttributeError as E:
-                print(E, " on line 534 in the file main.py")
+        elif self.tab.Console.ispressed() is not True or self.tab.terminal.ispressed() is not True:
+            pass
 
 
 if __name__ == '__main__':
     if True:  # checkVersion("version.txt") != checkVerOnlineFunc():
         pass  # TODO: implement an updater
+    # from utils.install_punkt import install_punkt
+
+    # install_punkt()
 
     app = QApplication(sys.argv)
     try:
@@ -591,6 +498,7 @@ if __name__ == '__main__':
         editor = config2['editor']
     else:
         editor = config0['editor']
+    print(choiceIndex)
     ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
@@ -604,5 +512,6 @@ if __name__ == '__main__':
     palette.setColor(QPalette.Highlight, QColor(editor["HighlightColor"]).lighter())
     palette.setColor(QPalette.HighlightedText, QColor(editor["HighlightedTextColor"]))
     app.setPalette(palette)
+    app.setStyleSheet(material_blue)  # uncomment this to have a material blue theme
     ex.show()
     sys.exit(app.exec_())
