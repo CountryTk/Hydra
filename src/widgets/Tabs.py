@@ -32,7 +32,10 @@ class Tabs(QWidget):
         self.app = app
         self.parent = parent
         self.palette = palette
-        self.layout = QHBoxLayout(self)
+        self.terminal = Terminal(self)
+        self.tool_layout = QVBoxLayout()
+        self.tool_layout_bar = QHBoxLayout()
+        self.layout = QVBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet("""
@@ -72,7 +75,6 @@ class Tabs(QWidget):
             QTabBar::tab:selected {
                 border-bottom-color: #FFFFFF; /* same as pane color */
             }
-            
             """)
         font = QFont(editor['tabFont'])
         font.setPointSize(editor["tabFontSize"])  # This is the tab font and font size
@@ -85,7 +87,6 @@ class Tabs(QWidget):
         self.tabSaved = False
 
         self.Console = Console(self)  # This is the terminal widget and the SECOND thread
-        self.terminal = Terminal()
         self.term = IPythonWidget()
         self.directory = Directory(callback, self.app, self.palette)  # TODO: This is top left
         self.directory.clearSelection()
@@ -131,11 +132,8 @@ class Tabs(QWidget):
         self.getAllOpenTabs.activated.connect(self.getAllOpenTabsFunc)
 
         currentTab = self.tabs.currentWidget()
+        self.layout.addLayout(self.tool_layout)
         self.hideDirectory()
-        """
-    def hideDirectory(self):
-        self.tab_layout.removeWidget(self.directory)
-        self.directory.setVisible(False)"""
 
     @pyqtSlot()
     def closeTabShortcut(self):
@@ -151,6 +149,7 @@ class Tabs(QWidget):
 
         for file in self.filelist:
             openedFileContents = open(file, 'r').read()
+            print(file)
 
     def closeTab(self, index):
         try:
@@ -190,8 +189,12 @@ class Tabs(QWidget):
     This keeps the UI order set as intended as built above when initialized.
     """
 
+    def hideConsole(self):
+        self.tool_layout.removeWidget(self.terminal)
+
     def showConsole(self):
-        pass
+        self.tool_layout.addWidget(self.terminal)
+        self.terminal.setFixedHeight(300)
 
     def currentTab(self):
         return self.tabs.currentWidget()
