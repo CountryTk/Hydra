@@ -4,9 +4,9 @@ from PyQt5.QtCore import Qt, pyqtSlot
 from widgets.Messagebox import MessageBox
 from widgets.Console import Console
 from widgets.Terminal import Terminal
-from widgets.IPythonWidget import IPythonWidget
 from widgets.Directory import Directory
 from utils.config import config_reader
+from widgets.Events import Events
 
 config0 = config_reader(0)
 config1 = config_reader(1)
@@ -32,15 +32,16 @@ class Tabs(QWidget):
         self.app = app
         self.parent = parent
         self.palette = palette
-        self.terminal = Terminal(self)
+        self.terminal = Terminal(self, False)
         self.tool_layout = QVBoxLayout()
         self.tool_layout_bar = QHBoxLayout()
         self.layout = QVBoxLayout(self)
         # Initialize tab screen
         self.tabs = QTabWidget()
+        self.events = Events()
         self.tabs.setStyleSheet("""
            QTabWidget::pane { /* The tab widget frame */
-                border-top: 0.5px solid #303030;
+                border-top: 0.5px solid #2c2c2c;
             }
             
             QTabWidget::tab-bar {
@@ -50,7 +51,7 @@ class Tabs(QWidget):
             /* Style the tab using the tab sub-control. Note that
                 it reads QTabBar _not_ QTabWidget */
             QTabBar::tab {
-                background: #434343;
+                background: #212121;
                 border-bottom: 2px solid #303030;
                 border-bottom-color: #434343;
                 min-width: 8ex;
@@ -62,14 +63,14 @@ class Tabs(QWidget):
             }
             
             QTabBar::tab:selected, QTabBar::tab:hover {
-                background: #434343;
+                background: #212121;
             }
             QToolTip {
                 padding: 3px;
                 font-family: \"Iosevka\";
                 font-size: 14px; 
                 color: #FFFFFF;
-                background: #303030;
+                background: #2c2c2c;
                 
             }
             QTabBar::tab:selected {
@@ -87,7 +88,6 @@ class Tabs(QWidget):
         self.tabSaved = False
 
         self.Console = Console(self)  # This is the terminal widget and the SECOND thread
-        self.term = IPythonWidget()
         self.directory = Directory(callback, self.app, self.palette)  # TODO: This is top left
         self.directory.clearSelection()
         self.tabCounter = []
@@ -107,10 +107,6 @@ class Tabs(QWidget):
 
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
-        # Add Console
-        self.console_layout = QHBoxLayout()  # Create console layout
-        self.console_layout.addWidget(self.term)  # Add console to console layout
-
         # Build Layout
         self.layout.addLayout(self.tab_layout)  # Adds 'TOP' layout : tab + directory
         self.layout.addLayout(self.search_layout)
@@ -120,9 +116,12 @@ class Tabs(QWidget):
 
         # Creating vertical splitter
         self.splitterV = QSplitter(Qt.Vertical)
+
+        self.splitterV2 = QSplitter(Qt.Vertical)
+
         self.splitterV.addWidget(self.splitterH)
         self.layout.addWidget(self.splitterV)
-        self.splitterV.setSizes([300, 10])
+        self.splitterV.setSizes([400, 10])
         self.setLayout(self.layout)  # Sets layout of QWidget
 
         self.closeShortcut = QShortcut(QKeySequence(editor["closeTabShortcut"]), self)
@@ -149,7 +148,6 @@ class Tabs(QWidget):
 
         for file in self.filelist:
             openedFileContents = open(file, 'r').read()
-            print(file)
 
     def closeTab(self, index):
         try:
@@ -177,7 +175,9 @@ class Tabs(QWidget):
     def showDirectory(self):
         self.directory.setVisible(True)
         self.tab_layout.removeWidget(self.tabs)
-        self.splitterH.addWidget(self.directory)  # Adding that directory widget in the Tab class BEFORE the tabs
+        self.splitterV2.addWidget(self.directory)
+        self.splitterV2.addWidget(self.events)
+        self.splitterH.addWidget(self.splitterV2)
         self.splitterH.addWidget(self.tabs)  # Adding tabs, now the directory tree will be on the left
 
     def hideDirectory(self):
@@ -185,7 +185,7 @@ class Tabs(QWidget):
         self.directory.setVisible(False)
 
     """
-    Because the root layouts are set all you have to do now is just add/remove widgets from the parent layout associated.
+    Because the root layouts are set all you have to do now is just add/remove widgets from the parent layout associated
     This keeps the UI order set as intended as built above when initialized.
     """
 
