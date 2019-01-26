@@ -4,7 +4,6 @@ from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, Q
 from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess
 from widgets.Editor import Editor
 from widgets.Customize import Customize
-from widgets.Numberbar import NumberBar
 from widgets.Messagebox import MessageBox
 
 
