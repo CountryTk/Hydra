@@ -7,7 +7,6 @@ from utils.search_algorithm import tokenize
 from widgets.Editor import Editor
 from widgets.Customize import Customize
 from widgets.Completer import Completer
-from widgets.Numberbar import NumberBar
 import platform
 from widgets.Pythonhighlighter import PyHighlighter
 config0 = config_reader(0)
@@ -55,6 +54,7 @@ class Content(QWidget):
         if self.baseName.endswith(".py"):
             self.highlighter = PyHighlighter(self.editor.document(), index=self.custom.index)
             self.tokenize_file()
+            print(self.code_info(self.editor.toPlainText()))
             self.test.setText(str(platform.system()) + "   " + "Python 3")
         else:
             pass
@@ -94,6 +94,19 @@ class Content(QWidget):
 
     def get_size(self, input):
         return round(len(input.encode("utf-8"))/1000)
+
+    def code_info(self, data):
+        counter = 1
+        keywords = {}
+        text_array = data.splitlines()
+
+        for w in text_array:
+            word = w.strip()
+            if word.startswith("class ") or word.startswith("def "):
+                keywords[counter] = word.strip()
+
+            counter += 1
+        return keywords
 
     def tokenize_file(self):
 
