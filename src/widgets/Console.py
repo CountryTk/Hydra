@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, Q
 from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess
 from widgets.Editor import Editor
 from widgets.Customize import Customize
+from widgets.Numberbar import NumberBar
 from widgets.Messagebox import MessageBox
 
 
@@ -14,7 +15,6 @@ class Console(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
-        self.custom = Customize()
         self.pressed = False
         self.font = QFont()
         self.dialog = MessageBox(self)
@@ -84,18 +84,24 @@ class Console(QWidget):
         # clear previous text
         self.added()
         self.button = QPushButton("Hide terminal")
+        self.button.setFont(QFont("Iosevka", 11))
+        self.button.setStyleSheet("""
+                height: 20;
+                background-color: #212121;
+
+                """)
         self.terminateButton = QPushButton("   Stop")
         self.terminateButton.setIcon(QIcon("resources/square.png"))
+        self.terminateButton.setFont(QFont("Iosevka", 11))
         self.terminateButton.clicked.connect(self.terminate)
-        self.button.setFixedWidth(100)
+        self.button.setFixedWidth(120)
         self.h_layout = QHBoxLayout()
         self.editor = Editor(self)
         self.editor.setReadOnly(True)
         self.editor.setFont(self.font)
         self.layout.addWidget(self.button)
-        self.layout.addLayout(self.h_layout)
-        self.h_layout.addWidget(self.editor)
-        self.h_layout.addWidget(self.terminateButton)
+        self.layout.addWidget(self.editor)
+        self.layout.addWidget(self.terminateButton)
         self.button.clicked.connect(self.remove)
         self.run(command)
 
