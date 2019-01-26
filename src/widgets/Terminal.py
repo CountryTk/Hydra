@@ -8,8 +8,6 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QPlainTextEdit, q
 from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread, QPoint
 
-lineBarColor = QColor(53, 53, 53)
-
 
 class PlainTextEdit(QPlainTextEdit):
     commandSignal = pyqtSignal(str)
@@ -23,7 +21,7 @@ class PlainTextEdit(QPlainTextEdit):
         self.appendPlainText(self.name)
         self.movable = movable
         self.parent = parent
-        self.setStyleSheet("QPlainTextEdit{background-color: black; color: white; padding: 0;}")
+        self.setStyleSheet("QPlainTextEdit{background-color: #212121; color: white; padding: 8;}")
         self.font = QFont()
         self.font.setFamily("Iosevka")
         self.font.setPointSize(12)
@@ -115,11 +113,13 @@ class Terminal(QWidget):
     def add(self):
         self.added()
         self.button = QPushButton("Hide terminal")
+        self.button.setFont(QFont("Iosevka", 11))
         self.button.setStyleSheet("""
         height: 20;
-        font-size: 14;
+        background-color: #212121;
+        
         """)
-        self.button.setFixedWidth(100)
+        self.button.setFixedWidth(120)
         self.editor = PlainTextEdit(self, self.movable)
         self.highlighter = name_highlighter(self.editor.document(), str(getpass.getuser()), str(socket.gethostname()),
                                             str(os.getcwd()))
@@ -138,15 +138,6 @@ class Terminal(QWidget):
         self.parent.hideConsole()
         self.pressed = False
 
-    def mousePressEvent(self, event):
-        self.oldPos = event.globalPos()
-
-    def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self.oldPos)
-
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
-
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
         self.editor.appendPlainText(self.error.strip('\n'))
@@ -162,7 +153,6 @@ class Terminal(QWidget):
         """Executes a system command."""
         if self.process.state() != 2:
             self.process.start(command)
-            print("Command executed, process state is now: " + str(self.process.state()))
 
     def handle(self, command):
 
@@ -173,8 +163,8 @@ class Terminal(QWidget):
             if self.process.state() == 2:
                 self.process.kill()
                 self.editor.appendPlainText("Program execution killed, press enter")
+
         if real_command.startswith("python"):
-            # TODO: start a python thread....
             pass
 
         if real_command != "":
@@ -184,12 +174,6 @@ class Terminal(QWidget):
         """Now we start implementing some commands"""
         if real_command == "clear":
             self.editor.clear()
-
-        elif "&&" in command_list:
-            pass
-            # print(command_list)
-            # print(command_list.index("&&"))
-            # print(command_list[command_list.index("&&")+1:])
 
         elif command_list is not None and command_list[0] == "echo":
             self.editor.appendPlainText(" ".join(command_list[1:]))
@@ -223,7 +207,8 @@ class Terminal(QWidget):
             self.run(real_command)
 
         else:
-            pass  # When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
+            pass
+    # When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
 
 
 class name_highlighter(QSyntaxHighlighter):
