@@ -3,7 +3,6 @@ import io
 from contextlib import redirect_stdout
 from vulture.core import Vulture
 from PyQt5.QtGui import QFont
-from pycodestyle import Checker
 
 
 class Events(QWidget):
