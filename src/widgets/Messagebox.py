@@ -45,6 +45,7 @@ class MessageBox(QWidget):
         self.cancel = QPushButton("Cancel")
         self.getHelpButton = QPushButton("Yes")
         self.closeAnywayButton = QPushButton()
+        self.getHelpButton.setAutoDefault(True)
         self.saveButton = QPushButton("Save")
 
         self.deleteButton.clicked.connect(self.delete)
