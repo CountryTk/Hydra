@@ -1,10 +1,8 @@
 import os
-from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout
-from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, QColor, QFont, QIcon
-from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtCore import Qt, pyqtSignal, QProcess
 from widgets.Editor import Editor
-from widgets.Customize import Customize
-from widgets.Numberbar import NumberBar
 from widgets.Messagebox import MessageBox
 
 
