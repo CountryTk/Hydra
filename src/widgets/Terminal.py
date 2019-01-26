@@ -4,9 +4,9 @@ import os
 import getpass
 import socket
 from pathlib import Path
-from PyQt5.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QPushButton, QPlainTextEdit, qApp
-from PyQt5.QtGui import QPainter, QColor, QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt5.QtCore import QRect, Qt, pyqtSignal, QRegExp, QProcess, QThread
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QPlainTextEdit, qApp, QDesktopWidget
+from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
+from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread, QPoint
 
 lineBarColor = QColor(53, 53, 53)
 
@@ -61,7 +61,6 @@ class PlainTextEdit(QPlainTextEdit):
                 text = self.textCursor().block().text()
                 self.commandSignal.emit(text)
                 self.appendPlainText(self.name)
-                print("Command sent: " + str(text))
 
                 return
 
@@ -81,7 +80,7 @@ class Terminal(QWidget):
     errorSignal = pyqtSignal(str)
     outputSignal = pyqtSignal(str)
 
-    def __init__(self, movable=False):
+    def __init__(self, parent, movable=False):
         super().__init__()
 
         self.setWindowFlags(
@@ -94,7 +93,7 @@ class Terminal(QWidget):
         self.layout = QVBoxLayout()
         self.pressed = False
         self.process = QProcess(self)
-
+        self.parent = parent
         self.name = None
 
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
@@ -136,6 +135,7 @@ class Terminal(QWidget):
     def remove(self):
         self.editor.deleteLater()
         self.button.deleteLater()
+        self.parent.hideConsole()
         self.pressed = False
 
     def mousePressEvent(self, event):
@@ -195,7 +195,7 @@ class Terminal(QWidget):
             self.editor.appendPlainText(" ".join(command_list[1:]))
 
         elif real_command == "exit":
-            qApp.exit()
+            self.remove()
 
         elif command_list is not None and command_list[0] == "cd" and len(command_list) > 1:
             try:
