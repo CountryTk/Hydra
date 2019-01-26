@@ -12,7 +12,7 @@ from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
 from widgets.Browser import Browser
-from resources.materialblue import material_blue
+from resources.materialblack import material_blue
 
 config0 = config_reader(0)
 config1 = config_reader(1)
