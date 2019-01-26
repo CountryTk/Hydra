@@ -3,13 +3,7 @@ A simple cross-platform python IDE with auto completion and the ability to run s
 
 This editor is very customizable, just edit the config.json file. All color codes  **MUST** be hex color codes!
 
-Required modules: PyQt5, bs4, lxml parser and qtconsole.
-
-# Auto completion
-
-Auto completion pops up by pressing Ctrl+Space. It will automatically reccommend the best word and pressing enter will select the word.
-
-You can also navigate the word list with arrow keys.
+Required modules: PyQt5, QScintilla, bs4, lxml, nltk and vulture
 
 # nltk installation
 After doing pip install -r requirements.txt you need to open up a cmd/terminal and follow these steps:
@@ -29,7 +23,6 @@ To cycle through any words that were found, you press F3
 ```git clone https://github.com/Fuchsiaff/PyPad.git && cd PyPad && pip install -r requirements.txt && cd src && python main.py``` 
 
 # Pictures
-![alt_text](https://raw.githubusercontent.com/Fuchsiaff/content/master/PyPad_picture1.png)
-![Auto completion demo](https://raw.githubusercontent.com/Fuchsiaff/content/master/vid1.mp4)
+![alt_text](https://raw.githubusercontent.com/Fuchsiaff/Content/master/2019-01-26-220809_1920x1021_scrot.png)
 
-![Another video demo](https://raw.githubusercontent.com/Fuchsiaff/content/master/vid2.mp4)
+![Video demo](https://raw.githubusercontent.com/Fuchsiaff/content/master/demo_1.mp4)
