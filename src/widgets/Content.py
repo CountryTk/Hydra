@@ -5,7 +5,7 @@ from utils.predictionList import wordList
 from utils.config import config_reader
 from utils.search_algorithm import tokenize
 from widgets.TextEditor import Editor
-import platform
+
 config0 = config_reader(0)
 config1 = config_reader(1)
 config2 = config_reader(2)
@@ -60,7 +60,10 @@ class Content(QWidget):
 
         if self.baseName.endswith(".py"):
             self.editor.python_highlighter()
-
+        elif self.baseName.endswith(".c") or self.baseName.endswith(".cpp") or self.baseName.endswith(".h"):
+            self.editor.c_highlighter()
+        elif self.baseName.endswith(".json"):
+            self.editor.json_highlighter()
         self.editor.cursorPositionChanged.connect(self.change_col)
 
     def change_col(self, line, column):
