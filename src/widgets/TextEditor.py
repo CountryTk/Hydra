@@ -1,6 +1,6 @@
 from builtins import print
 from utils.search_algorithm import tokenize
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
+from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs, QsciLexerCPP, QsciLexerJSON
 from PyQt5.QtGui import QFont, QFontMetrics, QColor, QGuiApplication
 from PyQt5.QtWidgets import QInputDialog
 from PyQt5.Qt import Qt
@@ -26,7 +26,6 @@ class Editor(QsciScintilla):
         self.fileName = None
         self.parent = parent
         self.debugging = False
-
         self.line = None
         self.column = None
 
@@ -119,35 +118,47 @@ class Editor(QsciScintilla):
                 # self.setCursorPosition(i, 120)
 
     def python_highlighter(self):
-        self.setAutoIndent(True)
         self.lexer = PythonLexer()
-        self.lexer.setFont(self.font)
         self.lexer.setFoldComments(True)
-        # set Lexer
-        self.setLexer(self.lexer)
         self.setCaretLineVisible(True)
-        self.lexer.setColor(QColor('white'), 0)  # default
-        self.lexer.setColor(QColor('#6B6E6C'), PythonLexer.Comment)  # = 1
-        self.lexer.setColor(QColor('#ADD4FF'), 2)  # Number = 2
-        self.lexer.setColor(QColor('#38ef7d'), 3)  # DoubleQuotedString
-        self.lexer.setColor(QColor('#38ef7d'), 4)  # SingleQuotedString
-        self.lexer.setColor(QColor('#F6DC74'), 5)  # Keyword
-        self.lexer.setColor(QColor('#38ef7d'), 6)  # TripleSingleQuotedString
-        self.lexer.setColor(QColor('#38ef7d'), 7)  # TripleDoubleQuotedString
-        self.lexer.setColor(QColor('#74F6C3'), 8)  # ClassName
-        self.lexer.setColor(QColor('#FF6666'), 9)  # FunctionMethodName
-        self.lexer.setColor(QColor('magenta'), 10)  # Operator
-        self.lexer.setColor(QColor('white'), 11)  # Identifier
-        self.lexer.setColor(QColor('gray'), 12)  # CommentBlock
-        self.lexer.setColor(QColor('#a8ff78'), 13)  # UnclosedString
-        self.lexer.setColor(QColor('gray'), 14)  # HighlightedIdentifier
-        self.lexer.setColor(QColor('#FF00E7'), 15)  # Decorator
 
-        self.lexer.setFont(QFont("Iosevka", weight=QFont.Bold), 5)
-        self.setCaretLineBackgroundColor(QColor("#3C3B3F"))
-
+        self.setDefaultSettings(self.lexer)
         self.setPythonAutocomplete()
         self.setFold()
+
+    def json_highlighter(self):
+        lexer = QsciLexerJSON()
+        self.setDefaultSettings(lexer)
+
+    def c_highlighter(self):
+        lexer = QsciLexerCPP()
+
+        self.setDefaultSettings(lexer)
+
+    def setDefaultSettings(self, lexer):
+        self.setAutoIndent(True)
+        lexer.setFont(self.font)
+
+        lexer.setColor(QColor('white'), 0)  # default
+        lexer.setColor(QColor('#6B6E6C'), PythonLexer.Comment)  # = 1
+        lexer.setColor(QColor('#ADD4FF'), 2)  # Number = 2
+        lexer.setColor(QColor('#38ef7d'), 3)  # DoubleQuotedString
+        lexer.setColor(QColor('#38ef7d'), 4)  # SingleQuotedString
+        lexer.setColor(QColor('#F6DC74'), 5)  # Keyword
+        lexer.setColor(QColor('#38ef7d'), 6)  # TripleSingleQuotedString
+        lexer.setColor(QColor('#38ef7d'), 7)  # TripleDoubleQuotedString
+        lexer.setColor(QColor('#74F6C3'), 8)  # ClassName
+        lexer.setColor(QColor('#FF6666'), 9)  # FunctionMethodName
+        lexer.setColor(QColor('magenta'), 10)  # Operator
+        lexer.setColor(QColor('white'), 11)  # Identifier
+        lexer.setColor(QColor('gray'), 12)  # CommentBlock
+        lexer.setColor(QColor('#a8ff78'), 13)  # UnclosedString
+        lexer.setColor(QColor('gray'), 14)  # HighlightedIdentifier
+        lexer.setColor(QColor('#FF00E7'), 15)  # Decorator
+
+        lexer.setFont(QFont("Iosevka", weight=QFont.Bold), 5)
+        self.setCaretLineBackgroundColor(QColor("#3C3B3F"))
+        self.setLexer(lexer)
 
     def setPythonAutocomplete(self):
         self.autocomplete = QsciAPIs(self.lexer)
