@@ -4,9 +4,9 @@ import os
 import getpass
 import socket
 from pathlib import Path
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QPlainTextEdit, qApp, QDesktopWidget
-from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread, QPoint
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QPlainTextEdit, QDesktopWidget
+from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont, QTextCursor
+from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread
 
 
 class PlainTextEdit(QPlainTextEdit):
@@ -21,12 +21,17 @@ class PlainTextEdit(QPlainTextEdit):
         self.appendPlainText(self.name)
         self.movable = movable
         self.parent = parent
+        self.commands = []  # This is a list to track what commands the user has used so we could display them when
+        # up arrow key is pressed
+        self.tracker = 0
         self.setStyleSheet("QPlainTextEdit{background-color: #212121; color: white; padding: 8;}")
         self.font = QFont()
         self.font.setFamily("Iosevka")
         self.font.setPointSize(12)
+        self.text = None
         self.setFont(self.font)
         self.document_file = self.document()
+        self.previousCommandLength = 0
         self.document_file.setDocumentMargin(-1)
 
     def center(self):
@@ -43,6 +48,12 @@ class PlainTextEdit(QPlainTextEdit):
         if self.movable is True:
             self.parent.mouseMoveEvent(event)
 
+    def textUnderCursor(self):
+        textCursor = self.textCursor()
+        textCursor.select(QTextCursor.WordUnderCursor)
+
+        return textCursor.selectedText()
+
     def keyPressEvent(self, e):
         cursor = self.textCursor()
 
@@ -55,12 +66,42 @@ class PlainTextEdit(QPlainTextEdit):
                 self.commandZPressed.emit("True")
                 return
 
-            if e.key() == 16777220:
+            if e.key() == 16777220:  # This is the ENTER key
                 text = self.textCursor().block().text()
+
+                if text == self.name + text.replace(self.name, "") and text.replace(self.name, "") != "":  # This is to prevent adding in commands that were not meant to be added in
+                    self.commands.append(text.replace(self.name, ""))
                 self.commandSignal.emit(text)
                 self.appendPlainText(self.name)
 
                 return
+
+            if e.key() == Qt.Key_Up:
+                try:
+                    if self.tracker != 0:
+                        cursor.select(QTextCursor.BlockUnderCursor)
+                        cursor.removeSelectedText()
+                        self.appendPlainText(self.name)
+
+                    self.insertPlainText(self.commands[self.tracker])
+                    self.tracker += 1
+
+                except IndexError:
+                    self.tracker = 0
+
+                return
+
+            if e.key() == Qt.Key_Down:
+                try:
+                    cursor.select(QTextCursor.BlockUnderCursor)
+                    cursor.removeSelectedText()
+                    self.appendPlainText(self.name)
+
+                    self.insertPlainText(self.commands[self.tracker])
+                    self.tracker -= 1
+
+                except IndexError:
+                    self.tracker = 0
 
             if e.key() == 16777219:
                 if cursor.positionInBlock() <= len(self.name):
@@ -90,7 +131,7 @@ class Terminal(QWidget):
         self.movable = movable
         self.layout = QVBoxLayout()
         self.pressed = False
-        self.process = QProcess(self)
+        self.process = QProcess()
         self.parent = parent
         self.name = None
 
@@ -194,7 +235,7 @@ class Terminal(QWidget):
             except FileNotFoundError as E:
                 self.editor.appendPlainText(str(E))
 
-        elif len(command_list) == 1 and command_list[0] == "cd":
+        elif command_list is not None and len(command_list) == 1 and command_list[0] == "cd":
             os.chdir(str(Path.home()))
             self.editor.name = "[" + str(getpass.getuser()) + "@" + str(socket.gethostname()) + "]" + "  ~" + str(
                 os.getcwd()) + " >$ "
@@ -219,8 +260,6 @@ class name_highlighter(QSyntaxHighlighter):
         self.name = user_name
         self.name2 = host_name
         self.cwd = cwd
-        # print(self.cwd)
-        first_list = []
         most_used = ["cd", "clear", "history", "ls", "man", "pwd", "what", "type",
                      "strace", "ltrace", "gdb", "cat", "chmod", "cp", "chown", "find", "grep", "locate", "mkdir",
                      "rmdir", "rm", "mv", "vim", "nano", "rename",
