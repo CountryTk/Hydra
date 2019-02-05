@@ -459,6 +459,8 @@ class Main(QMainWindow):
         If it does exist, then we're going to replace it, if it doesn't then we're just gonna add our file executer to
         the layout, expand the splitter and run the file.
 
+        Then check if the file executer already exists, but is called again to run the file again
+
         """
         active_tab = self.tab.tabs.currentWidget()
         python_command = self.choose_python()
@@ -466,8 +468,13 @@ class Main(QMainWindow):
             self.tab.splitterV.replaceWidget(self.tab.splitterV.indexOf(self.tab.terminal), self.tab.Console)
             self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
             self.tab.splitterV.setSizes([400, 10])
+
+        elif self.tab.splitterV.indexOf(self.tab.Console) == 1:
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
+
         else:
             self.tab.showFileExecuter()
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
 
 
 if __name__ == '__main__':
@@ -492,7 +499,7 @@ if __name__ == '__main__':
         editor = config2['editor']
     else:
         editor = config0['editor']
-  
+    print(choiceIndex)
     ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
