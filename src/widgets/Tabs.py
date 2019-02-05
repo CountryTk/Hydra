@@ -132,6 +132,7 @@ class Tabs(QWidget):
 
         currentTab = self.tabs.currentWidget()
         self.layout.addLayout(self.tool_layout)
+        self.layout.addWidget(self.splitterV)
         self.hideDirectory()
 
     @pyqtSlot()
@@ -190,11 +191,20 @@ class Tabs(QWidget):
     """
 
     def hideConsole(self):
-        self.tool_layout.removeWidget(self.terminal)
+        self.splitterV.setSizes([0, 0])
 
     def showConsole(self):
-        self.tool_layout.addWidget(self.terminal)
-        self.terminal.setFixedHeight(300)
+        self.splitterV.addWidget(self.terminal)
+        self.splitterV.setSizes([400, 10])
+        self.terminal.clicked = False
+
+    def hideFileExecuter(self):
+        self.splitterV.setSizes([0, 0])
+
+    def showFileExecuter(self):
+        self.splitterV.addWidget(self.Console)
+        self.splitterV.setSizes([400, 10])
+        self.Console.clicked = False
 
     def currentTab(self):
         return self.tabs.currentWidget()
