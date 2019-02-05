@@ -52,7 +52,6 @@ class Content(QWidget):
         self.main_layout.addLayout(self.hbox)
         self.main_layout.addLayout(self.status_bar_layout)
 
-
         self.line = None
         self.column = None
 
