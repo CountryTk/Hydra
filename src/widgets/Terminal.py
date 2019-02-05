@@ -133,17 +133,21 @@ class Terminal(QWidget):
         self.pressed = False
         self.process = QProcess()
         self.parent = parent
+        self.clicked = False
         self.name = None
 
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
         self.setLayout(self.layout)
         self.setStyleSheet("QWidget {background-color:invisible;}")
-
+        self.add()  # Add items to the layout
         # self.showMaximized() # comment this if you want to embed this widget
 
     def ispressed(self):
         return self.pressed
+
+    def hideTerminalClicked(self):
+        return self.clicked
 
     def center(self):
         qr = self.frameGeometry()
@@ -174,10 +178,9 @@ class Terminal(QWidget):
         self.pressed = True
 
     def remove(self):
-        self.editor.deleteLater()
-        self.button.deleteLater()
         self.parent.hideConsole()
         self.pressed = False
+        self.clicked = False
 
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
@@ -192,6 +195,11 @@ class Terminal(QWidget):
 
     def run(self, command):
         """Executes a system command."""
+
+        """
+         self.process.write(real_command.encode())
+            self.process.closeWriteChannel()
+        """
         if self.process.state() != 2:
             self.process.start(command)
 
@@ -240,16 +248,12 @@ class Terminal(QWidget):
             self.editor.name = "[" + str(getpass.getuser()) + "@" + str(socket.gethostname()) + "]" + "  ~" + str(
                 os.getcwd()) + " >$ "
 
-        elif self.process.state() == 2:
-            self.process.write(real_command.encode())
-            self.process.closeWriteChannel()
-
         elif command == self.editor.name + real_command:
             self.run(real_command)
 
         else:
             pass
-    # When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
+# When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
 
 
 class name_highlighter(QSyntaxHighlighter):
