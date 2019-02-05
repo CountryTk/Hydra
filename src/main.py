@@ -66,7 +66,7 @@ class Main(QMainWindow):
         self.setCentralWidget(self.tab)
 
         self.files = None  # Tracking the current file that is open
-        self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
+       # self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
 
         self.cFileOpened = False
         self.initUI()  # Main UI
@@ -437,43 +437,37 @@ class Main(QMainWindow):
             print("File dialog closed")
 
     def realterminal(self):
-        if self.tab.terminal.ispressed() is False and self.tab.tool_layout.indexOf(self.tab.Console) == -1:
-            self.tab.terminal.add()
-            self.tab.showConsole()
 
-        elif self.tab.terminal.ispressed() is False and self.tab.tool_layout.indexOf(self.tab.Console) == 0:
-            try:
-                self.tab.Console.remove()
-            except RuntimeError:  # This means that the console widget has been removed with its remove button
-                pass
-            self.tab.tool_layout.removeWidget(self.tab.Console)
-            self.tab.terminal.add()
+        """
+        Checking if the file executing widget already exists in the splitter layout:
+         
+        If it does exist, then we're going to replace the widget with the terminal widget, if it doesn't exist then
+        just add the terminal widget to the layout and expand the splitter.
+
+        """
+
+        if self.tab.splitterV.indexOf(self.tab.Console) == 1:
+            self.tab.splitterV.replaceWidget(self.tab.splitterV.indexOf(self.tab.Console), self.tab.terminal)
+            self.tab.splitterV.setSizes([400, 10])
+        else:
             self.tab.showConsole()
 
     def execute_file(self):
+        """
+        Checking if the terminal widget already exists in the splitter layout:
+
+        If it does exist, then we're going to replace it, if it doesn't then we're just gonna add our file executer to
+        the layout, expand the splitter and run the file.
+
+        """
         active_tab = self.tab.tabs.currentWidget()
         python_command = self.choose_python()
-        if self.tab.tool_layout.indexOf(self.tab.terminal) == -1 and self.tab.Console.ispressed() is not True:  # If the terminal widget isn't in the layout
-            self.tab.tool_layout.addWidget(self.tab.Console)
-            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
-
-        elif self.tab.tool_layout.indexOf(self.tab.terminal) == 0:
-            self.tab.terminal.remove()
-            self.tab.tool_layout.removeWidget(self.tab.terminal)
-            self.tab.tool_layout.addWidget(self.tab.Console)
-            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
-
-        elif self.tab.tool_layout.indexOf(self.tab.terminal) == -1 and self.tab.Console.ispressed() is True:  # If the terminal widget isn't in the layout
-            try:
-                self.tab.Console.remove()
-            except RuntimeError:  # This means that the console widget has been removed with its remove button
-                pass
-            self.tab.tool_layout.removeWidget(self.tab.Console)
-            self.tab.tool_layout.addWidget(self.tab.Console)
-            self.tab.Console.add("{} ".format(python_command) + active_tab.fileName)
-
-        elif self.tab.Console.ispressed() is not True or self.tab.terminal.ispressed() is not True:
-            pass
+        if self.tab.splitterV.indexOf(self.tab.terminal) == 1:
+            self.tab.splitterV.replaceWidget(self.tab.splitterV.indexOf(self.tab.terminal), self.tab.Console)
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
+            self.tab.splitterV.setSizes([400, 10])
+        else:
+            self.tab.showFileExecuter()
 
 
 if __name__ == '__main__':
@@ -498,7 +492,7 @@ if __name__ == '__main__':
         editor = config2['editor']
     else:
         editor = config0['editor']
-    print(choiceIndex)
+  
     ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
