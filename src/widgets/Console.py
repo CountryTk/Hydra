@@ -26,11 +26,13 @@ class Console(QWidget):
         self.setFocusPolicy(Qt.StrongFocus)
         self.error = None
         self.finished = False
+        self.clicked = False
 
         self.process = QProcess()
         self.state = None
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
+        self.add()  # Add items to the layout
 
     def ispressed(self):
         return self.pressed
@@ -39,11 +41,11 @@ class Console(QWidget):
         self.pressed = True
 
     def remove(self):
-        self.terminate()
-        self.editor.deleteLater()
-        self.button.deleteLater()
-        self.terminateButton.deleteLater()
-        self.pressed = False
+        self.parent.hideFileExecuter()
+        self.clicked = True
+
+    def hideTerminalClicked(self):
+        return self.clicked
 
     def onReadyReadStandardError(self):
         try:
@@ -77,7 +79,7 @@ class Console(QWidget):
     def ifFinished(self, exitCode, exitStatus):
         self.finished = True
 
-    def add(self, command):
+    def add(self):
         """Executes a system command."""
         # clear previous text
         self.added()
@@ -101,7 +103,6 @@ class Console(QWidget):
         self.layout.addWidget(self.editor)
         self.layout.addWidget(self.terminateButton)
         self.button.clicked.connect(self.remove)
-        self.run(command)
 
     def run(self, command):
         self.editor.clear()
