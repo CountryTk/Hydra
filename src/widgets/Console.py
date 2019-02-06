@@ -104,7 +104,8 @@ class Console(QWidget):
         self.layout.addWidget(self.terminateButton)
         self.button.clicked.connect(self.remove)
 
-    def run(self, command):
+    def run(self, command, path):  # Takes in the command and the path of the file
+        os.chdir(os.path.dirname(path))  # We need to change the path to the path where the file is being ran from
         self.editor.clear()
         if self.process.state() == 1 or self.process.state() == 2:
             self.process.kill()
