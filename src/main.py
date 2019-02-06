@@ -34,10 +34,6 @@ class Main(QMainWindow):
         self.tabsOpen = []
         self.pic_opened = False
 
-        if file is not None:
-            self.openFile(file)
-            self.fileNameChange()
-
         self.dialog = MessageBox(self)
 
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
@@ -515,4 +511,6 @@ if __name__ == '__main__':
     app.setPalette(palette)
     app.setStyleSheet(material_blue)  # uncomment this to have a material blue theme
     ex.show()
+    if file is not None:
+        ex.openFile(file)
     sys.exit(app.exec_())
