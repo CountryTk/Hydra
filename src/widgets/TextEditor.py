@@ -114,7 +114,9 @@ class Editor(QsciScintilla):
         line_n = self.lines()
         for i in range(line_n):
             if self.lineLength(i) > 121:
-                print("Line over 121 characters on line", str(i+1))
+                # TODO: Make a character format or something
+                pass
+                #  print("Line over 121 characters on line", str(i+1))
                 # self.setCursorPosition(i, 120)
 
     def python_highlighter(self):
