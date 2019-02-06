@@ -207,8 +207,11 @@ class Main(QMainWindow):
         self.findDocumentAct.setShortcut('Ctrl+Shift+F')
         
         self.findDocumentAct.setStatusTip('Find a document')
-        self.findDocumentAct.triggered.connect(self.findDocumentFunc)
-    
+        self.findDocumentAct.triggered.connect(self.temp)
+
+    def temp(self):
+        pass
+
     def findDocumentFunc(self):
         
         self.search.run()    
@@ -466,15 +469,14 @@ class Main(QMainWindow):
         python_command = self.choose_python()
         if self.tab.splitterV.indexOf(self.tab.terminal) == 1:
             self.tab.splitterV.replaceWidget(self.tab.splitterV.indexOf(self.tab.terminal), self.tab.Console)
-            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName, active_tab.fileName)
             self.tab.splitterV.setSizes([400, 10])
 
         elif self.tab.splitterV.indexOf(self.tab.Console) == 1:
-            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
-
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName, active_tab.fileName)
         else:
             self.tab.showFileExecuter()
-            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName)
+            self.tab.Console.run("{} ".format(python_command) + active_tab.fileName, active_tab.fileName)
 
 
 if __name__ == '__main__':
