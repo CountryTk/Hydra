@@ -7,6 +7,7 @@ import platform
 import random
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader
+from utils.lastFileOpen import lastFileOpen, updateLastFileOpen
 from widgets.Tabs import Tabs
 from widgets.Content import Content
 from widgets.Image import Image
@@ -310,6 +311,8 @@ class Main(QMainWindow):
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
             self.pic_opened = False
+
+            updateLastFileOpen(filename)
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E, " on line 346 in the file main.py")
 
@@ -484,7 +487,7 @@ if __name__ == '__main__':
     try:
         file = sys.argv[1]
     except IndexError:  # File not given
-        file = None
+        file = lastFileOpen()
     app.setStyle('Fusion')
     palette = QPalette()
     if choiceIndex == 0:
