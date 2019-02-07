@@ -20,6 +20,8 @@ To use the search function, you first have to press Ctrl+F and then type in the 
 To cycle through any words that were found, you press F3
 
 # Installation
+Open a terminal and paste this command in there:
+
 ```git clone https://github.com/Fuchsiaff/PyPad.git && cd PyPad && pip install -r requirements.txt && cd src && python main.py``` 
 
 # Pictures
