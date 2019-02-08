@@ -5,7 +5,7 @@ def updateLastFileOpen(filepath):
         If this config file can't be accessed for any reason it returns False
     """
     try:
-        open(filepath, 'w').close()
+        open(filepath, 'r').close()
     except FileNotFoundError:
         return False
 
