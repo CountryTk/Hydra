@@ -27,7 +27,7 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
         self.onStart(choiceIndex)
         self.status = QStatusBar(self)
         # Initializing the main widget where text is displayed
@@ -42,14 +42,14 @@ class Main(QMainWindow):
         self.setWindowTitle('PyPad')  # Setting the window title
 
         self.status_font = QFont("Inconsolata", 11)
-        
+
         self.os = platform.system()
-        
+
         self.tab.tabs.currentChanged.connect(self.fileNameChange)
         self.search = DocumentSearch()
         self.openterm()
         self.openterminal()
-        self.split2Tabs()
+        # self.split2Tabs()
         self.new()
         self.newProject()
         self.findDocument()
@@ -87,7 +87,7 @@ class Main(QMainWindow):
         else:
             self.button = QPushButton("Update")
             self.status.addWidget(self.button)
-            self.button.clicked.connect(lambda: print("starting update"))
+            self.button.clicked.connect(lambda: print("starting update lololoololololo"))
 
     def fileNameChange(self):
 
@@ -145,10 +145,10 @@ class Main(QMainWindow):
         toolMenu = menu.addMenu('Tools')
         toolMenu.addAction(self.openTermAct)
         toolMenu.addAction(self.openTerminalAct)
-        toolMenu.addAction(self.split2TabsAct)
-        
+       # toolMenu.addAction(self.split2TabsAct)
+
         searchDoc = menu.addMenu('Find document')
-        
+
         searchDoc.addAction(self.findDocumentAct)
 
         self.showMaximized()
@@ -166,18 +166,18 @@ class Main(QMainWindow):
 
         self.newAct.setStatusTip('Create a new file')
         self.newAct.triggered.connect(self.newFile)
-        
+
     def newProject(self):
         self.newProjectAct = QAction('New project')
         self.newProjectAct.setShortcut('Ctrl+Shift+N')
-        
+
         self.newProjectAct.setStatusTip('Create a new project')
         self.newProjectAct.triggered.connect(self.newProjectFolder)
-            
+
     def openProjectF(self):
         self.openProjectAct = QAction('Open project')
         self.openProjectAct.setShortcut('Ctrl+Shift+O')
-        
+
         self.openProjectAct.setStatusTip('Open a project')
         self.openProjectAct.triggered.connect(self.openProject)
 
@@ -221,21 +221,22 @@ class Main(QMainWindow):
 
         self.saveAsAct.setStatusTip('Save a file as')
         self.saveAsAct.triggered.connect(self.saveFileAs)
-        
+
     def findDocument(self):
         self.findDocumentAct = QAction('Find document')
         self.findDocumentAct.setShortcut('Ctrl+Shift+F')
-        
+
         self.findDocumentAct.setStatusTip('Find a document')
         self.findDocumentAct.triggered.connect(self.temp)
-    
+
     def temp(self):
-        pass
-    
+        from widgets.CodeDiff import CodeDiff
+        self.tab.tabs.addTab(CodeDiff("Test", "Test"), "lol")
+
     def findDocumentFunc(self):
-        
-        self.search.run()    
-        
+
+        self.search.run()
+
     def exit(self):
         self.exitAct = QAction('Quit', self)
         self.exitAct.setShortcut('Ctrl+Q')
@@ -264,7 +265,7 @@ class Main(QMainWindow):
         self.tab.tabs.setCurrentIndex(index)
 
     def openFile(self, filename):
-       
+
         try:
             for index, tabName in enumerate(self.tab.tabCounter):
                 with open(filename, 'r+') as file_o:
@@ -274,7 +275,7 @@ class Main(QMainWindow):
                         self.pic_opened = False
                     try:
                         text = file_o.read()
-                        
+
                     except UnicodeDecodeError as E:
                         text = str(E)
 
@@ -305,7 +306,7 @@ class Main(QMainWindow):
             basename = os.path.basename(filename)
             if self.pic_opened is True:
                 tab = Image(filename, basename)
-                
+
             else:
                 tab = Content(text, filename, basename, self, ex)  # Creating a tab object *IMPORTANT*
                 tab.saved = True
@@ -313,7 +314,7 @@ class Main(QMainWindow):
             self.tab.tabCounter.append(tab.baseName)
             dirPath = os.path.dirname(filename)
             self.files = filename
-            
+
             self.tabsOpen.append(self.files)
 
             index = self.tab.tabs.addTab(tab,
@@ -331,7 +332,7 @@ class Main(QMainWindow):
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
-            
+
             if self.pic_opened is not True:
                 self.currentTab.editor.setFont(self.font)  # Setting the font
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
@@ -349,7 +350,7 @@ class Main(QMainWindow):
             base_file_name = "Untitled_file_" + str(random.randint(1, 100)) + ".py"
             current = os.getcwd()
             fileName = current + "/" + base_file_name
-            
+
         self.pyFileOpened = True
         # Creates a new blank file
         file = Content(text, fileName, base_file_name, self, ex)
@@ -364,15 +365,15 @@ class Main(QMainWindow):
     def newProjectFolder(self):
         self.dialog = MessageBox(self.parent)
         self.dialog.newProject()
-        
+
     def openProject(self):
-        
+
         self._dir = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
-        
+
         self.tab.directory.openDirectory(self._dir)
         self.dir_opened = True
         self.tab.showDirectory()
-        
+
     def saveFile(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
@@ -405,17 +406,17 @@ class Main(QMainWindow):
             active_tab.tokenize_file()
         except Exception as E:
             print(E, " on line 403 in the file main.py")
-    
+
     def choose_python(self):
         if self.os == "Windows":
             return "python"
-            
+
         elif self.os == "Linux":
             return "python3"
-        
+
         elif self.os == "Darwin":
             return "python3"
-         
+
     def saveFileAs(self):
         try:
             active_tab = self.tab.tabs.currentWidget()
@@ -463,7 +464,7 @@ class Main(QMainWindow):
 
         """
         Checking if the file executing widget already exists in the splitter layout:
-         
+
         If it does exist, then we're going to replace the widget with the terminal widget, if it doesn't exist then
         just add the terminal widget to the layout and expand the splitter.
 
