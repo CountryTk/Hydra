@@ -14,7 +14,7 @@ from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
 from widgets.Browser import Browser
 from resources.materialblack import material_blue
-from utils.check_update import show_update
+from utils.check_update import show_update, make_decision
 
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 
@@ -78,6 +78,8 @@ class Main(QMainWindow):
     def check_updates(self, text):
 
         self.update_label = QLabel()
+        font = QFont("Inconsolata", 10)
+        self.update_label.setFont(font)
         self.update_label.setFont(self.status_font)
         self.update_label.setText(text)
         self.status.addWidget(self.update_label)
@@ -87,7 +89,12 @@ class Main(QMainWindow):
         else:
             self.button = QPushButton("Update")
             self.status.addWidget(self.button)
-            self.button.clicked.connect(lambda: print("starting update lololoololololo"))
+            self.button.setFont(font)
+            self.button.clicked.connect(self.update_pypad)
+
+    def update_pypad(self):
+        self.update_label.setText("Updating...")
+        self.status.removeWidget(self.button)
 
     def fileNameChange(self):
 
