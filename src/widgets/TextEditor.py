@@ -39,8 +39,8 @@ class Editor(QsciScintilla):
 
         self.font = QFont()
         self.font.setFamily("Inconsolata")
-        self.pointSize = editor["pointSize"] # TODO: Make this customizable
-        self.tabWidth = editor["TabWidth"]  # TODO: Make this customizable
+        self.pointSize = editor["pointSize"]
+        self.tabWidth = editor["TabWidth"]
         self.font.setPointSize(self.pointSize)
         self.dialog = MessageBox(self)
         self.verticalScrollBar().setStyleSheet(
