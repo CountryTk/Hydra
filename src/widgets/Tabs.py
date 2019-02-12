@@ -8,21 +8,11 @@ from widgets.Directory import Directory
 from utils.config import config_reader
 from widgets.Events import Events
 
-config0 = config_reader(0)
-config1 = config_reader(1)
-config2 = config_reader(2)
+configs = [config_reader(0), config_reader(1), config_reader(2)]
 
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
-
-if choiceIndex == 0:
-    editor = config0['editor']
-elif choiceIndex == 1:
-    editor = config1['editor']
-elif choiceIndex == 2:
-    editor = config2['editor']
-else:
-    editor = config0['editor']
+editor = configs[choiceIndex]['editor']
 
 
 class Tabs(QWidget):

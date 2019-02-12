@@ -8,6 +8,7 @@
     "menuFontSize": 10,
     "tabFontSize": 10.5,
     "directoryFontSize": 10.5,
+    "pointSize": 12,
     "tabShape": false,
     "tabMovable": true,
     "tabFont": "Inconsolata",

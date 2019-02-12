@@ -6,7 +6,12 @@ from PyQt5.QtWidgets import QInputDialog
 from PyQt5.Qt import Qt
 from utils.predictionList import wordList, funcList, errorList
 from widgets.Messagebox import MessageBox
+from utils.config import config_reader
 
+with open("default.json") as choice:
+    choiceIndex = int(choice.read())
+configs = [config_reader(0), config_reader(1), config_reader(2)]
+editor = configs[choiceIndex]['editor']
 
 class PythonLexer(QsciLexerPython):
     def __init__(self):
@@ -34,8 +39,8 @@ class Editor(QsciScintilla):
 
         self.font = QFont()
         self.font.setFamily("Inconsolata")
-        self.pointSize = 12  # TODO: Make this customizable
-        self.tabWidth = 4  # TODO: Make this customizable
+        self.pointSize = editor["pointSize"]
+        self.tabWidth = editor["TabWidth"]
         self.font.setPointSize(self.pointSize)
         self.dialog = MessageBox(self)
         self.verticalScrollBar().setStyleSheet(

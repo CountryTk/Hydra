@@ -8,6 +8,7 @@
     "menuFontSize": 10.5,
     "tabFontSize": 10.5,
     "directoryFontSize": 10,
+    "pointSize": 12,
     "tabShape": false,
     "tabMovable": true,
     "tabFont": "Iosevka",
