@@ -76,24 +76,14 @@ class Main(QMainWindow):
             self.setWindowTitle("PyPad ~ ")
 
     def onStart(self, index):
-
-        if index == 0:
-            editor = configs[0]['editor']
-
-        elif index == 1:
-            editor = configs[1]['editor']
-
-        elif index == 2:
-            editor = configs[2]['editor']
-
-        else:
-            editor = configs[0]['editor']
-
-        if editor["windowStaysOnTop"] is True:
-            self.setWindowFlags(Qt.WindowStaysOnTopHint)
-
-        else:
-            pass
+        try:
+            editor = configs[index]['editor']
+            if editor["windowStaysOnTop"] is True:
+                self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            else:
+                pass # What would you like to do here?
+        except Exception as err:
+            pass #log exception
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
@@ -209,7 +199,6 @@ class Main(QMainWindow):
         pass
 
     def findDocumentFunc(self):
-        
         self.search.run()    
         
     def exit(self):
