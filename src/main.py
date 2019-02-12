@@ -1,19 +1,20 @@
 import sys
 import os
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QColor, QPalette, QFont,  QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QStatusBar
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QLabel, QStatusBar, QPushButton
 import platform
 import random
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader, config_choice
-from utils.lastFileOpen import lastFileOpen, updateLastFileOpen
 from widgets.Tabs import Tabs
+from utils.lastOpenFile import lastFileOpen, updateLastFileOpen
 from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
 from widgets.Browser import Browser
 from resources.materialblack import material_blue
+from utils.check_update import show_update
 
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 
@@ -39,6 +40,8 @@ class Main(QMainWindow):
         self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))  # Setting the window icon
 
         self.setWindowTitle('PyPad')  # Setting the window title
+
+        self.status_font = QFont("Inconsolata", 11)
         
         self.os = platform.system()
         
@@ -46,6 +49,7 @@ class Main(QMainWindow):
         self.search = DocumentSearch()
         self.openterm()
         self.openterminal()
+        self.split2Tabs()
         self.new()
         self.newProject()
         self.findDocument()
@@ -54,7 +58,12 @@ class Main(QMainWindow):
         self.save()
         self.saveAs()
         self.exit()
-        
+
+        self.thread = UpdateThread()
+        self.thread.start()
+
+        self.thread.textSignal.connect(self.check_updates)
+
         self.dir_opened = False
         self._dir = None
 
@@ -62,12 +71,26 @@ class Main(QMainWindow):
         self.setCentralWidget(self.tab)
 
         self.files = None  # Tracking the current file that is open
-       # self.pyFileOpened = False  # Tracking if python file is opened, this is useful to delete highlighting
 
         self.cFileOpened = False
         self.initUI()  # Main UI
 
+    def check_updates(self, text):
+
+        self.update_label = QLabel()
+        self.update_label.setFont(self.status_font)
+        self.update_label.setText(text)
+        self.status.addWidget(self.update_label)
+
+        if text != "An update is available, would you like to update?":
+            pass
+        else:
+            self.button = QPushButton("Update")
+            self.status.addWidget(self.button)
+            self.button.clicked.connect(lambda: print("starting update"))
+
     def fileNameChange(self):
+
         try:
             currentFileName = self.tab.tabs.currentWidget().baseName
             self.setWindowTitle("PyPad ~ " + str(currentFileName))
@@ -76,14 +99,17 @@ class Main(QMainWindow):
             self.setWindowTitle("PyPad ~ ")
 
     def onStart(self, index):
+
         try:
             editor = configs[index]['editor']
             if editor["windowStaysOnTop"] is True:
                 self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
             else:
-                pass # What would you like to do here?
+                pass
+
         except Exception as err:
-            pass #log exception
+            pass  # log exception
 
         self.font = QFont()
         self.font.setFamily(editor["editorFont"])
@@ -119,6 +145,7 @@ class Main(QMainWindow):
         toolMenu = menu.addMenu('Tools')
         toolMenu.addAction(self.openTermAct)
         toolMenu.addAction(self.openTerminalAct)
+        toolMenu.addAction(self.split2TabsAct)
         
         searchDoc = menu.addMenu('Find document')
         
@@ -152,7 +179,14 @@ class Main(QMainWindow):
         self.openProjectAct.setShortcut('Ctrl+Shift+O')
         
         self.openProjectAct.setStatusTip('Open a project')
-        self.openProjectAct.triggered.connect(self.openProject)    
+        self.openProjectAct.triggered.connect(self.openProject)
+
+    def split2Tabs(self):
+        self.split2TabsAct = QAction('Split the first 2 tabs')
+        self.split2TabsAct.setShortcut('Ctrl+Alt+S')
+
+        self.split2TabsAct.setStatusTip("Splits the first 2 tabs into one tab")
+        self.split2TabsAct.triggered.connect(self.tab.split)
 
     def switchTabs(self):
         if self.tab.tabs.count() - 1 == self.tab.tabs.currentIndex():
@@ -194,11 +228,12 @@ class Main(QMainWindow):
         
         self.findDocumentAct.setStatusTip('Find a document')
         self.findDocumentAct.triggered.connect(self.temp)
-
+    
     def temp(self):
         pass
-
+    
     def findDocumentFunc(self):
+        
         self.search.run()    
         
     def exit(self):
@@ -292,7 +327,7 @@ class Main(QMainWindow):
                 pass
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-
+            updateLastFileOpen(filename)
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
@@ -302,8 +337,6 @@ class Main(QMainWindow):
                 self.currentTab.editor.setFocus()  # Setting focus to the tab after we open it
 
             self.pic_opened = False
-
-            updateLastFileOpen(filename)
         except (IsADirectoryError, AttributeError, UnboundLocalError, PermissionError) as E:
             print(E, " on line 346 in the file main.py")
 
@@ -406,7 +439,7 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.text())
                     text = active_tab.editor.text()
                     newTab = Content(str(text), fileName, baseName, self, ex)
-
+                    newTab.ready = True
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
                     index = self.tab.tabs.addTab(newTab, newTab.baseName)  # And add the new one!
                     self.tab.tabs.setTabToolTip(index, str(newTab.fileName))
@@ -461,27 +494,41 @@ class Main(QMainWindow):
 
         elif self.tab.splitterV.indexOf(self.tab.Console) == 1:
             self.tab.Console.run("{} ".format(python_command) + active_tab.fileName, active_tab.fileName)
+            self.tab.splitterV.setSizes([400, 10])
         else:
             self.tab.showFileExecuter()
             self.tab.Console.run("{} ".format(python_command) + active_tab.fileName, active_tab.fileName)
+            self.tab.splitterV.setSizes([400, 10])
+
+
+class UpdateThread(QThread):
+
+    textSignal = pyqtSignal(str)
+
+    def __init_(self):
+        super().__init__()
+
+    def run(self):
+
+        self.textSignal.emit(show_update())
 
 
 if __name__ == '__main__':
-    if True:  # checkVersion("version.txt") != checkVerOnlineFunc():
-        pass  # TODO: implement an updater
+
     # from utils.install_punkt import install_punkt
 
     # install_punkt()
 
     app = QApplication(sys.argv)
+
     try:
         file = sys.argv[1]
     except IndexError:  # File not given
         file = lastFileOpen()
+
     app.setStyle('Fusion')
     palette = QPalette()
     editor = configs[choiceIndex]['editor']
-    print(choiceIndex)
 
     ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
