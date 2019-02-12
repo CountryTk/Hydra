@@ -340,7 +340,7 @@ class Main(QMainWindow):
         widget = self.tab.tabs.currentWidget()
 
     def newProjectFolder(self):
-        self.dialog = MessageBox()
+        self.dialog = MessageBox(self.parent)
         self.dialog.newProject()
         
     def openProject(self):
@@ -365,7 +365,7 @@ class Main(QMainWindow):
                     active_tab.editor.updateAutoComplete(active_tab.fileName)
             else:
                 options = QFileDialog.Options()
-                name = QFileDialog.getSaveFileName(self, 'Save File', '',
+                name = QFileDialog.getSaveFileName(options, 'Save File', '',
                                                    'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
                                                    options=options)
                 fileName = name[0]
