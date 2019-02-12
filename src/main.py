@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qAp
 import platform
 import random
 from widgets.Messagebox import MessageBox
-from utils.config import config_reader
+from utils.config import config_reader, config_choice
 from utils.lastFileOpen import lastFileOpen, updateLastFileOpen
 from widgets.Tabs import Tabs
 from widgets.Content import Content
@@ -15,9 +15,8 @@ from utils.find_all_files import DocumentSearch
 from widgets.Browser import Browser
 from resources.materialblack import material_blue
 
-config0 = config_reader(0)
-config1 = config_reader(1)
-config2 = config_reader(2)
+configs = [config_reader(0), config_reader(1), config_reader(2)]
+
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
 
@@ -79,16 +78,16 @@ class Main(QMainWindow):
     def onStart(self, index):
 
         if index == 0:
-            editor = config0['editor']
+            editor = configs[0]['editor']
 
         elif index == 1:
-            editor = config1['editor']
+            editor = configs[1]['editor']
 
         elif index == 2:
-            editor = config2['editor']
+            editor = configs[2]['editor']
 
         else:
-            editor = config0['editor']
+            editor = configs[0]['editor']
 
         if editor["windowStaysOnTop"] is True:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
@@ -492,15 +491,9 @@ if __name__ == '__main__':
         file = lastFileOpen()
     app.setStyle('Fusion')
     palette = QPalette()
-    if choiceIndex == 0:
-        editor = config0['editor']
-    elif choiceIndex == 1:
-        editor = config1['editor']
-    elif choiceIndex == 2:
-        editor = config2['editor']
-    else:
-        editor = config0['editor']
+    editor = configs[choiceIndex]['editor']
     print(choiceIndex)
+
     ex = Main()
     palette.setColor(QPalette.Window, QColor(editor["windowColor"]))
     palette.setColor(QPalette.WindowText, QColor(editor["windowText"]))
