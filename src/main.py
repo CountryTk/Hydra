@@ -223,7 +223,7 @@ class Main(QMainWindow):
         options = QFileDialog.Options()
 
         filenames, _ = QFileDialog.getOpenFileNames(
-            self, 'Open a file', '',
+            options, 'Open a file', '',
             'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
             options=options
         )
