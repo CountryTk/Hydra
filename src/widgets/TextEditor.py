@@ -1,6 +1,7 @@
 from builtins import print
 from utils.search_algorithm import tokenize
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs, QsciLexerCPP, QsciLexerJSON
+from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs, QsciLexerCPP, QsciLexerJSON, QsciLexerXML,\
+    QsciLexerHTML
 from PyQt5.QtGui import QFont, QFontMetrics, QColor, QGuiApplication
 from PyQt5.QtWidgets import QInputDialog
 from PyQt5.Qt import Qt
@@ -8,10 +9,12 @@ from utils.predictionList import wordList, funcList, errorList
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader
 
+
 with open("default.json") as choice:
     choiceIndex = int(choice.read())
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 editor = configs[choiceIndex]['editor']
+
 
 class PythonLexer(QsciLexerPython):
     def __init__(self):
@@ -40,7 +43,6 @@ class Editor(QsciScintilla):
         self.font = QFont()
         self.font.setFamily("Inconsolata")
         self.pointSize = editor["pointSize"]
-        self.tabWidth = editor["TabWidth"]
         self.font.setPointSize(self.pointSize)
         self.dialog = MessageBox(self)
         self.verticalScrollBar().setStyleSheet(
@@ -75,7 +77,7 @@ class Editor(QsciScintilla):
 
         self.set_linenumbers(QFontMetrics(self.font))
         self.setFoldMarginColors(QColor("#212121"), QColor("#212121"))
-        self.set_indentation_settings(self.tabWidth)
+        self.set_indentation_settings()
 
     def set_up_tooltips(self):
         self.setCallTipsStyle(QsciScintilla.CallTipsNoContext)
@@ -105,14 +107,13 @@ class Editor(QsciScintilla):
         self.setMarginsBackgroundColor(QColor("#212121"))
         self.setMarginsForegroundColor(QColor("#FFFFFF"))
 
-    def set_indentation_settings(self, tab_width):
+    def set_indentation_settings(self):
         self.setIndentationsUseTabs(False)
-
-        self.setTabWidth(tab_width)
-
+        self.setTabWidth(4)
+        
         self.SendScintilla(QsciScintilla.SCI_SETUSETABS, False)
-
         self.setAutoIndent(True)
+        
         self.setTabIndents(True)
 
     def check_lines(self):
@@ -139,11 +140,18 @@ class Editor(QsciScintilla):
 
     def c_highlighter(self):
         lexer = QsciLexerCPP()
+        self.setDefaultSettings(lexer)
 
+    def xml_highlighter(self):
+        lexer = QsciLexerXML()
+        self.setDefaultSettings(lexer)
+
+    def html_highlighter(self):
+        lexer = QsciLexerHTML()
         self.setDefaultSettings(lexer)
 
     def setDefaultSettings(self, lexer):
-        self.setAutoIndent(True)
+        # self.setAutoIndent(True)
         lexer.setFont(self.font)
 
         lexer.setColor(QColor('white'), 0)  # default
