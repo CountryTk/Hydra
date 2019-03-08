@@ -5,3 +5,4 @@ sip~=4.19.8
 nltk
 QScintilla
 vulture
+requests
