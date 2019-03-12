@@ -6,3 +6,4 @@ nltk
 QScintilla
 vulture
 requests
+PyQtWebEngine
