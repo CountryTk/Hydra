@@ -175,22 +175,6 @@ class Editor(QPlainTextEdit):
 
         return textCursor.selectedText()
 
-    def contextMenuEvent(self, event):
-
-        menu = QMenu()
-        """Initializing actions"""
-        self.newFile()
-        self.openFile()
-        self.runFile()
-        menu.addAction(self.new_action)
-        menu.addAction(self.open_action)
-        menu.addAction(self.run_action)
-
-        menu.setFont(self.menu_font)
-
-        menu.exec(event.globalPos())
-        del menu
-
     def moveCursorPosBack(self):
         textCursor = self.textCursor()
         textCursorPos = textCursor.position()
