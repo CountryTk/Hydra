@@ -6,10 +6,12 @@ def updateLastFileOpen(filepath):
         os.path.isfile(filepath)
     except (FileNotFoundError, PermissionError, OSError):
         return False
-
-    with open('resources/lastFile.txt', 'w') as f:
-        f.write(filepath)
-    return True
+    try:
+        with open('resources/lastFile.txt', 'w') as f:
+            f.write(filepath)
+        return True
+    except FileNotFoundError as E:
+        print(E)
 
 
 def lastFileOpen():
