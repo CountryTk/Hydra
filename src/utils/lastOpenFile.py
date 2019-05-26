@@ -1,26 +1,30 @@
 import os
 
+last_file = ['resources/lastFile.txt']
 
-def updateLastFileOpen(filepath):
+def update_previous_file(filepath):
     try:
-        os.path.isfile(filepath)
-    except (FileNotFoundError, PermissionError, OSError):
+        if os.path.isfile(filepath):
+            try:
+                with open('resources/lastFile.txt', 'w+') as file:
+                    file.write(filepath)
+            except (FileNotFoundError, IOError) as err:
+                print(err)
+                return False
+    except Exception as err:
+        print(err)
         return False
-    try:
-        with open('resources/lastFile.txt', 'w') as f:
-            f.write(filepath)
-        return True
-    except FileNotFoundError as E:
-        print(E)
 
 
-def lastFileOpen():
+def get_last_file():
     try:
-        file = open('resources/lastFile.txt', 'r+')
-        try:
-            return file.read().strip()
-        finally:
-            file.close()
-    except (FileNotFoundError, PermissionError, OSError):
-        print('last-file-open config file not found')
-        return None
+        if os.path.isfile(last_file[0]):
+            try:
+                with open(last_file[0], 'r+') as file:
+                    return file.read(50) # Might need to assign more bytes if it reaches limit.
+            except (FileNotFoundError, IOError) as err:
+                print(err)
+                return False
+    except Exception as err:
+        print(err)
+        return False
