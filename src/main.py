@@ -10,7 +10,7 @@ import random
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader, config_choice
 from widgets.Tabs import Tabs
-from utils.lastOpenFile import lastFileOpen, updateLastFileOpen
+from utils.last_open_file import update_previous_file, get_last_file
 from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
@@ -357,7 +357,7 @@ class Main(QMainWindow):
                 pass
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-            updateLastFileOpen(filename)
+            update_previous_file(filename)
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     try:
         file = sys.argv[1]
     except IndexError:  # File not given
-        file = lastFileOpen()
+        file = get_last_file()
 
     app.setStyle('Fusion')
     palette = QPalette()
