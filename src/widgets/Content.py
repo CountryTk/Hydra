@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QCompleter, QShortcut, QPlainTextEdit, QStatusBar, QLabel
 from PyQt5.QtGui import QFont, QKeySequence, QTextCursor
 from PyQt5.QtCore import Qt, QPoint
-from src.utils.predictionList import wordList
-from src.utils.config import config_reader
-from src.utils.search_algorithm import tokenize
-from src.widgets.Editor import Editor
-from src.widgets.Pythonhighlighter import PyHighlighter
-from src.widgets.Completer import Completer
+from utils.predictionList import wordList
+from utils.config import config_reader
+from utils.search_algorithm import tokenize
+from widgets.Editor import Editor
+from widgets.Pythonhighlighter import PyHighlighter
+from widgets.Completer import Completer
 
 config0 = config_reader(0)
 config1 = config_reader(1)
