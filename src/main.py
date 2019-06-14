@@ -1,14 +1,16 @@
 import sys
 import os
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess
 from PyQt5.QtGui import QColor, QPalette, QFont,  QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QLabel, QStatusBar, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, qApp, QLabel, QStatusBar,\
+    QPushButton, QProgressBar
+from PyQt5.QtTest import QTest
 import platform
 import random
 from widgets.Messagebox import MessageBox
 from utils.config import config_reader, config_choice
 from widgets.Tabs import Tabs
-from utils.last_open_file import update_previous_file, get_last_file
+from utils.lastOpenFile import lastFileOpen, updateLastFileOpen
 from widgets.Content import Content
 from widgets.Image import Image
 from utils.find_all_files import DocumentSearch
@@ -27,6 +29,7 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+
         self.onStart(choiceIndex)
         self.status = QStatusBar(self)
         # Initializing the main widget where text is displayed
@@ -40,7 +43,7 @@ class Main(QMainWindow):
 
         self.setWindowTitle('PyPad')  # Setting the window title
 
-        self.status_font = QFont("Inconsolata", 11)
+        self.status_font = QFont(editor["statusBarFont"], editor["statusBarFontSize"])
 
         self.os = platform.system()
 
@@ -66,19 +69,25 @@ class Main(QMainWindow):
         self.dir_opened = False
         self._dir = None
 
-        # Without this, the whole layout is broken
+        self.update_progress = QProgressBar()
+        self.update_progress.setMaximumWidth(225)
+
+        self.update_progress.setStyleSheet(self.update_progress.styleSheet())
+
         self.setCentralWidget(self.tab)
 
         self.files = None  # Tracking the current file that is open
 
         self.cFileOpened = False
+
+        self.update_process = QProcess()
+
         self.initUI()  # Main UI
 
     def check_updates(self, text):
 
         self.update_label = QLabel()
-        font = QFont("Inconsolata", 10)
-        self.update_label.setFont(font)
+        self.update_label.setFont(QFont(editor["generalFont"], editor["generalFontSize"]))
         self.update_label.setFont(self.status_font)
         self.update_label.setText(text)
         self.status.addWidget(self.update_label)
@@ -87,13 +96,22 @@ class Main(QMainWindow):
             pass
         else:
             self.button = QPushButton("Update")
+            self.button.setFont(QFont(editor["generalFont"], editor["generalFontSize"]))
             self.status.addWidget(self.button)
-            self.button.setFont(font)
             self.button.clicked.connect(self.update_pypad)
 
     def update_pypad(self):
         self.update_label.setText("Updating...")
         self.status.removeWidget(self.button)
+        self.status.addWidget(self.update_progress)
+        """
+        So "updating" means I should first have an executeable or something of that sorts
+        """
+
+        for i in range(101):
+            self.update_progress.setValue(i)
+            QTest.qWait(random.randint(50, 75))
+        # make_decision(True)
 
     def fileNameChange(self):
 
@@ -165,6 +183,10 @@ class Main(QMainWindow):
 
         self.openAct.setStatusTip('Open a file')
         self.openAct.triggered.connect(self.openFileFromMenu)
+
+    def closeEvent(self, QCloseEvent):
+
+        os._exit(42)  # This makes sure every thread gets killed
 
     def new(self):
         self.newAct = QAction('New')
@@ -309,6 +331,7 @@ class Main(QMainWindow):
             except FileNotFoundError:
                 with open(filename, 'w+') as newFileCreated:
                     text = newFileCreated.read()
+
             basename = os.path.basename(filename)
             if self.pic_opened is True:
                 tab = Image(filename, basename)
@@ -334,7 +357,7 @@ class Main(QMainWindow):
                 pass
 
             self.tab.setLayout(self.tab.layout)  # Finally we set the layout
-            update_previous_file(filename)
+            updateLastFileOpen(filename)
             self.tab.tabs.setCurrentIndex(index)  # Setting the index so we could find the current widget
 
             self.currentTab = self.tab.tabs.currentWidget()
@@ -385,16 +408,16 @@ class Main(QMainWindow):
             active_tab = self.tab.tabs.currentWidget()
             if self.tab.tabs.count():  # If a file is already opened
                 with open(active_tab.fileName, 'w+') as saveFile:
-                    saveFile.write(active_tab.editor.text())
+                    saveFile.write(active_tab.editor.toPlainText())
                     active_tab.saved = True
-                    self.tab.events.look_for_dead_code(active_tab.editor.text())
+                    self.tab.events.look_for_dead_code(active_tab.editor.toPlainText())
                     active_tab.modified = False
                     saveFile.close()
                 if active_tab.fileName.endswith(".py"):
                     active_tab.editor.updateAutoComplete(active_tab.fileName)
             else:
                 options = QFileDialog.Options()
-                name = QFileDialog.getSaveFileName(options, 'Save File', '',
+                name = QFileDialog.getSaveFileName(self, 'Save File', '',
                                                    'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
                                                    options=options)
                 fileName = name[0]
@@ -403,8 +426,8 @@ class Main(QMainWindow):
                     active_tab.saved = True
                     active_tab.modified = False
                     self.tabsOpen.append(fileName)
-                    saveFile.write(active_tab.editor.text())
-                    self.tab.events.look_for_dead_code(active_tab.editor.text())
+                    saveFile.write(active_tab.editor.toPlainText())
+                    self.tab.events.look_for_dead_code(active_tab.editor.toPlainText())
                     saveFile.close()
                     if fileName.endswith(".py"):
                         active_tab.editor.updateAutoComplete(active_tab.fileName)
@@ -430,7 +453,7 @@ class Main(QMainWindow):
                 active_index = self.tab.tabs.currentIndex()
 
                 options = QFileDialog.Options()
-                name = QFileDialog.getSaveFileName(options, 'Save File', '',
+                name = QFileDialog.getSaveFileName(self, 'Save File', '',
                                                    'All Files (*);;Python Files (*.py);;Text Files (*.txt)',
                                                    options=options)
                 fileName = name[0]
@@ -443,8 +466,8 @@ class Main(QMainWindow):
                         baseName = os.path.basename(fileName)
                     except AttributeError:
                         print("All tabs closed")
-                    saveFile.write(active_tab.editor.text())
-                    text = active_tab.editor.text()
+                    saveFile.write(active_tab.editor.toPlainText())
+                    text = active_tab.editor.toPlainText()
                     newTab = Content(str(text), fileName, baseName, self, ex)
                     newTab.ready = True
                     self.tab.tabs.removeTab(active_index)  # When user changes the tab name we make sure we delete the old one
@@ -481,6 +504,16 @@ class Main(QMainWindow):
             self.tab.splitterV.setSizes([400, 10])
         else:
             self.tab.showConsole()
+
+    def open_documentation(self, data, word):
+
+        """
+        Opens documentation for a built in function
+        """
+        data = data.replace("|", "")
+        index = self.tab.tabs.addTab(Content(data, os.getcwd()+ "/" + str(word) + ".doc", str(word) + ".doc", self,
+                                              ex, True), str(word))
+        self.tab.tabs.setCurrentIndex(index)
 
     def execute_file(self):
         """
@@ -531,7 +564,7 @@ if __name__ == '__main__':
     try:
         file = sys.argv[1]
     except IndexError:  # File not given
-        file = get_last_file()
+        file = lastFileOpen()
 
     app.setStyle('Fusion')
     palette = QPalette()
