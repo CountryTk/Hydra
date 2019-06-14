@@ -1,11 +1,16 @@
 from builtins import print
-from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextEdit, QWidget, QToolTip, QApplication
-from PyQt5.QtCore import Qt, QRect, QSize, QObject, pyqtSignal, QPoint
-from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QBitmap, \
+from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextEdit, QWidget, QToolTip, QApplication,\
+    QDesktopWidget, QCompleter
+from PyQt5.QtCore import Qt, QRect, QSize, QObject, pyqtSignal, QPoint, QProcess
+from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QFontMetrics, \
     QColor, QCursor, QPixmap, QTextCharFormat
-from utils.find_all import find_all
-from widgets.Messagebox import MessageBox
-from utils.config import config_choice
+from src.utils.find_all import find_all
+from src.widgets.Messagebox import MessageBox
+from src.utils.predictionList import wordList
+from src.utils.config import config_choice
+import platform
+import keyword as kw
+from src.widgets.Completer import Completer
 
 editor = config_choice("default.json")['editor']
 
@@ -24,20 +29,22 @@ class QLineNumberArea(QWidget):
 
 class Editor(QPlainTextEdit):
 
-    def __init__(self, parent):
+    def __init__(self, parent, isReadOnly=False):
         super().__init__(parent)
         self.lineNumberArea = QLineNumberArea(self)
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
+        self.setReadOnly(isReadOnly)
         self.parent = parent
         self.font = QFont()
         self.size = 12
+        self.worldList = wordList
         self.dialog = MessageBox(self)
         self.menu_font = QFont()
-        self.menu_font.setFamily("Iosevka")
-        self.menu_font.setPointSize(10)
+        self.menu_font.setFamily(editor["menuFont"])
+        self.menu_font.setPointSize(editor["menuFontSize"])
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
@@ -47,11 +54,20 @@ class Editor(QPlainTextEdit):
         self.setFont(self.font)
         self.l = 0
         self.highlightingRules = []
+        self.extraSelections_ = []
         self.indexes = None
+        self.setMouseTracking(True)
+
+        self.completer = None
+
+        self.info_process = QProcess()
 
         self.setTabStopWidth(editor["TabWidth"])
         self.createStandardContextMenu()
         self.setWordWrapMode(QTextOption.NoWrap)
+
+        self.cursorPositionChanged.connect(self.getColAndRow)
+        self.info_process.readyReadStandardOutput.connect(self.get_pydoc_output)
 
     def getTextCursor(self):
         textCursor = self.textCursor()
@@ -59,8 +75,17 @@ class Editor(QPlainTextEdit):
 
         return textCursor, textCursorPos
 
-    def get_linenumbers(self):
+    def getColAndRow(self):
+
+        textCursor = self.getTextCursor()[0]
+
+        # print("row: {} column: {}".format(textCursor.blockNumber(), textCursor.positionInBlock()))
+
+    def totalLines(self):
         return self.blockCount()
+
+    def is_modified(self):
+        return self.document().isModified()
 
     def check(self):
         cursor = self.textCursor()
@@ -78,8 +103,8 @@ class Editor(QPlainTextEdit):
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()
 
-            extraSelections.append(selection)
-            self.setExtraSelections(extraSelections)
+            self.extraSelections_.append(selection)
+            self.setExtraSelections(self.extraSelections_)
 
             font = QFont()
             font.setFamily("Iosevka")
@@ -134,6 +159,7 @@ class Editor(QPlainTextEdit):
             extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
         self.check()
+        return extraSelections
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
@@ -167,7 +193,7 @@ class Editor(QPlainTextEdit):
     def runFile(self):
 
         self.run_action = QAction("Run")
-        self.run_action.triggered.connect(self.parent.parent.terminal)
+        self.run_action.triggered.connect(self.parent.parent.execute_file)
 
     def textUnderCursor(self):
         textCursor = self.textCursor()
@@ -182,19 +208,111 @@ class Editor(QPlainTextEdit):
         textCursor.setPosition(textCursorPos - 1)
         self.setTextCursor(textCursor)
 
+    def mouseMoveEvent(self, QMouseEvent):
+
+        # font = textCursor.block().charFormat().font()
+        # metrics = QFontMetrics(font)
+        #
+        # b = self.document().findBlockByLineNumber(0)
+        #
+        # cursor = QTextCursor(b)
+        #
+        # cursor.select(QTextCursor.BlockUnderCursor)
+        #
+        # cursor.removeSelectedText()
+        #
+        # height = metrics.height() + 2
+        # y = QMouseEvent.pos().y()
+        #print(y, height)
+        #print(y/height)
+        cursor_main = self.cursorForPosition(QMouseEvent.pos())
+        if QApplication.queryKeyboardModifiers() == Qt.ControlModifier:
+
+            cursor_main.select(QTextCursor.WordUnderCursor)
+            text = cursor_main.selectedText()
+            self.text = text
+            if self.text is not None:
+                url = "https://docs.python.org/3/library/functions.html#" + self.text
+                word = self.text
+                # self.parent.parent.showBrowser(url, word)
+
+                if self.check_func(word):
+                    extraSelections = self.highlightCurrentLine()
+                    selection = QTextEdit.ExtraSelection()
+                    selection.format.setFontUnderline(True)
+                    selection.format.setUnderlineColor(QColor("#00d2ff"))
+                    selection.format.setForeground(QColor("#00d2ff"))
+                    selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+                    selection.cursor = self.cursorForPosition(QMouseEvent.pos())
+                    selection.cursor.select(QTextCursor.WordUnderCursor)
+                    extraSelections.append(selection)
+                    self.setExtraSelections(extraSelections)
+                    cursor = QCursor(Qt.PointingHandCursor)
+                    # tooltip = QToolTip()
+                    QToolTip.setFont(QFont(editor["ToolTipFont"], editor["ToolTipFontSize"]))
+                    word_shown = eval(word).__doc__
+
+                    if len(word_shown) > 2000:
+                        word_shown = word_shown[:2000]
+
+                    QToolTip.showText(QCursor.pos(), "{}".format(word_shown))
+                    QApplication.setOverrideCursor(cursor)
+                    QApplication.changeOverrideCursor(cursor)
+                else:
+                    self.returnCursorToNormal()
+            else:
+
+                pass
+        else:
+            self.returnCursorToNormal()
+            extraSelections = self.highlightCurrentLine()
+            self.setExtraSelections(extraSelections)
+
+        super().mouseMoveEvent(QMouseEvent)
+
+    def returnCursorToNormal(self):
+        cursor = QCursor(Qt.ArrowCursor)
+        QApplication.setOverrideCursor(cursor)
+        QApplication.changeOverrideCursor(cursor)
+
     def mousePressEvent(self, e):
 
         self.check()
         if QApplication.queryKeyboardModifiers() == Qt.ControlModifier:
-            if self.text is not None:
-                self.check_func("lol")
-                url = "https://docs.python.org/3/library/functions.html#" + self.text
-                word = self.text
-                self.parent.parent.showBrowser(url, word)
-        QApplication.restoreOverrideCursor()
-        super().mousePressEvent(e)
 
-    def check_func(self, word):
+            super().mousePressEvent(e)
+            self.text = self.textUnderCursor()
+            if self.text is not None:
+                word = self.text
+                # self.parent.parent.showBrowser(url, word)
+
+                if self.check_func(self.textUnderCursor(), True):
+                    extraSelections = self.highlightCurrentLine()
+                    selection = QTextEdit.ExtraSelection()
+                    selection.format.setFontUnderline(True)
+                    selection.format.setUnderlineColor(QColor("#00d2ff"))
+                    selection.format.setForeground(QColor("#00d2ff"))
+                    selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+                    selection.cursor = self.textCursor()
+                    selection.cursor.clearSelection()
+                    selection.cursor.select(QTextCursor.WordUnderCursor)
+                    extraSelections.append(selection)
+                    self.setExtraSelections(extraSelections)
+                    self.text = self.textUnderCursor()
+
+                    # cursor = QCursor(Qt.PointingHandCursor)
+
+                    # QApplication.setOverrideCursor(cursor)
+                    # QApplication.changeOverrideCursor(cursor)
+
+                else:
+                    self.text = None
+        else:
+            super().mousePressEvent(e)
+        QApplication.restoreOverrideCursor()
+        # super().mousePressEvent(e)
+
+    def check_func(self, word, clicked=False):
         funcs = [
             "abs", "all", "any", "ascii", "bin", "bool", "breakpoint", "bytearray", "bytes", "callable",
             "chr", "classmethod",
@@ -210,14 +328,44 @@ class Editor(QPlainTextEdit):
             "set", "setattr", "slice", "sorted", "staticmethod", "str", "sum",
             "super", "tuple", "type", "vars", "zip", "__import__"
         ]
+
         word_array = list(word)
+
         for wo in word_array:
             if wo in ["{", "}", "'", '"', "[", "]", "(", ")"]:
                 word_array.remove(wo)
         for w in funcs:
             if w == "".join(word_array):
-                print("".join(word_array))
+                if clicked:
+                    if self.info_process.state() == 0:
+                        self.info_process.start("pydoc {}".format(word))
+                    else:
+                        pass
+
                 return True
+
+    def get_pydoc_output(self):
+        output = self.info_process.readAllStandardOutput().data().decode()
+        self.parent.parent.open_documentation(output, self.info_process.arguments()[0])
+
+    def contextMenuEvent(self, event):
+
+        menu = QMenu()
+
+        """Initializing actions"""
+        self.newFile()
+        self.openFile()
+        self.runFile()
+        menu.addAction(self.new_action)
+        menu.addAction(self.open_action)
+        menu.addAction(self.run_action)
+
+        menu.setFont(self.menu_font)
+
+        menu.exec(event.globalPos())
+
+
+        del menu
 
     def mouseReleaseEvent(self, e):
 
@@ -227,15 +375,12 @@ class Editor(QPlainTextEdit):
     def keyPressEvent(self, e):
         textCursor = self.textCursor()
         key = e.key()
-        if key == Qt.Key_H:
-            # self.parent.completer.wordList
-            # TODO: implement dynamic completion
-            pass
-
         if e.modifiers() == Qt.ControlModifier and key == 16777217:  # that key code stands for tab
             self.parent.parent.switchTabs()
 
         isSearch = (e.modifiers() == Qt.ControlModifier and e.key() == Qt.Key_F)
+
+        isDeleteLine = (e.modifiers() == Qt.ControlModifier and e.key() == 16777219)  # This is for MacOS (CMD+Delete)
 
         if isSearch:
             try:
@@ -245,49 +390,33 @@ class Editor(QPlainTextEdit):
 
                 textCursor = currentEditor.textCursor()
                 textCursorPos = textCursor.position()
+                if currentWidget is not None:
+                    text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
+                    if okPressed:
+                        if text == "":
+                            text = " "
+                            self.dialog.noMatch(text)
+                        self.searchtext = text
+                        try:
+                            with open(currentFile, 'r') as file:
+                                contents = file.read()
+                                self.indexes = list(find_all(contents, text))
+                                if len(self.indexes) == 0:
+                                    self.dialog.noMatch(text)
+
+                        except FileNotFoundError as E:
+                            print(E, " on line 245 in the file Editor.py")
 
             except (AttributeError, UnboundLocalError) as E:
                 print(E, " on line 228 in the file Editor.py")
 
-            if currentWidget is not None:
-                text, okPressed = QInputDialog.getText(self, 'Find', 'Find what: ')
-                if okPressed:
-                    if text == "":
-                        text = " "
-                        self.dialog.noMatch(text)
-                    self.searchtext = text
-                    try:
-                        with open(currentFile, 'r') as file:
-                            contents = file.read()
-                            self.indexes = list(find_all(contents, text))
-                            if len(self.indexes) == 0:
-                                self.dialog.noMatch(text)
-
-                    except FileNotFoundError as E:
-                        print(E, " on line 245 in the file Editor.py")
+        if isDeleteLine and platform.system() == "Darwin":  # Check if the os is MacOS
+            textCursor.select(QTextCursor.LineUnderCursor)
+            textCursor.removeSelectedText()
 
         if key == Qt.Key_QuoteDbl:
             self.insertPlainText('"')
             self.moveCursorPosBack()
-
-        if key == 16777249:  # This code stands for CTRL
-            if self.check_func(self.textUnderCursor()):
-                extraSelections = []
-                selection = QTextEdit.ExtraSelection()
-                selection.format.setFontUnderline(True)
-                selection.format.setUnderlineColor(QColor("#00d2ff"))
-                selection.format.setBackground(QColor("#00d2ff"))
-                selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-
-                selection.cursor = self.textCursor()
-                selection.cursor.clearSelection()
-                selection.cursor.select(QTextCursor.WordUnderCursor)
-                extraSelections.append(selection)
-                self.setExtraSelections(extraSelections)
-                self.text = self.textUnderCursor()
-                QApplication.setOverrideCursor(Qt.PointingHandCursor)
-            else:
-                self.text = None
 
         if e.modifiers() == Qt.ControlModifier and e.key() == 61:  # Press Ctrl+Equal key to make font bigger
 
@@ -357,9 +486,12 @@ class Editor(QPlainTextEdit):
                 self.setTextCursor(textCursor)
         if key not in [16777217, 16777219, 16777220]:
             super().keyPressEvent(e)
+            # print(self.textUnderCursor())
+            if len(self.textUnderCursor()) == 3:
+                pass
             return
 
-        e.accept()
+        # e.accept()
         cursor = self.textCursor()
         if key == 16777217:  # and self.replace_tabs:
             amount = 4 - self.textCursor().positionInBlock() % 4
