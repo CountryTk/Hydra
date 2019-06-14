@@ -4,13 +4,12 @@ from PyQt5.QtWidgets import QPlainTextEdit, QAction, QMenu, QInputDialog, QTextE
 from PyQt5.QtCore import Qt, QRect, QSize, QObject, pyqtSignal, QPoint, QProcess
 from PyQt5.QtGui import QFont, QTextOption, QTextCursor, QTextFormat, QPainter, QFontMetrics, \
     QColor, QCursor, QPixmap, QTextCharFormat
-from src.utils.find_all import find_all
-from src.widgets.Messagebox import MessageBox
-from src.utils.predictionList import wordList
-from src.utils.config import config_choice
+from utils.find_all import find_all
+from widgets.Messagebox import MessageBox
+from utils.predictionList import wordList
+from utils.config import config_choice
 import platform
 import keyword as kw
-from src.widgets.Completer import Completer
 
 editor = config_choice("default.json")['editor']
 
