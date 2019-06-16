@@ -1,0 +1,143 @@
+{
+  "editor": {
+    "windowStaysOnTop": false,
+    "editorFont": "Monaco",
+    "menuFont": "Monaco",
+    "directoryFont": "Monaco",
+    "editorFontSize": 16,
+    "menuFontSize": 14,
+    "tabFontSize": 14,
+    "directoryFontSize": 14,
+    "pointSize": 16,
+    "statusBarFont": "Monaco",
+    "statusBarFontSize": 14,
+    "generalFont": "Monaco",
+    "generalFontSize": 14,
+    "tabShape": false,
+    "tabMovable": true,
+    "tabFont": "Monaco",
+    "editorColor": "#212121",
+    "windowColor": "#212121",
+    "windowText": "#FFFFFF",
+    "alternateBase": "#FFFFFF",
+    "ToolTipBase": "#212121",
+    "ToolTipText": "#FFFFFF",
+    "ToolTipFont": "Monaco",
+    "ToolTipFontSize": 15,
+    "editorText": "#e3e6fc",
+    "buttonColor": "#353535",
+    "buttonTextColor": "#FFFFFF",
+    "HighlightColor": "#353535",
+    "UnfocusedHighlightColor": "#FFFFFF",
+    "HighlightedTextColor": "#000000",
+    "TabWidth": 38,
+    "NumberBarBox": false,
+    "errorMessages": true,
+    "closeTabShortcut": "Ctrl+W",
+    "moveCursorRight" : "Ctrl+L",
+    "moveCursorUp": "Ctrl+I",
+    "moveCursorDown": "Ctrl+M",
+    "selectAllWordsBeforeCursor": "Ctrl+K",
+    "moveCursorLeft": "Ctrl+J"
+  },
+  "files": {
+    "python": {
+      "extensions": "py",
+      "indentation": 4,
+      "keywords": ["for", "class", "range", "finally", "is", "return", "continue", "for", "lambda",
+        "try", "def", "from", "nonlocal", "while", "and", "not", "global", "del", "with", "as", "elif", "if",
+        "or", "yield", "assert", "else", "import", "pass", "break", "except", "in", "raise", "self", "async"],
+      "highlighting": {
+        "keyword": {
+          "bold": true,
+          "color": "#F6DC74"
+        },
+        "class": {
+          "color": "#74F6C3",
+          "bold": false
+        },
+        "function": {
+          "color": "#FF6666",
+          "italic": true
+        },
+        "magic": {
+          "color": "#FF6666",
+          "italic": true
+        },
+        "decorator": {
+          "color": "#FF00E7"
+        },
+        "multiLineComment": {
+          "color": "#039135"
+        },
+        "int": {
+          "color": "#ADD4FF"
+        },
+        "Qclass": {
+          "color": "#f5af19"
+        },
+        "self": {
+          "color": "#1cb5e0"
+        },
+        "T_bool": {
+          "color": "#0f9b0f"
+        },
+        "F_bool": {
+          "color": "#ef473a"
+        },
+        "N_bool": {
+          "color": "#fceabb"
+        },
+
+        "singleLineComment": {
+          "color": "#6B6E6C"
+        },
+        "quotation": {
+          "color": "#63ff00"
+        },
+        "quotation2": {
+          "color": "#63ff00"
+        }
+      }
+    }, "c": {
+      "extensions": "c",
+      "indentation": 4,
+      "keywords":["auto", "break", "case", "char", "const", "const", "continue", "default", "do", "double", "else",
+        "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof",
+        "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"],
+      "highlighting": {
+        "keyword": {
+          "color": "#0099FF",
+          "bold": true
+        },
+        "class": {
+          "color": "#330000",
+          "bold": true
+        },
+        "function": {
+          "color": "#FF9500",
+          "italic": true
+        },
+        "magic": {
+          "color": "#FF6666"
+        },
+        "decorator": {
+
+          "color": "#FF00E7"
+        },
+        "quotation": {
+          "color": "#63ff00"
+        },
+        "singleLineComment": {
+          "color": "#6B6E6C"
+        },
+        "multiLineComment": {
+          "color": "#039135"
+        },
+        "int": {
+          "color": "#ADD4FF"
+        }
+      }
+    }
+  }
+}
