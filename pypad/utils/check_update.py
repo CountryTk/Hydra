@@ -1,5 +1,6 @@
 import logging
 import requests
+from pypad.utils.config import LOCATION
 
 
 def local_version():
@@ -7,7 +8,7 @@ def local_version():
     logger = logging
     logger.basicConfig(filename="pypad.log", filemode='a', level=logger.INFO)
 
-    file = "version.txt"
+    file = LOCATION + "version.txt"
 
     try:
         with open(file, "r") as local:
@@ -34,7 +35,6 @@ def show_update():
 
     local = local_version().strip()
     online = online_version().strip()
-
     if local != online:
         return "An update is available, would you like to update?"
     else:
