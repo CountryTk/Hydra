@@ -23,7 +23,7 @@ def get_last_file():
         if os.path.isfile(last_file[0]):
 
             try:
-                with open(last_file[0], 'r') as file:
+                with open(last_file[0], 'r+') as file:
                     contents = file.read()
                     if os.path.isfile(contents):
 
