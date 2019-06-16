@@ -17,6 +17,10 @@ setup(name='PyPad editor',
             "requests",
             "PyQtWebEngine"
           ],
-      scripts=['bin/pypad'],
+      entry_points={
+            'console_scripts': [
+            'pypad=pypad.main:launch',
+          ],
+        },
       include_package_data=True,
       zip_safe=False)
