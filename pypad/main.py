@@ -593,3 +593,7 @@ def launch():
     if file is not None:
         ex.openFile(file)
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    launch()

@@ -57,6 +57,9 @@ class Directory(QTreeView):
         self.newAct.setStatusTip('Create a new file')
         self.newAct.triggered.connect(lambda: print("new"))
 
+    def deleteFile(self):
+        print("not implementeed")
+
     def openMenu(self, position):
 
         indexes = self.selectedIndexes()
