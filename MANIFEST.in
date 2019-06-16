@@ -3,3 +3,4 @@ include pypad/config.json
 include pypad/config1.json
 include pypad/config2.json
 include pypad/resources/lastFile.txt
+include pypad/version.txt
