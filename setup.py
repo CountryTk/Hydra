@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
+from pypad import __version__
 
 setup(name='PyPad editor',
-      version='1.1.0',
+      version=__version__,
       description='A simple customizable cross-platform IDE',
       url='https://github.com/CountryTk/PyPad',
       author='CountryTk',

@@ -1,6 +1,7 @@
 import os
+from pypad.utils.config import LOCATION
 
-last_file = ['resources/lastFile.txt']
+last_file = [LOCATION + 'resources/lastFile.txt']
 
 
 def update_previous_file(filepath=last_file[0]):
