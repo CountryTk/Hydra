@@ -5,6 +5,13 @@ This editor is very customizable, just edit the config.json file. All color code
 
 Required modules: PyQt5, QScintilla, bs4, lxml, nltk and vulture
 
+# Installation
+
+1) Clone this repository
+2) Run the command python setup.py install in the folder where setup.py is
+3) See nltk installation
+4) Run the command "pypad" to start PyPad
+
 # nltk installation
 After doing pip install -r requirements.txt you need to open up a cmd/terminal and follow these steps:
 
@@ -18,11 +25,6 @@ After doing pip install -r requirements.txt you need to open up a cmd/terminal a
 
 To use the search function, you first have to press Ctrl+F and then type in the word you want to search then press ok.
 To cycle through any words that were found, you press F3
-
-# Installation
-Open a terminal and paste this command in there:
-
-```git clone https://github.com/Fuchsiaff/PyPad.git && cd PyPad && pip install -r requirements.txt && cd src && python main.py``` 
 
 # Pictures
 ![alt_text](https://raw.githubusercontent.com/Fuchsiaff/Content/master/2019-01-26-220809_1920x1021_scrot.png)

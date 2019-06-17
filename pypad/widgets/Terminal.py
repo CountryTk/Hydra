@@ -431,7 +431,6 @@ class Console(QWidget):
         self.button.clicked.connect(self.remove)
 
     def run(self, command, path):  # Takes in the command and the path of the file
-        print(path)
         try:
             os.chdir(os.path.dirname(path))  # We need to change the path to the path where the file is being ran from
         except Exception as E:

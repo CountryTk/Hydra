@@ -12,9 +12,8 @@ from pypad.utils.completer_utility import tokenize
 from pypad.utils.find_utility import find_all
 from pypad.utils.completer_utility import wordList
 from pypad.widgets.Pythonhighlighter import PyHighlighter
-from pypad.widgets.Messagebox import MessageBox
+from pypad.widgets.Messagebox import MessageBox, NoMatch
 import platform
-
 
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 
@@ -189,6 +188,7 @@ class Content(QWidget):
         try:
             if self.modified:
                 self.parent.setWindowTitle("PyPad ~ " + str(self.baseName) + " [UNSAVED]")
+                # self.parent.saveFile()
             else:
                 pass
 
@@ -222,7 +222,6 @@ class Editor(QPlainTextEdit):
         self.font = QFont()
         self.size = 12
         self.worldList = wordList
-        self.dialog = MessageBox(self)
         self.menu_font = QFont()
         self.menu_font.setFamily(editor["menuFont"])
         self.menu_font.setPointSize(editor["menuFontSize"])
@@ -576,14 +575,16 @@ class Editor(QPlainTextEdit):
                     if okPressed:
                         if text == "":
                             text = " "
-                            self.dialog.noMatch(text)
+                            self.not_found = NoMatch(text)
+
                         self.searchtext = text
+
                         try:
                             with open(currentFile, 'r') as file:
                                 contents = file.read()
                                 self.indexes = list(find_all(contents, text))
                                 if len(self.indexes) == 0:
-                                    self.dialog.noMatch(text)
+                                    self.not_found = NoMatch(text)
 
                         except FileNotFoundError as E:
                             print(E, " on line 245 in the file Editor.py")

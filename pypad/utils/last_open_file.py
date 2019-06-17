@@ -14,7 +14,7 @@ def update_previous_file(filepath=last_file[0]):
                 print(err)
                 return False
     except Exception as err:
-        print(err)
+        print(err, " line 17 in last_open_file.py")
         return False
 
 
@@ -34,5 +34,5 @@ def get_last_file():
                 print(err)
                 return False
     except Exception as err:
-        print(err)
+        print(err, " line 37 in last_open_file.py")
         return False

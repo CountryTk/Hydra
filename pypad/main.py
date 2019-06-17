@@ -420,8 +420,10 @@ class Main(QMainWindow):
                     self.tab.events.look_for_dead_code(active_tab.editor.toPlainText())
                     active_tab.modified = False
                     saveFile.close()
+                """
                 if active_tab.fileName.endswith(".py"):
                     active_tab.editor.updateAutoComplete(active_tab.fileName)
+                """
             else:
                 options = QFileDialog.Options()
                 name = QFileDialog.getSaveFileName(self, 'Save File', '',
@@ -436,8 +438,10 @@ class Main(QMainWindow):
                     saveFile.write(active_tab.editor.toPlainText())
                     self.tab.events.look_for_dead_code(active_tab.editor.toPlainText())
                     saveFile.close()
+                    """
                     if fileName.endswith(".py"):
                         active_tab.editor.updateAutoComplete(active_tab.fileName)
+                    """
             self.setWindowTitle("PyPad ~ " + str(active_tab.baseName) + " [SAVED]")
             active_tab.tokenize_file()
         except Exception as E:
@@ -592,6 +596,8 @@ def launch():
     ex.show()
     if file is not None:
         ex.openFile(file)
+        ex.openProjectWithPath(os.getcwd())
+
     sys.exit(app.exec_())
 
 

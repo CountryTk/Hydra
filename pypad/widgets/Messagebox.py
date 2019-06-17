@@ -139,6 +139,7 @@ class MessageBox(QWidget):
         self.add_browser.showBrowser(self.url, self.helpword)  # self.add_browser should have the value <__main__.Main
         self.hide()
 
+    # DONE
     def noMatch(self, word):
 
         self.label.setText("No matches found for word: " + str(word))
@@ -148,6 +149,7 @@ class MessageBox(QWidget):
         self.layout.addWidget(self.button)
         self.show()
 
+    # DONE
     def newProject(self):
 
         cwd = os.getcwd()
@@ -191,7 +193,8 @@ class MessageBox(QWidget):
         self.layout.removeWidget(self.label)
         self.layout.addLayout(self.vertical)
         self.setLayout(self.layout)
-        self.show()
+        self.show()  #
+
 
     def getHelp(self, paren):
         self.add_browser = paren
@@ -210,6 +213,39 @@ class MessageBox(QWidget):
 
         else:
             self.hide()
+
+
+class NoMatch(QWidget):
+
+    def __init__(self, word):
+
+        super(NoMatch, self).__init__()
+
+        self.setWindowFlags(
+            Qt.Widget |
+            Qt.WindowCloseButtonHint |
+            Qt.WindowStaysOnTopHint |
+            Qt.FramelessWindowHint
+        )
+
+        self.layout = QHBoxLayout()
+
+        self.word = word
+        self.no_match = QLabel("No match found for word: {}".format(self.word))
+
+        self.ok_button = QPushButton("OK")
+        self.ok_button.setAutoDefault(True)
+        self.ok_button.clicked.connect(self.ok_pressed)
+
+        self.layout.addWidget(self.no_match)
+        self.layout.addWidget(self.ok_button)
+        self.setLayout(self.layout)
+
+        self.show()
+
+    def ok_pressed(self):
+
+        self.hide()
 
 
 class NewProject(QWidget):
@@ -314,6 +350,41 @@ class NewProject(QWidget):
 
         else:
             self.error_label.setText("Permission error")
+
+
+class GetHelp(QWidget):
+
+    def __init__(self, parent, helpword):
+
+        super(GetHelp, self).__init__()
+
+        self.layout = QHBoxLayout()
+        self.parent = parent
+        self.helpword = helpword
+
+        self.help_label = QLabel("It seems like you made an error, would you to get help?")
+
+        self.yes_button = QPushButton("Yes")
+        self.no_button = QPushButton("No")
+
+        self.yes_button.clicked.connect(self.ok_pressed)
+        self.no_button.clicked.connect(lambda: self.hide())
+
+        self.layout.addWidget(self.help_label)
+        self.setLayout(self.layout)
+
+    def show_or_not(self):
+
+        if editor["errorMessages"]:
+            self.show()
+        else:
+            self.hide()
+
+    def ok_pressed(self):
+
+        self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
+        self.parent.showBrowser(self.url, self.helpword)  # self.add_browser should have the value <__main__.Main
+        self.hide()
 
 
 class LineEdit(QLineEdit):
