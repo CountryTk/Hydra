@@ -1,6 +1,18 @@
-from pypad.utils.config import config_reader, LOCATION
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QDesktopWidget, QLabel, \
-    QVBoxLayout, QLineEdit, QFileDialog, QAction, QApplication, QGridLayout, QSpacerItem
+from Hydra.utils.config import config_reader, LOCATION
+from PyQt5.QtWidgets import (
+    QWidget,
+    QPushButton,
+    QHBoxLayout,
+    QDesktopWidget,
+    QLabel,
+    QVBoxLayout,
+    QLineEdit,
+    QFileDialog,
+    QAction,
+    QApplication,
+    QGridLayout,
+    QSpacerItem,
+)
 from PyQt5.QtGui import QFont, QIcon, QCursor, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
 import shutil
@@ -12,7 +24,7 @@ configs = [config_reader(0), config_reader(1), config_reader(2)]
 with open(LOCATION + "default.json") as choice:
     choiceIndex = int(choice.read())
 
-editor = configs[choiceIndex]['editor']
+editor = configs[choiceIndex]["editor"]
 
 
 class MessageBox(QWidget):
@@ -27,7 +39,7 @@ class MessageBox(QWidget):
         self.height = self.screen_geomtery.height()
         self.path = None
         self.add_browser = None
-        self.setWindowIcon(QIcon('resources/Python-logo-notext.svg_.png'))
+        self.setWindowIcon(QIcon("resources/Python-logo-notext.svg_.png"))
         self.initUI()
 
     def initUI(self):
@@ -83,8 +95,11 @@ class MessageBox(QWidget):
 
     def confirmation(self, index):
 
-        self.label.setText \
-            ("Theme " + str(index) + " selected\nNOTE: For some changes to work you need to restart PyPad")
+        self.label.setText(
+            "Theme "
+            + str(index)
+            + " selected\nNOTE: For some changes to work you need to restart Hydra"
+        )
         self.button.setText("Ok")
         self.button.setAutoDefault(True)
 
@@ -93,7 +108,6 @@ class MessageBox(QWidget):
         self.show()
 
     def success(self, directory):
-
         def _exit():
             self.hide()
 
@@ -101,7 +115,9 @@ class MessageBox(QWidget):
         self.successButton.resize(10, 30)
         self.successLabel = QLabel()
 
-        self.successLabel.setText("Successfully created a new project to: " + str(directory))
+        self.successLabel.setText(
+            "Successfully created a new project to: " + str(directory)
+        )
         self.successButton.clicked.connect(_exit)
         self.layout.addWidget(self.successLabel)
         self.layout.addWidget(self.successButton)
@@ -109,7 +125,6 @@ class MessageBox(QWidget):
         self.show()
 
     def saveMaybe(self, file, tabCounter, tab, index):
-
         def _closeAnyway():
             try:
                 file.deleteLater()
@@ -136,7 +151,9 @@ class MessageBox(QWidget):
     def gettingHelp(self):
 
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
-        self.add_browser.showBrowser(self.url, self.helpword)  # self.add_browser should have the value <__main__.Main
+        self.add_browser.showBrowser(
+            self.url, self.helpword
+        )  # self.add_browser should have the value <__main__.Main
         self.hide()
 
     # DONE
@@ -195,7 +212,6 @@ class MessageBox(QWidget):
         self.setLayout(self.layout)
         self.show()  #
 
-
     def getHelp(self, paren):
         self.add_browser = paren
         try:
@@ -204,7 +220,9 @@ class MessageBox(QWidget):
 
         except AttributeError as E:
             print(E, " on line 208 in the file Messagebox.py")
-        self.label.setText("It seems like you made an error, would you like to get help?")
+        self.label.setText(
+            "It seems like you made an error, would you like to get help?"
+        )
         self.layout.addWidget(self.getHelpButton)
         self.layout.addWidget(self.button)
         config = editor
@@ -216,16 +234,15 @@ class MessageBox(QWidget):
 
 
 class NoMatch(QWidget):
-
     def __init__(self, word):
 
         super(NoMatch, self).__init__()
 
         self.setWindowFlags(
-            Qt.Widget |
-            Qt.WindowCloseButtonHint |
-            Qt.WindowStaysOnTopHint |
-            Qt.FramelessWindowHint
+            Qt.Widget
+            | Qt.WindowCloseButtonHint
+            | Qt.WindowStaysOnTopHint
+            | Qt.FramelessWindowHint
         )
 
         self.layout = QHBoxLayout()
@@ -249,7 +266,6 @@ class NoMatch(QWidget):
 
 
 class NewProject(QWidget):
-
     def __init__(self, parent=None):
         super(NewProject, self).__init__()
 
@@ -276,7 +292,7 @@ class NewProject(QWidget):
 
         self.location_label = QLabel("Location: ")
         self.location_line = LineEdit()
-        project_name = "Untitled" + str(random.randint(1,420))
+        project_name = "Untitled" + str(random.randint(1, 420))
         path = os.path.expanduser("~/Documents/" + project_name)
         print(path)
         self.location_line.setPureText(path)
@@ -306,7 +322,9 @@ class NewProject(QWidget):
     def get_dir(self):
         # Get's the directory
 
-        self._dir = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+        self._dir = QFileDialog.getExistingDirectory(
+            None, "Select a folder:", "", QFileDialog.ShowDirsOnly
+        )
         self.location_line.setPureText(self._dir)
 
     def change_cursor(self):
@@ -337,13 +355,14 @@ class NewProject(QWidget):
 
         path = self.location_line.text()
         exists = os.path.exists(path)
-        access = os.access(os.path.dirname(path), os.W_OK)  # Can we actually write to that path?
+        access = os.access(
+            os.path.dirname(path), os.W_OK
+        )  # Can we actually write to that path?
 
         if access and exists is False:
             os.makedirs(path)
             self.parent.openProjectWithPath(path)
             self.hide()
-
 
         elif exists:
             self.error_label.setText("Directory already exists")
@@ -353,7 +372,6 @@ class NewProject(QWidget):
 
 
 class GetHelp(QWidget):
-
     def __init__(self, parent, helpword):
 
         super(GetHelp, self).__init__()
@@ -362,7 +380,9 @@ class GetHelp(QWidget):
         self.parent = parent
         self.helpword = helpword
 
-        self.help_label = QLabel("It seems like you made an error, would you to get help?")
+        self.help_label = QLabel(
+            "It seems like you made an error, would you to get help?"
+        )
 
         self.yes_button = QPushButton("Yes")
         self.no_button = QPushButton("No")
@@ -383,12 +403,13 @@ class GetHelp(QWidget):
     def ok_pressed(self):
 
         self.url = "https://duckduckgo.com/?q=" + str(self.helpword)
-        self.parent.showBrowser(self.url, self.helpword)  # self.add_browser should have the value <__main__.Main
+        self.parent.showBrowser(
+            self.url, self.helpword
+        )  # self.add_browser should have the value <__main__.Main
         self.hide()
 
 
 class LineEdit(QLineEdit):
-
     def __init__(self):
 
         super(LineEdit, self).__init__()
@@ -418,7 +439,6 @@ class LineEdit(QLineEdit):
 
 
 class GenericMessage(QWidget):
-
     def __init__(self, text):
 
         super(GenericMessage, self).__init__()

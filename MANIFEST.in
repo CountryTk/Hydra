@@ -1,6 +1,6 @@
-include pypad/default.json
-include pypad/config.json
-include pypad/config1.json
-include pypad/config2.json
-include pypad/resources/lastFile.txt
-include pypad/version.txt
+include Hydra/default.json
+include Hydra/config.json
+include Hydra/config1.json
+include Hydra/config2.json
+include Hydra/resources/lastFile.txt
+include Hydra/version.txt
