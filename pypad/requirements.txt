@@ -1,9 +1,0 @@
-PyQt5
-lxml
-qtconsole
-sip~=4.19.8
-nltk
-QScintilla
-vulture
-requests
-PyQtWebEngine
