@@ -371,13 +371,13 @@ class Editor(QPlainTextEdit):
                 word = self.text
                 # self.parent.parent.showBrowser(url, word)
 
-                tag = self.jump_to_def(word)
-                print(tag[0])
-                if tag[0]:
-                    print("INFO INFO INFO")
-                    print(tag[1])
+                # tag = self.jump_to_def(word)
+                # print(tag[0])
+                # if tag[0]:
+                    # print("INFO INFO INFO")
+                    # print(tag[1])
 
-                    self.parent.jumpToDef(tag[1])
+                    # self.parent.jumpToDef(tag[1])
 
                 # if self.check_func(self.textUnderCursor(), True):
                 #     extraSelections = self.highlightCurrentLine()
@@ -495,16 +495,16 @@ class Editor(QPlainTextEdit):
 
     def jump_to_def(self, word):
 
-        from Hydra.test import getTags
+        # from Hydra.test import getTags
+        return False
+        # lol = getTags()
+        # tag = lol.get(word, None)
 
-        lol = getTags()
-        tag = lol.get(word, None)
+        # if tag:
+           #  return True, tag
 
-        if tag:
-            return True, tag
-
-        else:
-            return False, ""
+        # else:
+            # return False, ""
 
     def get_pydoc_output(self):
         output = self.info_process.readAllStandardOutput().data().decode()
