@@ -1,3 +1,4 @@
+# Setting up imports
 import sys
 import os
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess
@@ -35,23 +36,23 @@ configs = [config_reader(0), config_reader(1), config_reader(2)]
 with open(LOCATION + "default.json") as choice:
     choiceIndex = int(choice.read())
 
-os.environ["PYTHONUNBUFFERED"] = "1"
+os.environ["PYTHONUNBUFFERED"] = "1"  # This is just an environment variable that PyCharm uses
 
 
 class Main(QMainWindow):
     def __init__(self, app, palette, editor, parent=None):
         super().__init__(parent)
 
-        self.editor = editor
-        self.onStart(choiceIndex)
-        self.status = QStatusBar(self)
+        self.editor = editor  # Current config chosen (can be one of 3 config<N>.json)
+        self.onStart(choiceIndex)   # Initializing config options 
+        self.status = QStatusBar(self)  # Status bar for displaying useful info like update found etc
 
         # Initializing the main widget where text is displayed
         self.tab = Tabs(self.cleanOpen, app, palette, self)
-        self.tabsOpen = []
+        # self.tabsOpen = []
 
-        self.pic_opened = False
-        self.dialog = MessageBox(self)
+        self.pic_opened = False  # This is used to open pictures but right now that feature is disabled
+        self.dialog = MessageBox(self)  # Handles dialogs, for now it only creates the create new project dialog
 
         self.setWindowIcon(
             QIcon("resources/Python-logo-notext.svg_.png")
@@ -59,12 +60,14 @@ class Main(QMainWindow):
 
         self.setWindowTitle("Hydra")  # Setting the window title
 
-        self.status_font = QFont(editor["statusBarFont"], editor["statusBarFontSize"])
+        self.status_font = QFont(editor["statusBarFont"], editor["statusBarFontSize"])  # Status bar font
 
         self.os = platform.system()
 
-        self.tab.tabs.currentChanged.connect(self.fileNameChange)
-        self.search = DocumentSearch()
+        self.tab.tabs.currentChanged.connect(self.fileNameChange)  # To change the title of the window when tab changes
+        self.search = DocumentSearch()  # To find documents in the whole system, also not quite working today
+
+        # Initializing QActions that can be triggered from a QMenu or via keyboard shortcuts
         self.openterm()
         self.openterminal()
         # self.split2Tabs()
@@ -77,11 +80,13 @@ class Main(QMainWindow):
         self.saveAs()
         self.exit()
 
-        self.thread = UpdateThread()
+        self.thread = UpdateThread()  # Update checking runs on its own thread to prevent main GUI from blocking
         self.thread.start()
 
+        # Data retrieved from the update thread gets processed check_updates
         self.thread.textSignal.connect(self.check_updates)
 
+        # Attributes to manage opening directories and such
         self.dir_opened = False
         self._dir = None
 
@@ -90,20 +95,13 @@ class Main(QMainWindow):
 
         self.update_progress.setStyleSheet(self.update_progress.styleSheet())
 
-        self.setCentralWidget(self.tab)
+        self.setCentralWidget(self.tab)  # QMainWindow's central widget
 
         self.files = None  # Tracking the current file that is open
 
-        self.cFileOpened = False
+        self.dead_code_thread = DeadCodeCheker()  # This checks for dead code
 
-        self.update_process = QProcess()
-        # self.save_thread = SaveFile(self)
-        self.dead_code_thread = DeadCodeCheker()
-
-        # self.save_thread.readDone.connect(self.ready)
-        # self.save_thread.updateOffset.connect(self.updateOffset)
         self.dead_code_thread.infoSignal.connect(self.write_dead_code_info)
-        self.ready_to_write = None
 
         self.stack = []  # Used for tracking when to check for dead code
 
@@ -111,21 +109,14 @@ class Main(QMainWindow):
 
         self.initUI()  # Main UI
 
-    def acquire_tab(self, tab):
-        self.tab_to_write_to = tab
-
     def write_dead_code_info(self, text):
 
         self.tab.events.info_bar.setText(text)
 
-    def ready(self):
-        self.ready_to_write = True
-
-    def not_ready(self):
-        self.ready_to_write = False
-
     def check_updates(self, text):
-
+        """
+        A function to check for updates and ask the user if they want to update or not
+        """
         self.update_label = QLabel()
         self.update_label.setFont(
             QFont(self.editor["generalFont"], self.editor["generalFontSize"])
@@ -145,12 +136,14 @@ class Main(QMainWindow):
             self.button.clicked.connect(self.update_Hydra)
 
     def update_Hydra(self):
+        """
+        This function gets used when the user wants to update Hydra
+        This function is not finished so it doesn't do any updating
+        """
+
         self.update_label.setText("Updating...")
         self.status.removeWidget(self.button)
         self.status.addWidget(self.update_progress)
-        """
-        So "updating" means I should first have an executeable or something of that sorts
-        """
 
         for i in range(101):
             self.update_progress.setValue(i)
@@ -378,20 +371,13 @@ class Main(QMainWindow):
         update_previous_file(filename)
 
     def addTab(self, state, tab, basename, index_to_remove):
-
+        """
+        Removes given tab and adds a new tab and makes it active
+        """
         self.tab.tabs.removeTab(index_to_remove)
         index = self.tab.tabs.addTab(tab, basename)
         self.tab.tabs.setCurrentIndex(index)
         self.tab.tabCounter.append(basename)
-
-    def write_to_file(self, data):
-        print(data)
-        if self.tab_to_write_to is None:
-            print("is none")
-            return
-        else:
-            self.tab_to_write_to.editor.insertPlainText(data)
-            print("Wrote")
 
     # Not in use
     def openFile(self, filename):
@@ -452,7 +438,7 @@ class Main(QMainWindow):
             dirPath = os.path.dirname(filename)
             self.files = filename
 
-            self.tabsOpen.append(self.files)
+            # self.tabsOpen.append(self.files)
 
             index = self.tab.tabs.addTab(
                 tab, tab.baseName
@@ -570,7 +556,7 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     active_tab.saved = True
                     active_tab.modified = False
-                    self.tabsOpen.append(fileName)
+                    # self.tabsOpen.append(fileName)
                     saveFile.write(active_tab.editor.toPlainText())
                     self.tab.events.look_for_dead_code(active_tab.editor.toPlainText())
                     saveFile.close()
@@ -584,14 +570,7 @@ class Main(QMainWindow):
             print(E, " on line 403 in the file main.py")
 
     def choose_python(self):
-        if self.os == "Windows":
-            return "python"
-
-        elif self.os == "Linux":
-            return "python3"
-
-        elif self.os == "Darwin":
-            return "python3"
+        return sys.executable
 
     def saveFileAs(self):
         try:
@@ -611,7 +590,7 @@ class Main(QMainWindow):
                 with open(fileName, "w+") as saveFile:
                     active_tab.saved = True
                     active_tab.modified = False
-                    self.tabsOpen.append(fileName)
+                    # self.tabsOpen.append(fileName)
 
                     try:
                         baseName = os.path.basename(fileName)

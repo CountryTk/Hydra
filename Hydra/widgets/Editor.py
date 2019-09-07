@@ -113,6 +113,8 @@ class Editor(QPlainTextEdit):
         self.setMouseTracking(True)
         self.completer = None
 
+        self.ignoreLength = None
+
         self.foldableLines: list = []
 
         self.info_process = QProcess()

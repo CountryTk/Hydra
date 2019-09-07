@@ -144,7 +144,9 @@ class Content(QWidget):
             self.highlighter = PyHighlighter(self.editor.document(), self.editor)
         elif self.baseName.endswith(".doc"):
             self.highlighter = PyHighlighter(self.editor.document(), self.editor)
+
         self.editor.cursorPositionChanged.connect(self.change_col)
+        # self.editor.textChanged.connect()
 
     def assignLines(self, array: list) -> None:
 
@@ -183,12 +185,13 @@ class Content(QWidget):
 
         if state:
 
-            self.meme(True)
+            self.initialize(True)
 
-    def meme(self, justOpened=False):
-
+    def initialize(self, justOpened=False):
+        """
+        After content is loaded into the file, this function will handle jump to definition when opening a file
+        """
         QTest.qWait(5)  # Without this, it won't work
-        self.currentBlockCount = self.editor.blockCount()
 
         if self.searchCommand:
 

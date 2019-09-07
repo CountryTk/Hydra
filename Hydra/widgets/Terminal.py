@@ -19,6 +19,9 @@ from PyQt5.QtGui import (
     QFont,
     QTextCursor,
     QIcon,
+    QKeyEvent,
+    QTextBlock,
+    QMouseEvent
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread
 from Hydra.utils.config import config_reader, LOCATION
@@ -230,7 +233,6 @@ class Terminal(QWidget):
     def onReadyReadStandardError(self):
         self.error = self.process.readAllStandardError().data().decode()
         self.editor.appendPlainText(self.error.strip("\n"))
-        self.editor.appendPlainText("wtf: {}, {}".format(os.getcwd(), __file__))
         self.errorSignal.emit(self.error)
 
     def onReadyReadStandardOutput(self):
@@ -328,6 +330,10 @@ class Terminal(QWidget):
         else:
             pass
         # When the user does a command like ls and then presses enter then it wont read the line where the cursor is on as a command
+
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+
+        return
 
 
 class name_highlighter(QSyntaxHighlighter):
@@ -462,12 +468,28 @@ class Console(QWidget):
         self.error = None
         self.finished = False
         self.clicked = False
+        self.editor = OutputTextEdit(self)
 
         self.process = QProcess()
         self.state = None
+
+        self.editor.userInputSignal.connect(self.attemptToWriteDataIntoProcess)
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
+        self.process.finished.connect(self.finishedProcess)
         self.add()  # Add items to the layout
+
+    def attemptToWriteDataIntoProcess(self, input: str) -> None:
+
+        if self.process.state() == QProcess.Running:
+            self.process.write(input.encode())
+            self.process.write(b"\n")
+
+    def finishedProcess(self, exitCode: int, exitStatus: QProcess.ExitStatus):
+
+        self.editor.setReadOnly(True)
+        self.editor.appendPlainText("\nProcess finished with exit code {}".format(exitCode))
+        self.parent.tabs.currentWidget().editor.setFocus()
 
     def ispressed(self):
         return self.pressed
@@ -502,11 +524,13 @@ class Console(QWidget):
         try:
             self.result = self.process.readAllStandardOutput().data().decode()
 
+            toIgnore: int = len(self.result.split("\n")[-1])
+            self.editor.setIgnoreLength(toIgnore)
+
         except UnicodeDecodeError as E:
             print(E)
         try:
             self.editor.appendPlainText(self.result.strip("\n"))
-            self.editor.appendPlainText("{}".format(__file__))
             self.state = self.process.state()
         except RuntimeError:
             pass
@@ -536,7 +560,6 @@ class Console(QWidget):
         self.terminateButton.clicked.connect(self.terminate)
         self.button.setFixedWidth(120)
         self.h_layout = QHBoxLayout()
-        self.editor = Editor(self)
         self.editor.setReadOnly(True)
         self.editor.setFont(self.font)
         self.layout.addWidget(self.button)
@@ -553,12 +576,65 @@ class Console(QWidget):
             print(E)
 
         self.editor.clear()
+
         if self.process.state() == 1 or self.process.state() == 2:
+
             self.process.kill()
             self.editor.setPlainText("Process already started, terminating")
+
         else:
-            self.process.start(command)
+            self.editor.setReadOnly(False)
+
+            commands: list = command.split(" ")
+            commands.insert(1, "-u")
+
+            self.process.start(" ".join(commands))
+            self.editor.appendPlainText("{} {}".format(commands[0], commands[-1]))
+            self.editor.setFocus()
+
 
     def terminate(self):
         if self.process.state() == 2:
             self.process.kill()
+
+
+class OutputTextEdit(QPlainTextEdit):
+
+    userInputSignal = pyqtSignal(str)
+
+    def __init__(self, parent):
+        super(OutputTextEdit, self).__init__()
+
+        self.parent = parent
+
+        self.ignoreLength = None
+
+    def setIgnoreLength(self, length: int) -> None:
+        # This is useful for determining which input is entered by the user and what has been entered by the program
+
+        self.ignoreLength = length
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if self.isReadOnly():
+            return
+        block: QTextBlock = self.textCursor().block()
+
+        if event.key() in [Qt.Key_Down, Qt.Key_Up, Qt.Key_Left, Qt.Key_Right]:
+            return
+
+        if not event.key() == 16777220:
+            super().keyPressEvent(event)
+
+        if not isinstance(self.ignoreLength, bool):
+
+            textToWrite: str = block.text()[self.ignoreLength:]
+
+            # TODO: Handle multiline input!!!
+
+            if event.key() == 16777220:
+                self.userInputSignal.emit(textToWrite)
+                return
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+
+        return
