@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QTreeView, QFileSystemModel, QMenu, QAc
 from PyQt5.QtCore import Qt, pyqtSignal, QProcess, QDir
 from PyQt5.QtGui import QFont, QColor, QPalette
 from Hydra.utils.config import config_reader, LOCATION
+import os
 from Hydra.widgets.Messagebox import MessageBox
 
 config0 = config_reader(0)
@@ -26,9 +27,14 @@ else:
 class Directory(QTreeView):
     def __init__(self, callback, app=None, palette=None):
         super().__init__()
+
         directoryFont = QFont()
         self.app = app
         self.palette = palette
+
+        self.currentPath: str = ""
+        self.indexPath: str = ""
+
         directoryFont.setFamily(editor["directoryFont"])
         directoryFont.setPointSize(editor["directoryFontSize"])
         self.open_callback = callback
@@ -43,6 +49,7 @@ class Directory(QTreeView):
         self.setIndentation(10)
         self.setAnimated(True)
         self.newFile()
+        self.deleteFile()
         self.setSortingEnabled(True)
         self.setWindowTitle("Dir View")
         self.hideColumn(1)
@@ -50,16 +57,27 @@ class Directory(QTreeView):
         self.hideColumn(2)
         self.confirmation = MessageBox(self)
         self.hideColumn(3)
-        # self.layout.addWidget(self)
         self.doubleClicked.connect(self.openFile)
 
     def newFile(self):
+
         self.newAct = QAction("New")
         self.newAct.setStatusTip("Create a new file")
         self.newAct.triggered.connect(lambda: print("new"))
 
     def deleteFile(self):
-        print("not implementeed")
+
+        self.deleteFileAct = QAction("Delete file")
+        self.deleteFileAct.triggered.connect(self.delete)
+
+    def delete(self):
+        
+        if len(self.indexPath) != 0:
+
+            if os.path.isdir(self.indexPath):
+                os.rmdir(self.indexPath)
+            else:
+                os.remove(self.indexPath)
 
     def openMenu(self, position):
 
@@ -71,10 +89,11 @@ class Directory(QTreeView):
                 index = index.parent()
                 level += 1
 
+        filePath = self.currentPath + "/" + indexes[0].data()
+        self.indexPath = filePath
         menu = QMenu()
-        menu.addAction(
-            self.newAct
-        )  # TODO: Add more context menu stuff and make them functional
+        menu.addAction(self.newAct)  # TODO: Add more context menu stuff and make them functional
+        menu.addAction(self.deleteFileAct)
         menu.exec_(self.viewport().mapToGlobal(position))
 
     def focusInEvent(self, event):
@@ -96,6 +115,7 @@ class Directory(QTreeView):
 
     def openDirectory(self, path):
         self.setRootIndex(self.model.index(path))
+        self.currentPath = path
 
     def openFile(self, signal):
         file_path = self.model.filePath(signal)
