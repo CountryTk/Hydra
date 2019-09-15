@@ -28,7 +28,7 @@ from PyQt5.QtGui import (
     QPainter,
     QTextLayout,
 )
-from PyQt5.QtCore import Qt, QPoint, QSize, QProcess, QRect, pyqtSignal, QRegExp
+from PyQt5.QtCore import Qt, QPoint, QSize, QProcess, QRect, pyqtSignal, QRegExp, QEvent
 from Hydra.utils.config import config_reader, LOCATION
 from Hydra.utils.completer_utility import tokenize
 from Hydra.utils.find_utility import find_all
@@ -40,7 +40,7 @@ from Hydra.widgets.SaveFile import SaveFile
 from Hydra.widgets.Editor import Editor, Completer
 from Hydra.widgets.numberBar import NumberBar
 from Hydra.widgets.foldArea import FoldArea
-import string
+from Hydra.widgets.Label import StatusLabel
 from PyQt5.QtTest import QTest
 import os
 
@@ -95,8 +95,12 @@ class Content(QWidget):
         self.editor.setPlainText(str(text))
         self.main_layout = QVBoxLayout(self)
         self.hbox = QHBoxLayout()
+
         self.status_bar_layout = QHBoxLayout()
-        self.status_bar = QLabel(self)
+        self.statusBarFont = QFont(editor["statusBarFont"], editor["statusBarFontSize"])
+        self.columnLabel = StatusLabel(text="", font=self.statusBarFont)
+        self.rowLabel = StatusLabel(text="", font=self.statusBarFont)
+        self.totalLineLabel = StatusLabel(text="", font=self.statusBarFont)
 
         self.open_file = OpenFile()
         self.save_file = SaveFile(self)
@@ -109,8 +113,13 @@ class Content(QWidget):
 
         self.hbox.setSpacing(0)
 
-        self.status_bar_layout.addWidget(self.status_bar)
-        self.status_bar_layout.addWidget(self.status_bar, Qt.AlignLeft)
+        self.status_bar_layout.addWidget(self.columnLabel)
+        self.status_bar_layout.addSpacing(10)
+        self.status_bar_layout.addWidget(self.rowLabel)
+        self.status_bar_layout.addSpacing(10)
+        self.status_bar_layout.addWidget(self.totalLineLabel)
+        self.status_bar_layout.addStretch()
+
         self.main_layout.addLayout(self.hbox)
         self.main_layout.addLayout(self.status_bar_layout)
         self.open_file.dataSignal.connect(
@@ -288,7 +297,7 @@ class Content(QWidget):
         line = textCursor.blockNumber() + 1
         column = textCursor.positionInBlock()
 
-        self.status_bar.setText(
+        """self.status_bar.setText(
             "Line: "
             + str(line)
             + " Column: "
@@ -299,15 +308,21 @@ class Content(QWidget):
             + "     Size: "
             + str(self.size_of_file / 1000)
             + " KiB"
-        )
+        )"""
 
-        self.status_bar.setFont(
-            QFont(editor["statusBarFont"], editor["statusBarFontSize"])
-        )
+        self.rowLabel.setText("Ln: {}".format(line))
+        self.columnLabel.setText("Col: {}".format(column))
+        self.totalLineLabel.setText("Total: {}".format(self.editor.totalLines()))
+
         self.editor.highlightCurrentLine()
 
     def get_size(self, input):
         return round(len(input.encode("utf-8")) / 1000)
+
+    def leaveEvent(self, event: QEvent) -> None:
+
+        self.editor.returnCursorToNormal()
+        super().leaveEvent(event)
 
     def code_info(self, data):
         counter = 1

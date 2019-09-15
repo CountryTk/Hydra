@@ -10,13 +10,14 @@ setup(name='PyPad editor',
       packages=find_packages(),
       install_requires=[
             "PyQt5",
+            "PyQt5-sip"
             "lxml",
             "qtconsole",
             "nltk",
-            "QScintilla",
             "vulture",
             "requests",
-            "PyQtWebEngine"
+            "PyQtWebEngine",
+            "shutil"
           ],
       entry_points={
             'console_scripts': [

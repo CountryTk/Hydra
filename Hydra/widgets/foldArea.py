@@ -55,7 +55,8 @@ class FoldArea(QWidget):
     def unfold(self, block: QTextBlock):
 
         foldableBlocks: list = self.editor.getFoldableBlocks(block)
-
+        if isinstance(foldableBlocks, bool):
+            return
         for foldableBlock in foldableBlocks:
 
             foldableBlock.setVisible(True)

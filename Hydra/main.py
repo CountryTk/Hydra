@@ -16,7 +16,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtTest import QTest
 import platform
-import string
 import random
 from Hydra.widgets.Messagebox import MessageBox, NewProject
 from Hydra.utils.config import config_reader, config_choice, LOCATION
@@ -27,16 +26,18 @@ from Hydra.widgets.Image import Image
 from Hydra.widgets.Events import DeadCodeCheker
 from Hydra.utils.find_utility import DocumentSearch
 from Hydra.widgets.SaveFile import SaveFile
+from Hydra.widgets.Label import StatusLabel
 from Hydra.widgets.Browser import Browser
 from Hydra.resources.materialblack import material_blue
 from Hydra.utils.check_update import show_update, make_decision
+import shutil
 
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 
 with open(LOCATION + "default.json") as choice:
     choiceIndex = int(choice.read())
 
-os.environ["PYTHONUNBUFFERED"] = "1"  # This is just an environment variable that PyCharm uses
+# os.environ["PYTHONUNBUFFERED"] = "1"  # This is just an environment variable that PyCharm uses
 
 
 class Main(QMainWindow):
@@ -106,6 +107,8 @@ class Main(QMainWindow):
         self.stack = []  # Used for tracking when to check for dead code
 
         self.tab_to_write_to = None
+
+        self.tagInfo = StatusLabel(text="", font=self.status_font)
 
         self.initUI()  # Main UI
 
@@ -341,7 +344,6 @@ class Main(QMainWindow):
         if os.path.isdir(filename):
             return
         if pic_opened:
-            print(filename)
             tab = Image(filename, basename)
         else:
             tab = Content("", filename, basename, self, False, searchCommand)
@@ -513,7 +515,38 @@ class Main(QMainWindow):
 
         self.tab.directory.openDirectory(self._dir)
         self.dir_opened = True
+
+        # Generating tags file
+        self.generateTagFile(self._dir)
+
         self.tab.showDirectory()
+
+    def generateTagFile(self, directoryLocation: str) -> bool:
+
+        location = shutil.which("ctags")
+        appDir = os.getcwd()
+
+        if location is None:
+            print("Please download universal ctags from the website https://github.com/universal-ctags/ctags")
+            return False
+
+        else:
+            os.chdir(directoryLocation)
+            generateProcess = QProcess(self)
+            command = [location, "-R"]
+            generateProcess.start(" ".join(command))
+            self.tagInfo.setText("Generating tags file...")
+            self.status.addWidget(self.tagInfo, Qt.AlignRight)
+            generateProcess.finished.connect(lambda: self.afterTagGeneration(appDir))
+
+    def afterTagGeneration(self, appDir: str) -> None:
+
+        os.chdir(appDir)
+        print(os.getcwd())
+        self.status.removeWidget(self.tagInfo)
+
+    def parseTagFile(self):
+        pass
 
     def openProjectWithPath(self, path):
 
@@ -570,9 +603,11 @@ class Main(QMainWindow):
             print(E, " on line 403 in the file main.py")
 
     def choose_python(self):
+
         return sys.executable
 
     def saveFileAs(self):
+
         try:
             active_tab = self.tab.tabs.currentWidget()
             if active_tab is not None:

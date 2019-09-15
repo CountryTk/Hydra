@@ -216,7 +216,6 @@ Browser	widgets/Browser.py	/^    class Browser(QWebEngineView):$/;"	c
 Browser	widgets/Browser.py	/^    class Browser(QWidget):$/;"	c
 Completer	widgets/Editor.py	/^class Completer(QCompleter):$/;"	c
 Console	widgets/Terminal.py	/^class Console(QWidget):$/;"	c
-Container	2point56mb.py	/^class Container(QWidget):$/;"	c
 Content	widgets/Content.py	/^class Content(QWidget):$/;"	c
 DeadCodeCheker	widgets/Events.py	/^class DeadCodeCheker(QThread):$/;"	c
 Directory	widgets/Directory.py	/^class Directory(QTreeView):$/;"	c
@@ -226,9 +225,13 @@ Editor	widgets/Editor.py	/^class Editor(QPlainTextEdit):$/;"	c
 Editor	widgets/TextEditor.py	/^class Editor(QsciScintilla):$/;"	c
 EndOfFileSignal	widgets/OpenFile.py	/^    EndOfFileSignal = pyqtSignal(list)$/;"	v	class:OpenFile
 Events	widgets/Events.py	/^class Events(QWidget):$/;"	c
+FOLDED_STATE	widgets/foldArea.py	/^FOLDED_STATE = -1$/;"	v
+FOLDED_STATE	widgets/numberBar.py	/^FOLDED_STATE = 1$/;"	v
+FOLDING_PATTERN	widgets/foldArea.py	/^FOLDING_PATTERN = "\\\\s*(def|class|with|if|else|elif|for|while|async).*:"$/;"	v
 F_bool	config.json	/^        "F_bool": {$/;"	o	object:files.python.highlighting
 F_bool	config1.json	/^        "F_bool": {$/;"	o	object:files.python.highlighting
 F_bool	config2.json	/^        "F_bool": {$/;"	o	object:files.python.highlighting
+FoldArea	widgets/foldArea.py	/^class FoldArea(QWidget):$/;"	c
 GenericMessage	widgets/Messagebox.py	/^class GenericMessage(QWidget):$/;"	c
 GetHelp	widgets/Messagebox.py	/^class GetHelp(QWidget):$/;"	c
 HighlightColor	config.json	/^    "HighlightColor": "#4DD2FF",$/;"	s	object:editor
@@ -239,12 +242,8 @@ HighlightedTextColor	config1.json	/^    "HighlightedTextColor": "#000000",$/;"	s
 HighlightedTextColor	config2.json	/^    "HighlightedTextColor": "#000000",$/;"	s	object:editor
 IPythonWidget	widgets/IPythonWidget.py	/^class IPythonWidget(RichJupyterWidget):$/;"	c
 Image	widgets/Image.py	/^class Image(QWidget):$/;"	c
-Installation	README.md	/^# Installation$/;"	c
-LINES_TO_HIGHLIGHT_FIRST	widgets/Syntaxhighlighter.py	/^LINES_TO_HIGHLIGHT_FIRST = 2000  # This is the number that first gets highlighted when a file is/;"	v
-LOCATION	utils/config.py	/^LOCATION =  os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '\/'$/;"	v
+LOCATION	utils/config.py	/^LOCATION = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "\/"$/;"	v
 LineEdit	widgets/Messagebox.py	/^class LineEdit(QLineEdit):$/;"	c
-LineNumberArea	2point56mb.py	/^class LineNumberArea(QWidget):$/;"	c
-Main	2point56mb.py	/^class Main(QMainWindow):$/;"	c
 Main	main.py	/^class Main(QMainWindow):$/;"	c
 MessageBox	widgets/Messagebox.py	/^class MessageBox(QWidget):$/;"	c
 N_bool	config.json	/^        "N_bool": {$/;"	o	object:files.python.highlighting
@@ -252,25 +251,22 @@ N_bool	config1.json	/^        "N_bool": {$/;"	o	object:files.python.highlighting
 N_bool	config2.json	/^        "N_bool": {$/;"	o	object:files.python.highlighting
 NewProject	widgets/Messagebox.py	/^class NewProject(QWidget):$/;"	c
 NoMatch	widgets/Messagebox.py	/^class NoMatch(QWidget):$/;"	c
+NumberBar	widgets/numberBar.py	/^class NumberBar(QWidget):$/;"	c
 NumberBarBox	config.json	/^    "NumberBarBox": true,$/;"	b	object:editor
 NumberBarBox	config1.json	/^    "NumberBarBox": false,$/;"	b	object:editor
 NumberBarBox	config2.json	/^    "NumberBarBox": false,$/;"	b	object:editor
 OpenFile	widgets/OpenFile.py	/^class OpenFile(QThread):$/;"	c
-Pictures	README.md	/^# Pictures$/;"	c
-PlainTextEdit	2point56mb.py	/^class PlainTextEdit(QPlainTextEdit):$/;"	c
+OutputTextEdit	widgets/Terminal.py	/^class OutputTextEdit(QPlainTextEdit):$/;"	c
 PlainTextEdit	widgets/Terminal.py	/^class PlainTextEdit(QPlainTextEdit):$/;"	c
 PyHighlighter	widgets/Pythonhighlighter.py	/^class PyHighlighter(QSyntaxHighlighter):$/;"	c
-PyPad	README.md	/^# PyPad$/;"	c
 PythonLexer	widgets/TextEditor.py	/^class PythonLexer(QsciLexerPython):$/;"	c
 QLineNumberArea	widgets/Editor.py	/^class QLineNumberArea(QWidget):$/;"	c
 Qclass	config.json	/^        "Qclass": {$/;"	o	object:files.python.highlighting
 Qclass	config1.json	/^        "Qclass": {$/;"	o	object:files.python.highlighting
 Qclass	config2.json	/^        "Qclass": {$/;"	o	object:files.python.highlighting
 SaveFile	widgets/SaveFile.py	/^class SaveFile(QThread):$/;"	c
-Search function	README.md	/^# Search function$/;"	c
-SyntaxHighlighter	2point56mb.py	/^class SyntaxHighlighter(QSyntaxHighlighter):$/;"	c
+StatusLabel	widgets/Label.py	/^class StatusLabel(QLabel):$/;"	c
 SyntaxHighlighter	widgets/Pythonhighlighter.py	/^class SyntaxHighlighter(QObject):$/;"	c
-SyntaxHighlighter	widgets/Syntaxhighlighter.py	/^class SyntaxHighlighter(QObject):$/;"	c
 T_bool	config.json	/^        "T_bool": {$/;"	o	object:files.python.highlighting
 T_bool	config1.json	/^        "T_bool": {$/;"	o	object:files.python.highlighting
 T_bool	config2.json	/^        "T_bool": {$/;"	o	object:files.python.highlighting
@@ -291,22 +287,19 @@ ToolTipFontSize	config2.json	/^    "ToolTipFontSize": 15,$/;"	n	object:editor
 ToolTipText	config.json	/^    "ToolTipText": "#FFFFFF",$/;"	s	object:editor
 ToolTipText	config1.json	/^    "ToolTipText": "#FFFFFF",$/;"	s	object:editor
 ToolTipText	config2.json	/^    "ToolTipText": "#FFFFFF",$/;"	s	object:editor
+UNFOLDED_STATE	widgets/foldArea.py	/^UNFOLDED_STATE = 0$/;"	v
+UNFOLDED_STATE	widgets/numberBar.py	/^UNFOLDED_STATE = 0$/;"	v
 UnfocusedHighlightColor	config.json	/^    "UnfocusedHighlightColor": "#FFFFFF",$/;"	s	object:editor
 UnfocusedHighlightColor	config1.json	/^    "UnfocusedHighlightColor": "#FFFFFF",$/;"	s	object:editor
 UnfocusedHighlightColor	config2.json	/^    "UnfocusedHighlightColor": "#FFFFFF",$/;"	s	object:editor
 UpdateThread	main.py	/^class UpdateThread(QThread):$/;"	c
 VERSION	__init__.py	/^VERSION = (1, 0, 0)$/;"	v
 __init_	main.py	/^    def __init_(self):$/;"	m	class:UpdateThread	file:
-__init__	2point56mb.py	/^    def __init__(self):$/;"	m	class:Container
-__init__	2point56mb.py	/^    def __init__(self):$/;"	m	class:Main
-__init__	2point56mb.py	/^    def __init__(self):$/;"	m	class:PlainTextEdit
-__init__	2point56mb.py	/^    def __init__(self, editor):$/;"	m	class:LineNumberArea
-__init__	2point56mb.py	/^    def __init__(self, parent=None, index=None, *args):$/;"	m	class:SyntaxHighlighter
 __init__	main.py	/^    def __init__(self, app, palette, editor, parent=None):$/;"	m	class:Main
 __init__	utils/find_utility.py	/^    def __init__(self):$/;"	m	class:DocumentSearch
 __init__	utils/find_utility.py	/^    def __init__(self, file):$/;"	m	class:grabFiles
 __init__	widgets/Browser.py	/^        def __init__(self, url):$/;"	m	class:Browser
-__init__	widgets/Content.py	/^    def __init__(self, text, fileName, baseName, parent, isReadOnly=False, searchCommand=None):$/;"	m	class:Content
+__init__	widgets/Content.py	/^    def __init__($/;"	m	class:Content
 __init__	widgets/Directory.py	/^    def __init__(self, callback, app=None, palette=None):$/;"	m	class:Directory
 __init__	widgets/Editor.py	/^    def __init__(self, editor):$/;"	m	class:QLineNumberArea
 __init__	widgets/Editor.py	/^    def __init__(self, myKeywords=None, parent=None):$/;"	m	class:Completer
@@ -315,6 +308,7 @@ __init__	widgets/Events.py	/^    def __init__(self):$/;"	m	class:DeadCodeCheker
 __init__	widgets/Events.py	/^    def __init__(self, text=None, file_name=None):$/;"	m	class:Events
 __init__	widgets/IPythonWidget.py	/^    def __init__(self, *args, **kwargs):$/;"	m	class:IPythonWidget
 __init__	widgets/Image.py	/^    def __init__(self, fileName, baseName):$/;"	m	class:Image
+__init__	widgets/Label.py	/^    def __init__(self, text: str, font: QFont):$/;"	m	class:StatusLabel
 __init__	widgets/Messagebox.py	/^    def __init__(self):$/;"	m	class:LineEdit
 __init__	widgets/Messagebox.py	/^    def __init__(self, parent, error=None, helpword=None, index=choiceIndex):$/;"	m	class:MessageBox
 __init__	widgets/Messagebox.py	/^    def __init__(self, parent, helpword):$/;"	m	class:GetHelp
@@ -325,19 +319,21 @@ __init__	widgets/OpenFile.py	/^    def __init__(self, parent=None):$/;"	m	class:
 __init__	widgets/Pythonhighlighter.py	/^    def __init__(self, editor, index=choiceIndex):$/;"	m	class:SyntaxHighlighter
 __init__	widgets/Pythonhighlighter.py	/^    def __init__(self, parent=None, editor=None, index=choiceIndex, *args):$/;"	m	class:PyHighlighter
 __init__	widgets/SaveFile.py	/^    def __init__(self, parent):$/;"	m	class:SaveFile
-__init__	widgets/Syntaxhighlighter.py	/^    def __init__(self, editor, index=choiceIndex):$/;"	m	class:SyntaxHighlighter
 __init__	widgets/Tabs.py	/^    def __init__(self, callback, app, palette, parent=None):$/;"	m	class:Tabs
+__init__	widgets/Terminal.py	/^    def __init__(self, parent):$/;"	m	class:OutputTextEdit
 __init__	widgets/Terminal.py	/^    def __init__(self, parent, movable=False):$/;"	m	class:Terminal
 __init__	widgets/Terminal.py	/^    def __init__(self, parent=None):$/;"	m	class:Console
 __init__	widgets/Terminal.py	/^    def __init__(self, parent=None, movable=False):$/;"	m	class:PlainTextEdit
 __init__	widgets/Terminal.py	/^    def __init__(self, parent=None, user_name=None, host_name=None, cwd=None):$/;"	m	class:name_highlighter
 __init__	widgets/TextEditor.py	/^    def __init__(self):$/;"	m	class:PythonLexer
 __init__	widgets/TextEditor.py	/^    def __init__(self, parent=None):$/;"	m	class:Editor
-__version__	__init__.py	/^__version__ = '.'.join(map(str, VERSION))/;"	v
+__init__	widgets/foldArea.py	/^    def __init__(self, editor: Editor):$/;"	m	class:FoldArea
+__init__	widgets/numberBar.py	/^    def __init__(self, editor: Editor):$/;"	m	class:NumberBar
+__version__	__init__.py	/^__version__ = ".".join(map(str, VERSION))$/;"	v
 _closeAnyway	widgets/Messagebox.py	/^        def _closeAnyway():$/;"	f	member:MessageBox.saveMaybe	file:
 _exit	widgets/Messagebox.py	/^        def _exit():$/;"	f	member:MessageBox.success	file:
 _hide	widgets/Messagebox.py	/^        def _hide():$/;"	f	member:MessageBox.saveMaybe	file:
-acquire_tab	main.py	/^    def acquire_tab(self, tab):$/;"	m	class:Main
+_lol	utils/check_update.py	/^    def _lol():$/;"	f	function:local_version	file:
 add	widgets/Terminal.py	/^    def add(self):$/;"	m	class:Console
 add	widgets/Terminal.py	/^    def add(self):$/;"	m	class:Terminal
 addTab	main.py	/^    def addTab(self, state, tab, basename, index_to_remove):$/;"	m	class:Main
@@ -346,11 +342,12 @@ add_args	widgets/OpenFile.py	/^    def add_args(self, filename, file_exists):$/;
 add_args	widgets/SaveFile.py	/^    def add_args(self, tab):$/;"	m	class:SaveFile
 added	widgets/Terminal.py	/^    def added(self):$/;"	m	class:Console
 added	widgets/Terminal.py	/^    def added(self):$/;"	m	class:Terminal
+afterTagGeneration	main.py	/^    def afterTagGeneration(self, appDir: str) -> None:$/;"	m	class:Main
 alternateBase	config.json	/^    "alternateBase": "#FFFFFF",$/;"	s	object:editor
 alternateBase	config1.json	/^    "alternateBase": "#FFFFFF",$/;"	s	object:editor
 alternateBase	config2.json	/^    "alternateBase": "#FFFFFF",$/;"	s	object:editor
-app	2point56mb.py	/^    app = QApplication(sys.argv)$/;"	v
 assignLines	widgets/Content.py	/^    def assignLines(self, array: list) -> None:$/;"	m	class:Content
+attemptToWriteDataIntoProcess	widgets/Terminal.py	/^    def attemptToWriteDataIntoProcess(self, input: str) -> None:$/;"	m	class:Console
 autoSaveEnabled	config1.json	/^    "autoSaveEnabled": false,$/;"	b	object:editor
 autoSaveStep	config1.json	/^    "autoSaveStep": 5$/;"	n	object:editor
 bold	config.json	/^          "bold": true$/;"	b	object:files.c.highlighting.class
@@ -402,7 +399,6 @@ choiceIndex	widgets/Directory.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/Editor.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/Messagebox.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/Pythonhighlighter.py	/^    choiceIndex = int(choice.read())$/;"	v
-choiceIndex	widgets/Syntaxhighlighter.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/Tabs.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/Terminal.py	/^    choiceIndex = int(choice.read())$/;"	v
 choiceIndex	widgets/TextEditor.py	/^    choiceIndex = int(choice.read())$/;"	v
@@ -498,13 +494,10 @@ commandSignal	widgets/Terminal.py	/^    commandSignal = pyqtSignal(str)$/;"	v	cl
 commandZPressed	widgets/Terminal.py	/^    commandZPressed = pyqtSignal(str)$/;"	v	class:PlainTextEdit
 config0	widgets/Directory.py	/^config0 = config_reader(0)$/;"	v
 config0	widgets/Pythonhighlighter.py	/^config0 = config_reader(0)$/;"	v
-config0	widgets/Syntaxhighlighter.py	/^config0 = config_reader(0)$/;"	v
 config1	widgets/Directory.py	/^config1 = config_reader(1)$/;"	v
 config1	widgets/Pythonhighlighter.py	/^config1 = config_reader(1)$/;"	v
-config1	widgets/Syntaxhighlighter.py	/^config1 = config_reader(1)$/;"	v
 config2	widgets/Directory.py	/^config2 = config_reader(2)$/;"	v
 config2	widgets/Pythonhighlighter.py	/^config2 = config_reader(2)$/;"	v
-config2	widgets/Syntaxhighlighter.py	/^config2 = config_reader(2)$/;"	v
 config_choice	utils/config.py	/^def config_choice(file):$/;"	f
 config_reader	utils/config.py	/^def config_reader(theme):$/;"	f
 configs	main.py	/^configs = [config_reader(0), config_reader(1), config_reader(2)]$/;"	v
@@ -541,21 +534,18 @@ dont	widgets/Messagebox.py	/^    def dont(self):$/;"	m	class:MessageBox
 editor	config.json	/^  "editor": {$/;"	o
 editor	config1.json	/^  "editor": {$/;"	o
 editor	config2.json	/^  "editor": {$/;"	o
-editor	widgets/Content.py	/^editor = configs[choiceIndex]['editor']$/;"	v
-editor	widgets/Directory.py	/^    editor = config0['editor']$/;"	v
-editor	widgets/Directory.py	/^    editor = config1['editor']$/;"	v
-editor	widgets/Directory.py	/^    editor = config2['editor']$/;"	v
-editor	widgets/Editor.py	/^editor = configs[choiceIndex]['editor']$/;"	v
-editor	widgets/Messagebox.py	/^editor = configs[choiceIndex]['editor']$/;"	v
-editor	widgets/Pythonhighlighter.py	/^    editor = config0['editor']$/;"	v
-editor	widgets/Pythonhighlighter.py	/^    editor = config1['editor']$/;"	v
-editor	widgets/Pythonhighlighter.py	/^    editor = config2['editor']$/;"	v
-editor	widgets/Syntaxhighlighter.py	/^    editor = config0['editor']$/;"	v
-editor	widgets/Syntaxhighlighter.py	/^    editor = config1['editor']$/;"	v
-editor	widgets/Syntaxhighlighter.py	/^    editor = config2['editor']$/;"	v
-editor	widgets/Tabs.py	/^editor = configs[choiceIndex]['editor']$/;"	v
-editor	widgets/Terminal.py	/^editor = configs[choiceIndex]['editor']$/;"	v
-editor	widgets/TextEditor.py	/^editor = configs[choiceIndex]['editor']$/;"	v
+editor	widgets/Content.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
+editor	widgets/Directory.py	/^    editor = config0["editor"]$/;"	v
+editor	widgets/Directory.py	/^    editor = config1["editor"]$/;"	v
+editor	widgets/Directory.py	/^    editor = config2["editor"]$/;"	v
+editor	widgets/Editor.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
+editor	widgets/Messagebox.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
+editor	widgets/Pythonhighlighter.py	/^    editor = config0["editor"]$/;"	v
+editor	widgets/Pythonhighlighter.py	/^    editor = config1["editor"]$/;"	v
+editor	widgets/Pythonhighlighter.py	/^    editor = config2["editor"]$/;"	v
+editor	widgets/Tabs.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
+editor	widgets/Terminal.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
+editor	widgets/TextEditor.py	/^editor = configs[choiceIndex]["editor"]$/;"	v
 editorColor	config.json	/^    "editorColor": "#303030",$/;"	s	object:editor
 editorColor	config1.json	/^    "editorColor": "#212121",$/;"	s	object:editor
 editorColor	config2.json	/^    "editorColor": "#303030",$/;"	s	object:editor
@@ -563,12 +553,11 @@ editorFont	config.json	/^    "editorFont": "Iosevka",$/;"	s	object:editor
 editorFont	config1.json	/^    "editorFont": "Monaco",$/;"	s	object:editor
 editorFont	config2.json	/^    "editorFont": "Iosevka",$/;"	s	object:editor
 editorFontSize	config.json	/^    "editorFontSize": 12,$/;"	n	object:editor
-editorFontSize	config1.json	/^    "editorFontSize": 16,$/;"	n	object:editor
+editorFontSize	config1.json	/^    "editorFontSize": 15,$/;"	n	object:editor
 editorFontSize	config2.json	/^    "editorFontSize": 9,$/;"	n	object:editor
 editorText	config.json	/^    "editorText": "#e3e6fc",$/;"	s	object:editor
 editorText	config1.json	/^    "editorText": "#e3e6fc",$/;"	s	object:editor
 editorText	config2.json	/^    "editorText": "#e3e6fc",$/;"	s	object:editor
-end	2point56mb.py	/^    def end(self):$/;"	m	class:Main
 errorList	utils/completer_utility.py	/^errorList = [$/;"	v
 errorMessages	config.json	/^    "errorMessages": false,$/;"	b	object:editor
 errorMessages	config1.json	/^    "errorMessages": true,$/;"	b	object:editor
@@ -584,7 +573,6 @@ extensions	config1.json	/^      "extensions": "c",$/;"	s	object:files.c
 extensions	config1.json	/^      "extensions": "py",$/;"	s	object:files.python
 extensions	config2.json	/^      "extensions": "c",$/;"	s	object:files.c
 extensions	config2.json	/^      "extensions": "py",$/;"	s	object:files.python
-file	utils/code_analysis.py	/^file = open("..\/main.py", "r").read()$/;"	v
 fileNameChange	main.py	/^    def fileNameChange(self):$/;"	m	class:Main
 fileSignal	utils/find_utility.py	/^    fileSignal = pyqtSignal(str)$/;"	v	class:grabFiles
 files	config.json	/^  "files": {$/;"	o
@@ -593,9 +581,11 @@ files	config2.json	/^  "files": {$/;"	o
 findDocument	main.py	/^    def findDocument(self):$/;"	m	class:Main
 findDocumentFunc	main.py	/^    def findDocumentFunc(self):$/;"	m	class:Main
 find_all	utils/find_utility.py	/^def find_all(a_str, sub):$/;"	f
+finishedProcess	widgets/Terminal.py	/^    def finishedProcess(self, exitCode: int, exitStatus: QProcess.ExitStatus):$/;"	m	class:Console
 focusInEvent	widgets/Content.py	/^    def focusInEvent(self, event):$/;"	m	class:Content
 focusInEvent	widgets/Directory.py	/^    def focusInEvent(self, event):$/;"	m	class:Directory
 focusOutEvent	widgets/Directory.py	/^    def focusOutEvent(self, event):$/;"	m	class:Directory
+fold	widgets/foldArea.py	/^    def fold(self, block: QTextBlock):$/;"	m	class:FoldArea
 funcList	utils/completer_utility.py	/^funcList = [$/;"	v
 function	config.json	/^        "function": {$/;"	o	object:files.c.highlighting
 function	config.json	/^        "function": {$/;"	o	object:files.python.highlighting
@@ -609,10 +599,13 @@ generalFont	config2.json	/^    "generalFont": "Monaco",$/;"	s	object:editor
 generalFontSize	config.json	/^    "generalFontSize": 14,$/;"	n	object:editor
 generalFontSize	config1.json	/^    "generalFontSize": 14,$/;"	n	object:editor
 generalFontSize	config2.json	/^    "generalFontSize": 14,$/;"	n	object:editor
+generateTagFile	main.py	/^    def generateTagFile(self, directoryLocation: str) -> bool:$/;"	m	class:Main
 getAllOpenTabsFunc	widgets/Tabs.py	/^    def getAllOpenTabsFunc(self):$/;"	m	class:Tabs
-getColAndRow	widgets/Editor.py	/^    def getColAndRow(self):$/;"	m	class:Editor
+getBlockUnderCursor	widgets/Editor.py	/^    def getBlockUnderCursor(self, event: QMouseEvent) -> QTextBlock:$/;"	m	class:Editor
+getBlockUnderCursor	widgets/foldArea.py	/^    def getBlockUnderCursor(self, event: QMouseEvent) -> QTextBlock:$/;"	m	class:FoldArea
+getBlockUnderCursor	widgets/numberBar.py	/^    def getBlockUnderCursor(self, event: QMouseEvent) -> QTextBlock:$/;"	m	class:NumberBar
+getFoldableBlocks	widgets/Editor.py	/^    def getFoldableBlocks(self, block: QTextBlock) -> list:$/;"	m	class:Editor
 getHelp	widgets/Messagebox.py	/^    def getHelp(self, paren):$/;"	m	class:MessageBox
-getTags	test.py	/^def getTags() -> dict:$/;"	f
 getTextCursor	widgets/Content.py	/^    def getTextCursor(self):$/;"	m	class:Content
 getTextCursor	widgets/Editor.py	/^    def getTextCursor(self):$/;"	m	class:Editor
 get_dir	widgets/Messagebox.py	/^    def get_dir(self):$/;"	m	class:NewProject
@@ -623,22 +616,16 @@ get_size	widgets/Content.py	/^    def get_size(self, input):$/;"	m	class:Content
 gettingHelp	widgets/Messagebox.py	/^    def gettingHelp(self):$/;"	m	class:MessageBox
 grabFiles	utils/find_utility.py	/^class grabFiles(QThread):$/;"	c
 handle	widgets/Terminal.py	/^    def handle(self, command):$/;"	m	class:Terminal
-handleData	widgets/Editor.py	/^    def handleData(self, value):$/;"	m	class:Editor
+hello	Untitled_file_7.py	/^def hello():$/;"	f
 hideConsole	widgets/Tabs.py	/^    def hideConsole(self):$/;"	m	class:Tabs
 hideDirectory	widgets/Tabs.py	/^    def hideDirectory(self):$/;"	m	class:Tabs
 hideFileExecuter	widgets/Tabs.py	/^    def hideFileExecuter(self):$/;"	m	class:Tabs
 hideTerminalClicked	widgets/Terminal.py	/^    def hideTerminalClicked(self):$/;"	m	class:Console
 hideTerminalClicked	widgets/Terminal.py	/^    def hideTerminalClicked(self):$/;"	m	class:Terminal
-highlight	widgets/Content.py	/^    def highlight(self, _: list) -> None:$/;"	m	class:Content
-highlight	widgets/Syntaxhighlighter.py	/^    def highlight(self, block: QTextBlock, layout: QTextLayout ,ranges: list,):$/;"	m	class:SyntaxHighlighter
-highlightBlock	2point56mb.py	/^    def highlightBlock(self, text):$/;"	m	class:SyntaxHighlighter
 highlightBlock	widgets/Pythonhighlighter.py	/^    def highlightBlock(self, text):$/;"	m	class:PyHighlighter
 highlightBlock	widgets/Terminal.py	/^    def highlightBlock(self, text):$/;"	m	class:name_highlighter
 highlightBlocks	widgets/Pythonhighlighter.py	/^    def highlightBlocks(self, justOpened=False):$/;"	m	class:SyntaxHighlighter
-highlightBlocks	widgets/Syntaxhighlighter.py	/^    def highlightBlocks(self, justOpened=False):$/;"	m	class:SyntaxHighlighter
 highlightCurrentLine	widgets/Editor.py	/^    def highlightCurrentLine(self):$/;"	m	class:Editor
-highlightCurrentLine	widgets/Syntaxhighlighter.py	/^    def highlightCurrentLine(self, block: QTextBlock):$/;"	m	class:SyntaxHighlighter
-highlightGivenBlocks	widgets/Syntaxhighlighter.py	/^    def highlightGivenBlocks(self, startBlock: QTextBlock, endBlock: QTextBlock):$/;"	m	class:SyntaxHighlighter
 highlightOneBlock	widgets/Pythonhighlighter.py	/^    def highlightOneBlock(self, block):$/;"	m	class:SyntaxHighlighter
 highlighting	config.json	/^      "highlighting": {$/;"	o	object:files.c
 highlighting	config.json	/^      "highlighting": {$/;"	o	object:files.python
@@ -646,7 +633,6 @@ highlighting	config1.json	/^      "highlighting": {$/;"	o	object:files.c
 highlighting	config1.json	/^      "highlighting": {$/;"	o	object:files.python
 highlighting	config2.json	/^      "highlighting": {$/;"	o	object:files.c
 highlighting	config2.json	/^      "highlighting": {$/;"	o	object:files.python
-hmm	Untitled_file_28.py	/^hmm = open("test.mp4", "wb")$/;"	v
 html_highlighter	widgets/TextEditor.py	/^    def html_highlighter(self):$/;"	m	class:Editor
 ifFinished	widgets/Terminal.py	/^    def ifFinished(self, exitCode, exitStatus):$/;"	m	class:Console
 indentation	config.json	/^      "indentation": 4,$/;"	n	object:files.c
@@ -659,6 +645,7 @@ infoSignal	widgets/Events.py	/^    infoSignal = pyqtSignal(str)$/;"	v	class:Dead
 initUI	main.py	/^    def initUI(self):$/;"	m	class:Main
 initUI	utils/find_utility.py	/^    def initUI(self):$/;"	m	class:DocumentSearch
 initUI	widgets/Messagebox.py	/^    def initUI(self):$/;"	m	class:MessageBox
+initialize	widgets/Content.py	/^    def initialize(self, justOpened=False):$/;"	m	class:Content
 insertCompletion	widgets/Content.py	/^    def insertCompletion(self, completion):$/;"	m	class:Content
 insertFromMimeData	widgets/Editor.py	/^    def insertFromMimeData(self, source: QMimeData) -> None:$/;"	m	class:Editor
 insertText	widgets/Content.py	/^    def insertText(self, text: str) -> None:$/;"	m	class:Content
@@ -669,7 +656,6 @@ int	config1.json	/^        "int": {$/;"	o	object:files.c.highlighting
 int	config1.json	/^        "int": {$/;"	o	object:files.python.highlighting
 int	config2.json	/^        "int": {$/;"	o	object:files.c.highlighting
 int	config2.json	/^        "int": {$/;"	o	object:files.python.highlighting
-isModified	2point56mb.py	/^    def isModified(self):$/;"	m	class:Main
 is_modified	widgets/Editor.py	/^    def is_modified(self):$/;"	m	class:Editor
 ispressed	widgets/Terminal.py	/^    def ispressed(self):$/;"	m	class:Console
 ispressed	widgets/Terminal.py	/^    def ispressed(self):$/;"	m	class:Terminal
@@ -685,12 +671,13 @@ italic	config2.json	/^          "italic": true$/;"	b	object:files.python.highlig
 iterate	widgets/Editor.py	/^    def iterate(self):$/;"	m	class:Editor
 json_highlighter	widgets/TextEditor.py	/^    def json_highlighter(self):$/;"	m	class:Editor
 jumpToDef	main.py	/^    def jumpToDef(self, tagList: list):$/;"	m	class:Main
+jumpToDef	widgets/Content.py	/^    def jumpToDef(self, tagList: list):$/;"	m	class:Content
 jump_to_def	widgets/Editor.py	/^    def jump_to_def(self, word):$/;"	m	class:Editor
-keyPressEvent	2point56mb.py	/^    def keyPressEvent(self, event: QKeyEvent):$/;"	m	class:PlainTextEdit
 keyPressEvent	widgets/Content.py	/^    def keyPressEvent(self, event):$/;"	m	class:Content
 keyPressEvent	widgets/Directory.py	/^    def keyPressEvent(self, event):$/;"	m	class:Directory
 keyPressEvent	widgets/Editor.py	/^    def keyPressEvent(self, e):$/;"	m	class:Editor
 keyPressEvent	widgets/Terminal.py	/^    def keyPressEvent(self, e):$/;"	m	class:PlainTextEdit
+keyPressEvent	widgets/Terminal.py	/^    def keyPressEvent(self, event: QKeyEvent) -> None:$/;"	m	class:OutputTextEdit
 keyPressEvent	widgets/TextEditor.py	/^    def keyPressEvent(self, e):$/;"	m	class:Editor
 keyReleaseEvent	widgets/TextEditor.py	/^    def keyReleaseEvent(self, e):$/;"	m	class:Editor
 keyword	config.json	/^        "keyword": {$/;"	o	object:files.c.highlighting
@@ -706,16 +693,13 @@ keywords	config1.json	/^      "keywords":["auto", "break", "case", "char", "cons
 keywords	config2.json	/^      "keywords": ["for", "class", "range", "False", "finally", "is", "return", "None", "continu/;"	a	object:files.python
 keywords	config2.json	/^      "keywords":["auto", "break", "case", "char", "const", "const", "continue", "default", "do"/;"	a	object:files.c
 keywords	widgets/TextEditor.py	/^    def keywords(self, index):$/;"	m	class:PythonLexer
-last_file	utils/lastOpenFile.py	/^last_file = ['resources\/lastFile.txt']$/;"	v
-last_file	utils/last_open_file.py	/^last_file = [LOCATION + 'resources\/lastFile.txt']$/;"	v
+last_file	utils/lastOpenFile.py	/^last_file = ["resources\/lastFile.txt"]$/;"	v
+last_file	utils/last_open_file.py	/^last_file = [LOCATION + "resources\/lastFile.txt"]$/;"	v
 launch	main.py	/^def launch():$/;"	f
+leaveEvent	widgets/foldArea.py	/^    def leaveEvent(self, event: QEvent) -> None:$/;"	m	class:FoldArea
 lets_exit	main.py	/^    def lets_exit(self):$/;"	m	class:Main
-lineNumberAreaPaintEvent	widgets/Editor.py	/^    def lineNumberAreaPaintEvent(self, event):$/;"	m	class:Editor
-lineNumberAreaWidth	widgets/Editor.py	/^    def lineNumberAreaWidth(self):$/;"	m	class:Editor
 lineSignal	widgets/Pythonhighlighter.py	/^    lineSignal = pyqtSignal(list)$/;"	v	class:SyntaxHighlighter
-lineSignal	widgets/Syntaxhighlighter.py	/^    lineSignal = pyqtSignal(list)$/;"	v	class:SyntaxHighlighter
 local_version	utils/check_update.py	/^def local_version():$/;"	f
-lol	2point56mb.py	/^    lol = Main()$/;"	v
 look_for_dead_code	widgets/Events.py	/^    def look_for_dead_code(self, text):$/;"	m	class:Events
 magic	config.json	/^        "magic": {$/;"	o	object:files.c.highlighting
 magic	config.json	/^        "magic": {$/;"	o	object:files.python.highlighting
@@ -725,7 +709,6 @@ magic	config2.json	/^        "magic": {$/;"	o	object:files.c.highlighting
 magic	config2.json	/^        "magic": {$/;"	o	object:files.python.highlighting
 make_decision	utils/check_update.py	/^def make_decision(choice):$/;"	f
 material_blue	resources/materialblack.py	/^material_blue = """$/;"	v
-meme	widgets/Content.py	/^    def meme(self, justOpened=False):$/;"	m	class:Content
 menuFont	config.json	/^    "menuFont": "Inconsolata",$/;"	s	object:editor
 menuFont	config1.json	/^    "menuFont": "Monaco",$/;"	s	object:editor
 menuFont	config2.json	/^    "menuFont": "Iosevka",$/;"	s	object:editor
@@ -735,9 +718,14 @@ menuFontSize	config2.json	/^    "menuFontSize": 9,$/;"	n	object:editor
 mouseMoveEvent	widgets/Editor.py	/^    def mouseMoveEvent(self, QMouseEvent):$/;"	m	class:Editor
 mouseMoveEvent	widgets/Messagebox.py	/^    def mouseMoveEvent(self, event):$/;"	m	class:LineEdit
 mouseMoveEvent	widgets/Terminal.py	/^    def mouseMoveEvent(self, event):$/;"	m	class:PlainTextEdit
-mousePressEvent	widgets/Editor.py	/^    def mousePressEvent(self, e):$/;"	m	class:Editor
+mouseMoveEvent	widgets/foldArea.py	/^    def mouseMoveEvent(self, event: QMouseEvent) -> None:$/;"	m	class:FoldArea
+mousePressEvent	widgets/Editor.py	/^    def mousePressEvent(self, e: QMouseEvent):$/;"	m	class:Editor
+mousePressEvent	widgets/Terminal.py	/^    def mousePressEvent(self, a0: QMouseEvent) -> None:$/;"	m	class:Terminal
+mousePressEvent	widgets/Terminal.py	/^    def mousePressEvent(self, e: QMouseEvent) -> None:$/;"	m	class:OutputTextEdit
 mousePressEvent	widgets/Terminal.py	/^    def mousePressEvent(self, event):$/;"	m	class:PlainTextEdit
 mousePressEvent	widgets/TextEditor.py	/^    def mousePressEvent(self, e):$/;"	m	class:Editor
+mousePressEvent	widgets/foldArea.py	/^    def mousePressEvent(self, event: QMouseEvent):$/;"	m	class:FoldArea
+mousePressEvent	widgets/numberBar.py	/^    def mousePressEvent(self, event: QMouseEvent):$/;"	m	class:NumberBar
 mouseReleaseEvent	widgets/Editor.py	/^    def mouseReleaseEvent(self, e):$/;"	m	class:Editor
 moveCursorDown	config.json	/^    "moveCursorDown": "Ctrl+M",$/;"	s	object:editor
 moveCursorDown	config1.json	/^    "moveCursorDown": "Ctrl+M",$/;"	s	object:editor
@@ -758,7 +746,6 @@ multiLineComment	config1.json	/^        "multiLineComment": {$/;"	o	object:files
 multiLineComment	config1.json	/^        "multiLineComment": {$/;"	o	object:files.python.highlighting
 multiLineComment	config2.json	/^        "multiLineComment": {$/;"	o	object:files.c.highlighting
 multiLineComment	config2.json	/^        "multiLineComment": {$/;"	o	object:files.python.highlighting
-multiLineHighlight	2point56mb.py	/^    def multiLineHighlight(self, text):$/;"	m	class:SyntaxHighlighter
 multiLineHighlight	widgets/Pythonhighlighter.py	/^    def multiLineHighlight(self, text):$/;"	m	class:PyHighlighter
 name_highlighter	widgets/Terminal.py	/^class name_highlighter(QSyntaxHighlighter):$/;"	c
 new	main.py	/^    def new(self):$/;"	m	class:Main
@@ -768,29 +755,24 @@ newFile	widgets/Editor.py	/^    def newFile(self):$/;"	m	class:Editor
 newProject	main.py	/^    def newProject(self):$/;"	m	class:Main
 newProject	widgets/Messagebox.py	/^    def newProject(self):$/;"	m	class:MessageBox
 newProjectFolder	main.py	/^    def newProjectFolder(self):$/;"	m	class:Main
-nltk installation	README.md	/^# nltk installation$/;"	c
 noMatch	widgets/Messagebox.py	/^    def noMatch(self, word):$/;"	m	class:MessageBox
 normal_cursor	widgets/Messagebox.py	/^    def normal_cursor(self):$/;"	m	class:NewProject
-not_ready	main.py	/^    def not_ready(self):$/;"	m	class:Main
 ok_pressed	widgets/Messagebox.py	/^    def ok_pressed(self):$/;"	m	class:GetHelp
 ok_pressed	widgets/Messagebox.py	/^    def ok_pressed(self):$/;"	m	class:NoMatch
 old_open	widgets/OpenFile.py	/^    def old_open(self):  # Deprecated$/;"	m	class:OpenFile
 old_save	widgets/SaveFile.py	/^    def old_save(self, tab):  # Deprecated$/;"	m	class:SaveFile
 onFirstOpen	widgets/Pythonhighlighter.py	/^    def onFirstOpen(self):$/;"	m	class:SyntaxHighlighter
-onFirstOpen	widgets/Syntaxhighlighter.py	/^    def onFirstOpen(self):$/;"	m	class:SyntaxHighlighter
 onReadyReadStandardError	widgets/Terminal.py	/^    def onReadyReadStandardError(self):$/;"	m	class:Console
 onReadyReadStandardError	widgets/Terminal.py	/^    def onReadyReadStandardError(self):$/;"	m	class:Terminal
 onReadyReadStandardOutput	widgets/Terminal.py	/^    def onReadyReadStandardOutput(self):$/;"	m	class:Console
 onReadyReadStandardOutput	widgets/Terminal.py	/^    def onReadyReadStandardOutput(self):$/;"	m	class:Terminal
 onStart	main.py	/^    def onStart(self, index):$/;"	m	class:Main
 online_version	utils/check_update.py	/^def online_version():$/;"	f
-only_spaces	2point56mb.py	/^    def only_spaces(self, word: str):$/;"	m	class:PlainTextEdit
+onlySpaces	widgets/Editor.py	/^    def onlySpaces(self, word: str) -> bool:$/;"	m	class:Editor
 open	main.py	/^    def open(self):$/;"	m	class:Main
 open	widgets/OpenFile.py	/^    def open(self):$/;"	m	class:OpenFile
-openAct	2point56mb.py	/^    def openAct(self):$/;"	m	class:Main
 openBrowser	main.py	/^    def openBrowser(self, url, word):$/;"	m	class:Main
 openDirectory	widgets/Directory.py	/^    def openDirectory(self, path):$/;"	m	class:Directory
-openFile	2point56mb.py	/^    def openFile(self):$/;"	m	class:Main
 openFile	main.py	/^    def openFile(self, filename):$/;"	m	class:Main
 openFile	widgets/Directory.py	/^    def openFile(self, signal):$/;"	m	class:Directory
 openFile	widgets/Editor.py	/^    def openFile(self):$/;"	m	class:Editor
@@ -806,8 +788,11 @@ openterminal	main.py	/^    def openterminal(self):$/;"	m	class:Main
 our_start	widgets/OpenFile.py	/^    def our_start(self):$/;"	m	class:OpenFile
 outputSignal	widgets/Terminal.py	/^    outputSignal = pyqtSignal(str)$/;"	v	class:Console
 outputSignal	widgets/Terminal.py	/^    outputSignal = pyqtSignal(str)$/;"	v	class:Terminal
+paintEvent	widgets/Editor.py	/^    def paintEvent(self, e: QPaintEvent):$/;"	m	class:Editor
 paintEvent	widgets/Editor.py	/^    def paintEvent(self, event):$/;"	m	class:QLineNumberArea
-placeholder	widgets/Content.py	/^    def placeholder(self):$/;"	m	class:Content
+paintEvent	widgets/foldArea.py	/^    def paintEvent(self, event: QPaintEvent):$/;"	m	class:FoldArea
+paintEvent	widgets/numberBar.py	/^    def paintEvent(self, event: QPaintEvent):$/;"	m	class:NumberBar
+parseTagFile	main.py	/^    def parseTagFile(self):$/;"	m	class:Main
 pointSize	config.json	/^    "pointSize": 12,$/;"	n	object:editor
 pointSize	config1.json	/^    "pointSize": 16,$/;"	n	object:editor
 pointSize	config2.json	/^    "pointSize": 12,$/;"	n	object:editor
@@ -818,7 +803,6 @@ python	config.json	/^    "python": {$/;"	o	object:files
 python	config1.json	/^    "python": {$/;"	o	object:files
 python	config2.json	/^    "python": {$/;"	o	object:files
 python_highlighter	widgets/TextEditor.py	/^    def python_highlighter(self):$/;"	m	class:Editor
-quitAct	2point56mb.py	/^    def quitAct(self):$/;"	m	class:Main
 quotation	config.json	/^        "quotation": {$/;"	o	object:files.c.highlighting
 quotation	config.json	/^        "quotation": {$/;"	o	object:files.python.highlighting
 quotation	config1.json	/^        "quotation": {$/;"	o	object:files.c.highlighting
@@ -828,19 +812,17 @@ quotation	config2.json	/^        "quotation": {$/;"	o	object:files.python.highli
 quotation2	config.json	/^        "quotation2": {$/;"	o	object:files.python.highlighting
 quotation2	config1.json	/^        "quotation2": {$/;"	o	object:files.python.highlighting
 quotation2	config2.json	/^        "quotation2": {$/;"	o	object:files.python.highlighting
-readAmountSignal	widgets/OpenFile.py	/^    readAmountSignal = pyqtSignal(list)  # This signal is for when the user hasn't loaded the wh/;"	v	class:OpenFile
+readAmountSignal	widgets/OpenFile.py	/^    readAmountSignal = pyqtSignal($/;"	v	class:OpenFile
 readCompleted	widgets/Content.py	/^    def readCompleted(self, state: bool) -> None:$/;"	m	class:Content
 readDone	widgets/OpenFile.py	/^    readDone = pyqtSignal(bool)$/;"	v	class:OpenFile
 readDone	widgets/SaveFile.py	/^    readDone = pyqtSignal(bool)$/;"	v	class:SaveFile
-ready	main.py	/^    def ready(self):$/;"	m	class:Main
 readyToShow	widgets/Content.py	/^    readyToShow = pyqtSignal(bool)$/;"	v	class:Content
 realterminal	main.py	/^    def realterminal(self):$/;"	m	class:Main
 remove	widgets/Terminal.py	/^    def remove(self):$/;"	m	class:Console
 remove	widgets/Terminal.py	/^    def remove(self):$/;"	m	class:Terminal
-res	Untitled_file_28.py	/^res = requests.get("https:\/\/youtu.be\/9EcjWd-O4jI")$/;"	v
-resizeEvent	widgets/Editor.py	/^    def resizeEvent(self, event):$/;"	m	class:Editor
 resize_contents	widgets/Messagebox.py	/^    def resize_contents(self):$/;"	m	class:LineEdit
 returnCursorToNormal	widgets/Editor.py	/^    def returnCursorToNormal(self):$/;"	m	class:Editor
+returnCursorToNormal	widgets/foldArea.py	/^    def returnCursorToNormal(self) -> None:$/;"	m	class:FoldArea
 run	main.py	/^    def run(self):$/;"	m	class:UpdateThread
 run	utils/find_utility.py	/^    def run(self):$/;"	m	class:DocumentSearch
 run	utils/find_utility.py	/^    def run(self):$/;"	m	class:grabFiles
@@ -853,9 +835,7 @@ run	widgets/Terminal.py	/^    def run(self, command, path):  # Takes in the comm
 runFile	widgets/Editor.py	/^    def runFile(self):$/;"	m	class:Editor
 save	main.py	/^    def save(self):$/;"	m	class:Main
 save	widgets/SaveFile.py	/^    def save(self, tab):$/;"	m	class:SaveFile
-saveAct	2point56mb.py	/^    def saveAct(self):$/;"	m	class:Main
 saveAs	main.py	/^    def saveAs(self):$/;"	m	class:Main
-saveFile	2point56mb.py	/^    def saveFile(self):$/;"	m	class:Main
 saveFile	main.py	/^    def saveFile(self):$/;"	m	class:Main
 saveFileAs	main.py	/^    def saveFileAs(self):$/;"	m	class:Main
 saveMaybe	widgets/Messagebox.py	/^    def saveMaybe(self, file, tabCounter, tab, index):$/;"	m	class:MessageBox
@@ -870,9 +850,12 @@ self	config2.json	/^        "self": {$/;"	o	object:files.python.highlighting
 setCompleter	widgets/Content.py	/^    def setCompleter(self, completer):$/;"	m	class:Content
 setDefaultSettings	widgets/TextEditor.py	/^    def setDefaultSettings(self, lexer):$/;"	m	class:Editor
 setFold	widgets/TextEditor.py	/^    def setFold(self):$/;"	m	class:Editor
+setFoldLines	widgets/Editor.py	/^    def setFoldLines(self, lines: list):$/;"	m	class:Editor
+setFoldLines	widgets/numberBar.py	/^    def setFoldLines(self, lines: dict):$/;"	m	class:NumberBar
+setIgnoreLength	widgets/Terminal.py	/^    def setIgnoreLength(self, length: int) -> None:$/;"	m	class:OutputTextEdit
 setPureText	widgets/Messagebox.py	/^    def setPureText(self, a0: str) -> None:$/;"	m	class:LineEdit
 setPythonAutocomplete	widgets/TextEditor.py	/^    def setPythonAutocomplete(self):$/;"	m	class:Editor
-set_brace_colors	widgets/TextEditor.py	/^    def set_brace_colors(self, matched_B=None, matched_F=None, unmatched_B=None, unmatched_F=Non/;"	m	class:Editor
+set_brace_colors	widgets/TextEditor.py	/^    def set_brace_colors($/;"	m	class:Editor
 set_indentation_settings	widgets/TextEditor.py	/^    def set_indentation_settings(self):$/;"	m	class:Editor
 set_linenumbers	widgets/TextEditor.py	/^    def set_linenumbers(self, fontmetrics):$/;"	m	class:Editor
 set_up_tooltips	widgets/TextEditor.py	/^    def set_up_tooltips(self):$/;"	m	class:Editor
@@ -880,7 +863,6 @@ showConsole	widgets/Tabs.py	/^    def showConsole(self):$/;"	m	class:Tabs
 showDirectory	widgets/Tabs.py	/^    def showDirectory(self):$/;"	m	class:Tabs
 showFileExecuter	widgets/Tabs.py	/^    def showFileExecuter(self):$/;"	m	class:Tabs
 showPath	utils/find_utility.py	/^    def showPath(self, path):$/;"	m	class:DocumentSearch
-showRowAndCol	2point56mb.py	/^    def showRowAndCol(self):$/;"	m	class:Container
 show_or_not	widgets/Messagebox.py	/^    def show_or_not(self):$/;"	m	class:GetHelp
 show_update	utils/check_update.py	/^def show_update():$/;"	f
 singleLineComment	config.json	/^        "singleLineComment": {$/;"	o	object:files.c.highlighting
@@ -917,27 +899,27 @@ tabShape	config2.json	/^    "tabShape": true,$/;"	b	object:editor
 temp	main.py	/^    def temp(self):$/;"	m	class:Main
 terminate	widgets/Terminal.py	/^    def terminate(self):$/;"	m	class:Console
 textSignal	main.py	/^    textSignal = pyqtSignal(str)$/;"	v	class:UpdateThread
-textUnderCursor	2point56mb.py	/^    def textUnderCursor(self):$/;"	m	class:PlainTextEdit
 textUnderCursor	widgets/Content.py	/^    def textUnderCursor(self):$/;"	m	class:Content
 textUnderCursor	widgets/Editor.py	/^    def textUnderCursor(self):$/;"	m	class:Editor
 textUnderCursor	widgets/Terminal.py	/^    def textUnderCursor(self):$/;"	m	class:PlainTextEdit
 tokenize	utils/completer_utility.py	/^def tokenize(file):$/;"	f
 tokenize_file	widgets/Content.py	/^    def tokenize_file(self):$/;"	m	class:Content
 totalLines	widgets/Editor.py	/^    def totalLines(self):$/;"	m	class:Editor
-tree	utils/code_analysis.py	/^tree = ast.parse(file)$/;"	v
 trigger	utils/find_utility.py	/^    def trigger(self):$/;"	m	class:DocumentSearch
+unfold	widgets/foldArea.py	/^    def unfold(self, block: QTextBlock):$/;"	m	class:FoldArea
 unsetFold	widgets/TextEditor.py	/^    def unsetFold(self):$/;"	m	class:Editor
 updateAutoComplete	widgets/TextEditor.py	/^    def updateAutoComplete(self, file_path=None):$/;"	m	class:Editor
-updateLineNumberArea	widgets/Editor.py	/^    def updateLineNumberArea(self, rect, dy):$/;"	m	class:Editor
-updateLineNumberAreaWidth	widgets/Editor.py	/^    def updateLineNumberAreaWidth(self, _):$/;"	m	class:Editor
 updateOffset	widgets/SaveFile.py	/^    updateOffset = pyqtSignal(int)$/;"	v	class:SaveFile
-updateWidth	2point56mb.py	/^    def updateWidth(self):$/;"	m	class:LineNumberArea
+updateOnScroll	widgets/foldArea.py	/^    def updateOnScroll(self, rect: QRect, scroll: int):$/;"	m	class:FoldArea
+updateOnScroll	widgets/numberBar.py	/^    def updateOnScroll(self, rect: QRect, scroll: int):$/;"	m	class:NumberBar
+updateWidth	widgets/foldArea.py	/^    def updateWidth(self, blockCount: int):$/;"	m	class:FoldArea
+updateWidth	widgets/numberBar.py	/^    def updateWidth(self, blockCount: int):$/;"	m	class:NumberBar
+update_Hydra	main.py	/^    def update_Hydra(self):$/;"	m	class:Main
 update_previous_file	utils/lastOpenFile.py	/^def update_previous_file(filepath):$/;"	f
 update_previous_file	utils/last_open_file.py	/^def update_previous_file(filepath=last_file[0]):$/;"	f
-update_pypad	main.py	/^    def update_pypad(self):$/;"	m	class:Main
-valueSignal	widgets/Editor.py	/^    valueSignal = pyqtSignal(list)$/;"	v	class:Editor
+userInputSignal	widgets/Terminal.py	/^    userInputSignal = pyqtSignal(str)$/;"	v	class:OutputTextEdit
+visibleBlocks	widgets/Editor.py	/^    def visibleBlocks(self):$/;"	m	class:Editor
 visibleBlocks	widgets/Pythonhighlighter.py	/^    def visibleBlocks(self):$/;"	m	class:SyntaxHighlighter
-visibleBlocks	widgets/Syntaxhighlighter.py	/^    def visibleBlocks(self):$/;"	m	class:SyntaxHighlighter
 windowColor	config.json	/^    "windowColor": "#303030",$/;"	s	object:editor
 windowColor	config1.json	/^    "windowColor": "#212121",$/;"	s	object:editor
 windowColor	config2.json	/^    "windowColor": "#303030",$/;"	s	object:editor
@@ -950,5 +932,4 @@ windowText	config2.json	/^    "windowText": "#FFFFFF",$/;"	s	object:editor
 wordList	utils/completer_utility.py	/^wordList = [$/;"	v
 wordList	utils/completer_utility.py	/^wordList = sorted(wordList)$/;"	v
 write_dead_code_info	main.py	/^    def write_dead_code_info(self, text):$/;"	m	class:Main
-write_to_file	main.py	/^    def write_to_file(self, data):$/;"	m	class:Main
 xml_highlighter	widgets/TextEditor.py	/^    def xml_highlighter(self):$/;"	m	class:Editor

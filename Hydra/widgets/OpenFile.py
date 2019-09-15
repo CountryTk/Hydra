@@ -48,8 +48,6 @@ class OpenFile(QThread):
 
                     if self.read_amount == max_size:
 
-                        # print("END OF FILE REACHED LMAOAOAOAOAAO")
-
                         self.EndOfFileSignal.emit([True, max_size])
 
                     self.readAmountSignal.emit([self.read_amount, max_size])

@@ -587,11 +587,10 @@ class Console(QWidget):
 
             commands: list = command.split(" ")
             commands.insert(1, "-u")
-
             self.process.start(" ".join(commands))
             self.editor.appendPlainText("{} {}".format(commands[0], commands[-1]))
-            self.editor.setFocus()
 
+            self.editor.setFocus()
 
     def terminate(self):
         if self.process.state() == 2:
@@ -615,8 +614,10 @@ class OutputTextEdit(QPlainTextEdit):
         self.ignoreLength = length
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+
         if self.isReadOnly():
             return
+
         block: QTextBlock = self.textCursor().block()
 
         if event.key() in [Qt.Key_Down, Qt.Key_Up, Qt.Key_Left, Qt.Key_Right]:

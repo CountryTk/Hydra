@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QMenu,
     QInputDialog,
     QStyleOptionViewItem,
-    QStyle
+    QStyle,
 )
 from PyQt5.QtGui import (
     QFont,
@@ -26,7 +26,8 @@ from PyQt5.QtGui import (
     QTextLayout,
     QTextBlock,
     QPaintEvent,
-    QMouseEvent
+    QMouseEvent,
+    QFontMetricsF,
 )
 from PyQt5.QtCore import (
     Qt,
@@ -38,7 +39,7 @@ from PyQt5.QtCore import (
     QRegExp,
     QMimeData,
     QRectF,
-    QPointF
+    QPointF,
 )
 from Hydra.utils.config import config_reader, LOCATION
 from Hydra.utils.completer_utility import tokenize
@@ -61,32 +62,10 @@ with open(LOCATION + "default.json") as choice:
 editor = configs[choiceIndex]["editor"]
 
 
-class QLineNumberArea(QWidget):
-    def __init__(self, editor):
-        super().__init__(editor)
-        self.codeEditor = editor
-
-    def sizeHint(self):
-        return QSize(self.codeEditor.lineNumberAreaWidth(), 0)
-
-    def paintEvent(self, event):
-        self.codeEditor.lineNumberAreaPaintEvent(event)
-
-
 class Editor(QPlainTextEdit):
-    valueSignal = pyqtSignal(list)
-
     def __init__(self, parent, isReadOnly=False):
         super().__init__(parent)
-        """
-        self.lineNumberArea = QLineNumberArea(self)
-        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
-        self.updateRequest.connect(self.updateLineNumberArea)"""
-        #self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
-        self.verticalScrollBar().valueChanged.connect(self.handleData)
-
-        # self.updateLineNumberAreaWidth(0)
         self.setReadOnly(isReadOnly)
         self.parent = parent
 
@@ -94,9 +73,9 @@ class Editor(QPlainTextEdit):
         self.size = 12
         self.setUpdatesEnabled(True)
         self.worldList = wordList
-        self.menu_font = QFont()
-        self.menu_font.setFamily(editor["menuFont"])
-        self.menu_font.setPointSize(editor["menuFontSize"])
+        self.menuFont = QFont()
+        self.menuFont.setFamily(editor["menuFont"])
+        self.menuFont.setPointSize(editor["menuFontSize"])
         self.font.setFamily(editor["editorFont"])
         self.font.setPointSize(editor["editorFontSize"])
         self.focused = None
@@ -112,6 +91,8 @@ class Editor(QPlainTextEdit):
         self.indexes = None
         self.setMouseTracking(True)
         self.completer = None
+
+        self.setTabStopDistance(QFontMetricsF(self.font).width(" ") * 4)
 
         self.ignoreLength = None
 
@@ -140,7 +121,9 @@ class Editor(QPlainTextEdit):
 
         block: QTextBlock = self.firstVisibleBlock()
         height: int = self.height()
-        blockTop: float = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        blockTop: float = self.blockBoundingGeometry(block).translated(
+            self.contentOffset()
+        ).top()
         blockBottom: float = self.blockBoundingGeometry(block).height() + blockTop
 
         while block.isValid():
@@ -160,7 +143,6 @@ class Editor(QPlainTextEdit):
         nextBlock: QTextBlock = block.next()
         foldableBlocks: list = []
         lastBlock = None
-
         while nextBlock.isValid():
             strippedText = nextBlock.text().strip()
 
@@ -168,29 +150,28 @@ class Editor(QPlainTextEdit):
 
             if currentBlockIndentation <= rootIndentation:
 
-                if len(strippedText) != 0:  # This evaluates to true when we we reach a block that is not in our scope to fold
+                if (
+                    len(strippedText) != 0
+                ):  # This evaluates to true when we we reach a block that is not in our scope to fold
                     break
 
-            if len(strippedText) != 0:  # Last block with actual code in it, no white space contained
+            if (
+                len(strippedText) != 0
+            ):  # Last block with actual code in it, no white space contained
                 lastBlock = nextBlock
 
             foldableBlocks.append(nextBlock)
-            print(nextBlock.blockNumber()+1, "next block")
             nextBlock = nextBlock.next()
 
         for index, foldableBlock in enumerate(foldableBlocks):
 
             if foldableBlocks[index] == lastBlock:
 
-                return foldableBlocks[:index+1]
+                return foldableBlocks[: index + 1]
 
     def paintEvent(self, e: QPaintEvent):
         self.visibleBlocks()
         super().paintEvent(e)
-
-    def handleData(self, value):
-
-        self.valueSignal.emit([value, self.verticalScrollBar().maximum()])
 
     def totalLines(self):
         return self.blockCount()
@@ -239,38 +220,6 @@ class Editor(QPlainTextEdit):
         self.new_action = QAction("New")
         self.new_action.triggered.connect(self.parent.parent.newFile)
 
-    def lineNumberAreaWidth(self):
-        digits = 1
-        max_value = max(1, self.blockCount())
-        while max_value >= 10:
-            max_value /= 10
-            digits += 1
-        space = 10 + self.fontMetrics().width("9") * digits
-
-        space += 20
-
-        return space
-
-    def updateLineNumberAreaWidth(self, _):
-        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
-
-    def updateLineNumberArea(self, rect, dy):
-        if dy:
-            self.lineNumberArea.scroll(0, dy)
-        else:
-            self.lineNumberArea.update(
-                0, rect.y(), self.lineNumberArea.width(), rect.height()
-            )
-        if rect.contains(self.viewport().rect()):
-            self.updateLineNumberAreaWidth(0)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        cr = self.contentsRect()
-        """self.lineNumberArea.setGeometry(
-            QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height())
-        )"""
-
     def highlightCurrentLine(self):
         extraSelections = []
         if not self.isReadOnly():
@@ -282,43 +231,8 @@ class Editor(QPlainTextEdit):
             selection.cursor.clearSelection()
             extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
-        self.check()
+        # self.check()
         return extraSelections
-
-    def lineNumberAreaPaintEvent(self, event):
-        painter = QPainter(self.lineNumberArea)
-
-        painter.fillRect(event.rect(), QColor("#303030"))
-
-        block = self.firstVisibleBlock()
-        blockNumber = block.blockNumber()
-        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-        bottom = top + self.blockBoundingRect(block).height()
-
-        # Just to make sure I use the right font
-        height = self.fontMetrics().height()
-
-        while block.isValid() and (top <= event.rect().bottom()):
-            if block.isVisible() and (bottom >= event.rect().top()):
-                number = str(blockNumber + 1)
-                painter.setPen(Qt.white)
-
-                painter.drawText(
-                    0, top, self.lineNumberArea.width(), height, Qt.AlignCenter, number
-                )
-                options = QStyleOptionViewItem()
-                options.rect = QRect(0, top, self.lineNumberArea.width() + 45, height)
-                options.state = (QStyle.State_Active |
-                                 QStyle.State_Item |
-                                 QStyle.State_Children |
-                                 QStyle.State_Open)
-                self.style().drawPrimitive(QStyle.PE_IndicatorBranch, options,
-                                               painter, self)
-            block = block.next()
-            top = bottom
-            bottom = top + self.blockBoundingRect(block).height()
-            blockNumber += 1
-
 
     def openFile(self):
 
@@ -330,8 +244,59 @@ class Editor(QPlainTextEdit):
         self.run_action = QAction("Run")
         self.run_action.triggered.connect(self.parent.parent.execute_file)
 
+    def insert(self):
+        self.insertAction = QAction("Bubblesort")
+        self.insertAction.triggered.connect(self.bubblesort)
+
+    def insertClass(self):
+        self.insertClassAction = QAction("Create a class")
+        self.insertClassAction.triggered.connect(self.createClass)
+    def insertConcentricCircle(self):
+        self.insertConcentricCircleAction = QAction("Concentric circle")
+        self.insertConcentricCircleAction.triggered.connect(self.concentricCircle)
+
+    def concentricCircle(self):
+
+        self.insertPlainText("""import turtle
+turtle.penup()
+for i in range(1, 500, 50):
+    turtle.right(90)    # Face South
+    turtle.forward(i)   # Move one radius
+    turtle.right(270)   # Back to start heading
+    turtle.pendown()    # Put the pen back down
+    turtle.circle(i)    # Draw a circle
+    turtle.penup()      # Pen up while we go home
+    turtle.home()  
+        """)
+
+    def createClass(self):
+        self.insertPlainText(
+            """class Placeholder:
+            
+    def __init__(self):
+        self.solve()
+        
+    def solve(self):
+        pass"""
+        )
+
+    def bubblesort(self):
+
+        self.insertPlainText(
+            """def bubbleSort(array: list):
+    for i in range(len(array) - 1, 0, -1):
+        for j in range(i):
+            if array[j] > array[j+1]:
+                temp = array[j]
+                array[j] = array[j+1]
+                array[j+1] = temp"""
+        )
+
     def textUnderCursor(self):
         textCursor = self.textCursor()
+        pos: int = textCursor.position()
+
+        textCursor.setPosition(pos - 1)
         textCursor.select(QTextCursor.WordUnderCursor)
 
         return textCursor.selectedText()
@@ -344,8 +309,10 @@ class Editor(QPlainTextEdit):
         self.setTextCursor(textCursor)
 
     def mouseMoveEvent(self, QMouseEvent):
-        #TODO: finish
-
+        # TODO: finish
+        cursor: QCursor = QCursor(Qt.IBeamCursor)
+        QApplication.setOverrideCursor(cursor)
+        QApplication.changeOverrideCursor(cursor)
         super().mouseMoveEvent(QMouseEvent)
 
     def returnCursorToNormal(self):
@@ -363,8 +330,9 @@ class Editor(QPlainTextEdit):
         return emptyBlock
 
     def mousePressEvent(self, e: QMouseEvent):
-
-        self.check()
+        super().mousePressEvent(e)
+        return
+        # self.check()
         if QApplication.queryKeyboardModifiers() == Qt.ControlModifier:
 
             super().mousePressEvent(e)
@@ -376,10 +344,10 @@ class Editor(QPlainTextEdit):
                 # tag = self.jump_to_def(word)
                 # print(tag[0])
                 # if tag[0]:
-                    # print("INFO INFO INFO")
-                    # print(tag[1])
+                # print("INFO INFO INFO")
+                # print(tag[1])
 
-                    # self.parent.jumpToDef(tag[1])
+                # self.parent.jumpToDef(tag[1])
 
                 # if self.check_func(self.textUnderCursor(), True):
                 #     extraSelections = self.highlightCurrentLine()
@@ -503,10 +471,10 @@ class Editor(QPlainTextEdit):
         # tag = lol.get(word, None)
 
         # if tag:
-           #  return True, tag
+        #  return True, tag
 
         # else:
-            # return False, ""
+        # return False, ""
 
     def get_pydoc_output(self):
         output = self.info_process.readAllStandardOutput().data().decode()
@@ -525,11 +493,20 @@ class Editor(QPlainTextEdit):
         self.newFile()
         self.openFile()
         self.runFile()
+        self.insert()
+        self.insertClass()
+        self.insertConcentricCircle()
         menu.addAction(self.new_action)
         menu.addAction(self.open_action)
         menu.addAction(self.run_action)
 
-        menu.setFont(self.menu_font)
+
+        insertMenu = menu.addMenu("Insert")
+        insertMenu.addAction(self.insertAction)
+        insertMenu.addAction(self.insertClassAction)
+        insertMenu.addAction(self.insertConcentricCircleAction)
+        menu.setFont(self.menuFont)
+        insertMenu.setFont(self.menuFont)
 
         menu.exec(event.globalPos())
 
@@ -537,10 +514,19 @@ class Editor(QPlainTextEdit):
 
     def mouseReleaseEvent(self, e):
 
-        self.check()
+        # self.check()
         super().mouseReleaseEvent(e)
 
+    def onlySpaces(self, word: str) -> bool:
+
+        for char in word:
+
+            if char != " ":
+                return False
+        return True
+
     def keyPressEvent(self, e):
+
         textCursor = self.textCursor()
         key = e.key()
         if (
@@ -629,94 +615,49 @@ class Editor(QPlainTextEdit):
             except IndexError:
                 self.l = 0
 
-        if key == 39:
-            self.insertPlainText("'")
-            self.moveCursorPosBack()
+        if key == 16777220:
 
-        if key == Qt.Key_BraceLeft:
-            self.insertPlainText("}")
-            self.moveCursorPosBack()
+            currentText: str = self.textCursor().block().text()
+            space: str = " "
 
-        if key == Qt.Key_BracketLeft:
-            self.insertPlainText("]")
-            self.moveCursorPosBack()
+            if self.textUnderCursor().endswith(":"):
+                spaces: int = 0
 
-        if key == Qt.Key_ParenLeft:
-            self.insertPlainText(")")
-            self.moveCursorPosBack()
+                for index, i in enumerate(currentText):
 
-        if key == Qt.Key_ParenRight:
-            textCursor = self.textCursor()
-            textCursor.select(QTextCursor.WordUnderCursor)
-            if textCursor.selectedText() == "()" or "()" in textCursor.selectedText():
-                return
+                    if i != " ":
+                        if index % 4 == 0:
 
-        if key == Qt.Key_BraceRight:
-            textCursor = self.textCursor()
-            textCursor.select(QTextCursor.WordUnderCursor)
-            if textCursor.selectedText == "":
-                return
-        if key == 16777219:
-            if self.textUnderCursor() in ['""', "()", "[]", "''", "{}"]:
-                textCursor = self.textCursor()
-                textCursorPos = textCursor.position()
+                            super().keyPressEvent(e)
+                            self.insertPlainText(space * (index + 4))
 
-                textCursor.setPosition(textCursorPos + 1)
-                textCursor.deletePreviousChar()
-                self.setTextCursor(textCursor)
-        if key not in [16777217, 16777219, 16777220]:
-            super().keyPressEvent(e)
-            # print(self.textUnderCursor())
-            if len(self.textUnderCursor()) == 3:
-                pass
-            return
+                            return
 
-        # e.accept()
-        cursor = self.textCursor()
-        if key == 16777217:  # and self.replace_tabs:
-            amount = 4 - self.textCursor().positionInBlock() % 4
-            self.insertPlainText(" " * amount)
+                if spaces == 0:
 
-        elif (
-            key == 16777219
-            and cursor.selectionStart() == cursor.selectionEnd()
-            and self.replace_tabs
-            and cursor.positionInBlock()
-        ):
-            position = cursor.positionInBlock()
-            end = cursor.position()
-            start = end - (position % 4)
-
-            if start == end and position >= 4:
-                start -= 4
-
-            string = self.toPlainText()[start:end]
-            if not len(string.strip()):  # if length is 0 which is binary for false
-                for i in range(end - start):
-                    cursor.deletePreviousChar()
+                    super().keyPressEvent(e)
+                    self.insertPlainText(space * 4)
+                    return
             else:
-                super().keyPressEvent(e)
 
-        elif key == 16777220:
-            end = cursor.position()
-            start = end - cursor.positionInBlock()
-            line = self.toPlainText()[start:end]
-            indentation = len(line) - len(line.lstrip())
+                for index, i in enumerate(currentText):
 
-            chars = "\t"
-            if self.replace_tabs:
-                chars = "    "
-                indentation /= self.replace_tabs
+                    if i != " ":
 
-            if line.endswith(":"):
-                if self.replace_tabs:
-                    indentation += 1
+                        if index % 4 == 0 and index != 0:
+                            super().keyPressEvent(e)
+                            self.insertPlainText(space * index)
 
-            super().keyPressEvent(e)
-            self.insertPlainText(chars * int(indentation))
+                            return
+                        break
+                    else:
 
-        else:
-            super().keyPressEvent(e)
+                        if len(currentText) % 4 == 0 and self.onlySpaces(currentText):
+                            super().keyPressEvent(e)
+                            self.insertPlainText(space * len(currentText))
+                            return
+
+        super().keyPressEvent(e)
 
 
 class Completer(QCompleter):

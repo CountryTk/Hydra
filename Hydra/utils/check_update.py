@@ -9,7 +9,7 @@ def local_version():
 
     def _lol():
         if 1 == 1:
-            print("lol")
+            pass
     return __version__
 
 
