@@ -71,7 +71,7 @@ class Directory(QTreeView):
         self.deleteFileAct.triggered.connect(self.delete)
 
     def delete(self):
-        
+
         if len(self.indexPath) != 0:
 
             if os.path.isdir(self.indexPath):
