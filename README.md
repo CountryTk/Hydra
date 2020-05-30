@@ -22,4 +22,4 @@ After doing pip install -r requirements.txt you need to open up a cmd/terminal a
 4) Launch Hydra with the command `Hydra`
 
 # Demo
-https://imgur.com/a/cB2niZ9
+[Imgur demo](https://i.imgur.com/oNVKiRT.mp4)
