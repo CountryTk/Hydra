@@ -21,7 +21,5 @@ After doing pip install -r requirements.txt you need to open up a cmd/terminal a
 3) Install the IDE via setup.py `python3 setup.py install`
 4) Launch Hydra with the command `Hydra`
 
-# Pictures
-![alt_text](https://raw.githubusercontent.com/Fuchsiaff/Content/master/2019-01-26-220809_1920x1021_scrot.png)
-
-![Video demo](https://raw.githubusercontent.com/Fuchsiaff/content/master/demo_1.mp4)
+# Demo
+https://imgur.com/a/cB2niZ9
