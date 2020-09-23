@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QPlainTextEdit,
     QDesktopWidget,
     QHBoxLayout,
+    QTabWidget
 )
 from PyQt5.QtGui import (
     QSyntaxHighlighter,
@@ -26,7 +27,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtCore import Qt, pyqtSignal, QRegExp, QProcess, QThread
 from Hydra.utils.config import config_reader, LOCATION
 from Hydra.widgets.Messagebox import MessageBox, GenericMessage
-from Hydra.widgets.Content import Editor
+from Hydra.widgets.Browser import Browser
 
 configs = [config_reader(0), config_reader(1), config_reader(2)]
 
@@ -157,6 +158,13 @@ class PlainTextEdit(QPlainTextEdit):
         e.accept()
 
 
+class Tabs(QTabWidget):
+
+    def __init__(self):
+        super().__init__()
+        pass
+
+
 class Terminal(QWidget):
     errorSignal = pyqtSignal(str)
     outputSignal = pyqtSignal(str)
@@ -177,13 +185,26 @@ class Terminal(QWidget):
         self.parent = parent
         self.clicked = False
         self.name = None
+        self.tabs = Tabs()
 
         self.process.readyReadStandardError.connect(self.onReadyReadStandardError)
         self.process.readyReadStandardOutput.connect(self.onReadyReadStandardOutput)
+        self.layout.addWidget(self.tabs)
+        self.editor = PlainTextEdit(self, False)
         self.setLayout(self.layout)
         self.setStyleSheet("QWidget {background-color:invisible;}")
+        #self.showMaximized() # comment this if you want to embed this widget
+        self.browser_button = QPushButton("Open")
+
+        self.browser_button.pressed.connect(self.openBrowser)
+
         self.add()  # Add items to the layout
-        # self.showMaximized() # comment this if you want to embed this widget
+
+
+    def openBrowser(self):
+        widget = Browser("https://duckduckgo.com")
+        index = self.tabs.addTab(widget, "Console")
+        self.tabs.setCurrentIndex(index)
 
     def ispressed(self):
         return self.pressed
@@ -217,10 +238,12 @@ class Terminal(QWidget):
             str(os.getcwd()),
         )
         self.layout.addWidget(self.button)
-        self.layout.addWidget(self.editor)
+        # self.layout.addWidget(self.editor)
         self.editor.commandSignal.connect(self.handle)
         self.button.clicked.connect(self.remove)
         self.editor.commandZPressed.connect(self.handle)
+        self.tabs.addTab(self.editor, "Terminal")
+        self.tabs.addTab(self.browser_button, "Help")
 
     def added(self):
         self.pressed = True
@@ -564,7 +587,7 @@ class Console(QWidget):
         self.editor.setFont(self.font)
         self.layout.addWidget(self.button)
         self.layout.addWidget(self.editor)
-        self.layout.addWidget(self.terminateButton)
+        # self.layout.addWidget(self.terminateButton)
         self.button.clicked.connect(self.remove)
 
     def run(self, command, path):  # Takes in the command and the path of the file

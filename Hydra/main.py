@@ -75,6 +75,7 @@ class Main(QMainWindow):
         self.new()
         self.newProject()
         self.findDocument()
+
         self.openProjectF()
         self.open()
         self.save()
@@ -333,8 +334,9 @@ class Main(QMainWindow):
                 self.pic_opened = True
             self.cleanOpen(filename, self.pic_opened)
 
-    def openBrowser(self, url, word):
-        widget = Browser(url)
+    def openBrowser(self):
+        widget = Browser("https://duckduckgo.com")
+        word = ""
         index = self.tab.tabs.addTab(widget, "Info about: " + str(word))
         self.tab.tabs.setCurrentIndex(index)
 

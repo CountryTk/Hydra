@@ -49,6 +49,7 @@ from Hydra.widgets.Pythonhighlighter import PyHighlighter
 from Hydra.widgets.Messagebox import MessageBox, NoMatch
 from Hydra.widgets.OpenFile import OpenFile
 from Hydra.widgets.SaveFile import SaveFile
+from Hydra.widgets.Browser import Browser
 import platform
 from PyQt5.QtTest import QTest
 import os
@@ -216,7 +217,6 @@ class Editor(QPlainTextEdit):
 
     def newFile(self):
         """This is a wrapper for the function defined in Main: """
-
         self.new_action = QAction("New")
         self.new_action.triggered.connect(self.parent.parent.newFile)
 
@@ -251,9 +251,21 @@ class Editor(QPlainTextEdit):
     def insertClass(self):
         self.insertClassAction = QAction("Create a class")
         self.insertClassAction.triggered.connect(self.createClass)
+
     def insertConcentricCircle(self):
         self.insertConcentricCircleAction = QAction("Concentric circle")
         self.insertConcentricCircleAction.triggered.connect(self.concentricCircle)
+
+    def openBrowserFunction(self):
+        self.openBrowserAct = QAction("Secret")
+
+        self.openBrowserAct.triggered.connect(self.openBrowser)
+
+    def openBrowser(self):
+        widget = Browser("https://duckduckgo.com")
+        word = ""
+        index = self.tab.tabs.addTab(widget, "Info about: " + str(word))
+        self.tab.tabs.setCurrentIndex(index)
 
     def concentricCircle(self):
 
@@ -496,6 +508,8 @@ for i in range(1, 500, 50):
         self.insert()
         self.insertClass()
         self.insertConcentricCircle()
+        self.openBrowserFunction()
+
         menu.addAction(self.new_action)
         menu.addAction(self.open_action)
         menu.addAction(self.run_action)
@@ -505,6 +519,7 @@ for i in range(1, 500, 50):
         insertMenu.addAction(self.insertAction)
         insertMenu.addAction(self.insertClassAction)
         insertMenu.addAction(self.insertConcentricCircleAction)
+        insertMenu.addAction(self.openBrowserAct)
         menu.setFont(self.menuFont)
         insertMenu.setFont(self.menuFont)
 
@@ -516,6 +531,13 @@ for i in range(1, 500, 50):
 
         # self.check()
         super().mouseReleaseEvent(e)
+
+    def openBrowser(self):
+        widget = Browser("https://duckduckgo.com")
+        word = ""
+        index = self.parent.parent.tab.tabs.addTab(widget, "ylesanne2.py")
+        self.parent.parent.tab.tabs.setCurrentIndex(index)
+
 
     def onlySpaces(self, word: str) -> bool:
 
