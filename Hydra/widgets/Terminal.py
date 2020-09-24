@@ -254,7 +254,10 @@ class Terminal(QWidget):
         self.clicked = False
 
     def onReadyReadStandardError(self):
-        self.error = self.process.readAllStandardError().data().decode()
+        try:
+            self.error = self.process.readAllStandardError().data().decode()
+        except:
+            self.error = ""
         self.editor.appendPlainText(self.error.strip("\n"))
         self.errorSignal.emit(self.error)
 
