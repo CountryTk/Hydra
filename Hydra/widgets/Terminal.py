@@ -540,7 +540,8 @@ class Console(QWidget):
                 self.error = self.error.split(os.linesep)[-2]
                 self.dialog.helpword = str(self.error)
                 self.dialog.getHelp(self.parent.parent)
-        except IndexError as E:
+        except (IndexError, UnicodeDecodeError) as E:
+
             print(E)
 
     def onReadyReadStandardOutput(self):
