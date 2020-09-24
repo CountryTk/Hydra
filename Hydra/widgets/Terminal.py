@@ -529,8 +529,11 @@ class Console(QWidget):
 
     def onReadyReadStandardError(self):
         try:
-            self.error = self.process.readAllStandardError().data().decode()
-
+            try:
+                self.error = self.process.readAllStandardError().data().decode()
+            except (UnicodeDecodeError) as e:
+                print(e)
+                self.error = ""
             self.editor.appendPlainText(self.error)
 
             self.errorSignal.emit(self.error)
